@@ -1,0 +1,18 @@
+.Header-logo {
+  padding-top: 10px;
+  height: 70px;
+  position: absolute;
+  left: 0;
+}
+
+.Header-title {
+  padding-top: 20px;
+  margin: 0px;
+  text-align: center;
+}
+
+.Header-header {
+  background-color: #005EC5;
+  height: 70px;
+  color: white;
+}

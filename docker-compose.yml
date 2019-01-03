@@ -1,0 +1,37 @@
+version: '3.5'
+
+services:
+  server:
+    container_name: server
+    restart: always
+    build: .
+    command:
+      - "flask"
+      - "run"
+      - "--host=0.0.0.0"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/home/app-user/app/server
+    environment:
+      - FLASK_APP=server/app.py
+
+  web:
+    container_name: web
+    build: .
+    command:
+      - "npm"
+      - "start"
+      - "--prefix"
+      - "web/"
+    volumes:
+      - './web:/home/app-user/app/web'
+      - '/home/app-user/app/web/node_modules'
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "server"
+    environment:
+      - NODE_ENV=development
+      - NODE_PATH=./web/src
+

@@ -1,0 +1,86 @@
+.App {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.App-fieldsetColumn {
+  width: 20%;
+  padding-top: 5px;
+  display: inline-block;
+  float: left;
+}
+
+.App-fieldset {
+  border: 0;
+  background: transparent;
+}
+
+.App-fieldsetInput, .App-fieldsetTextarea {
+  font-size: 14px;
+  line-height: 20px;
+  margin: 5px;
+  padding: 7px 10px;
+  width: 95%;
+  border: 1px solid #dbd7d3;
+  border-radius: 10px;
+}
+
+  /*.fieldsetTextarea
+    min-height: 180px
+    resize: none
+    &:disabled
+      border-color: #f4f4f4
+      background: #f4f4f4*/
+
+.App-fieldsetLabel, .App-uppercaseFieldsetLabel {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.App-fieldsetRadioLabel {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.App-fieldsetRadio {
+  display: inline-block;
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(0,0,0,0.30);
+  border-radius: 50%;
+}
+
+.App-submitButton {
+  background: #0366D6;
+  color: #ffffff;
+  font-weight: 500;
+  border: 1px solid #dbd7d3;
+  font-size: 14px;
+  min-width: 82px;
+  margin-left: 7px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.App-datatable {
+  width: 75%;
+  display: inline-block;
+  float: right;
+  margin: 5px;
+  padding: 7px 10px;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
