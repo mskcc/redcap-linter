@@ -18,7 +18,9 @@ class Form extends Component {
       	token: '',
       	repeatableInstruments: '',
       	dataDictionary: '',
+      	dataDictionaryName: '',
       	dataFile: '',
+      	dataFileName: '',
       	environment: 'test'
       }
     };
@@ -33,6 +35,17 @@ class Form extends Component {
   	let newForm = this.state.form
   	newForm[field] = e.target.value
   	this.setState({form: newForm})
+  }
+
+  handleSelectedFile(field, e) {
+  	let newForm = this.state.form
+  	newForm[field] = e.target.files[0]
+  	if (field === 'dataFile') {
+  		newForm['dataFileName'] = e.target.value;
+  	} else if (field === 'dataDictionary') {
+  		newForm['dataDictionaryName'] = e.target.value;
+  	}
+    this.setState({form: newForm})
   }
 
   render() {
@@ -99,8 +112,8 @@ class Form extends Component {
 	          <label className="App-fieldsetLabel">Datafile: </label>
 	          <input className="App-fieldsetInput"
 	            type="file"
-	            value={form.dataFile}
-	            onChange={this.handleOnChangeForm.bind(this, 'dataFile')} />
+	            value={form.dataFileName}
+	            onChange={this.handleSelectedFile.bind(this, 'dataFile')} />
 	        </fieldset>
 
 	        <div className="Form-submitButtonDiv">

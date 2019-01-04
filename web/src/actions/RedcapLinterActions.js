@@ -6,11 +6,15 @@ export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 export function postForm(form) {
 
   return function action(dispatch) {
+  	const data = new FormData();
+    data.append('dataFile', form.dataFile);
+    data.append('dataFileName', form.dataFileName);
+
     const request = axios({
       method: 'POST',
       url: 'http://localhost:5000/',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      data: form
+      headers: {'Content-Type': 'multipart/form-data'},
+      data: data
     });
     
     return request.then(
