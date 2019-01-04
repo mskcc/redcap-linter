@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import '../../App.css'
 import './Form.css'
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { postForm } from '../../actions/RedcapLinterActions';
 
 class Form extends Component {
 
@@ -21,9 +24,10 @@ class Form extends Component {
     };
   }
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   return shallowCompare(this, nextProps, nextState);
-  // }
+  onSubmit() {
+  	this.props.postForm(this.state.form);
+  	console.log(this.state);
+  }
 
   handleOnChangeForm(field, e) {
   	let newForm = this.state.form
@@ -33,10 +37,9 @@ class Form extends Component {
 
   render() {
   	let form = this.state.form
-  	console.log(form);
     return (
 		<div className="App-fieldsetColumn">
-			<fieldset className="App-fieldset">
+	        <fieldset className="App-fieldset">
 	          <label className="App-fieldsetLabel">Environment</label>
 	          <label className="App-fieldsetRadioLabel">
 	            <input className="App-fieldsetRadio"
@@ -63,17 +66,6 @@ class Form extends Component {
 	            Production
 	          </label>
 	        </fieldset>
-
-	        <fieldset className="App-fieldset">
-	          <label className="App-fieldsetLabel">Datafile: </label>
-	          <input className="App-fieldsetInput"
-	            type="file"
-	            value={form.dataFile}
-	            onChange={this.handleOnChangeForm.bind(this, 'dataFile')} />
-	        </fieldset>
-
-	        <hr />
-
     		<fieldset className="App-fieldset">
     		  <label className="App-fieldsetLabel">Token: </label>
 	          <input className="App-fieldsetInput"
@@ -100,10 +92,32 @@ class Form extends Component {
 	            value={form.repeatableInstruments}
 	            onChange={this.handleOnChangeForm.bind(this, 'repeatableInstruments')} />
 	        </fieldset>
-	        <button className="App-submitButton">Submit</button>
+
+	        <hr />
+
+	        <fieldset className="App-fieldset">
+	          <label className="App-fieldsetLabel">Datafile: </label>
+	          <input className="App-fieldsetInput"
+	            type="file"
+	            value={form.dataFile}
+	            onChange={this.handleOnChangeForm.bind(this, 'dataFile')} />
+	        </fieldset>
+
+	        <div className="Form-submitButtonDiv">
+	        	<button onClick={this.onSubmit.bind(this)} className="App-submitButton">Submit</button>
+	        </div>
 	      </div>
     	);
 	}
 }
 
-export default Form;
+function mapStateToProps(state) {
+  console.log(state)
+  return state;
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ postForm: postForm }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Form);
