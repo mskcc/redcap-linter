@@ -11,13 +11,15 @@ app.logger.setLevel(logging.INFO)
 
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
-    response = flask.jsonify({'some': 'data'})
-    response.headers.add('Access-Control-Allow-Origin', '*')
     # json_data = json.loads(request.form.to_dict().keys()[0])
     # app.logger.info(json_data)
     # file = json_data['dataFile']
-    excel = pd.read_excel(request.files['dataFile'], sheet_name=None, dtype=str)
+    excel = pd.read_excel(request.files['dataFile'], sheet_name=None)
+    app.logger.info(list(excel.get(excel.keys()[0]).columns))
     records = None
+    results = {'csv_headers': list(excel.get(excel.keys()[0]).columns)}
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
 CORS(app, expose_headers='Authorization')

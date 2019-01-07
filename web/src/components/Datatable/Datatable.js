@@ -3,6 +3,9 @@ import './Datatable.css';
 import ReactTable from "react-table";
 import 'react-table/react-table.css';
 import { _resolve } from '../../utils/utils'
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { postForm } from '../../actions/RedcapLinterActions';
 
 class Datatable extends Component {
 
@@ -14,23 +17,23 @@ class Datatable extends Component {
   getStateFromProps(props) {
     return {
       selected: '',
-      // data: [{
-      //   name: 'Tanner Linsley',
-      //   age: 26,
-      //   friend: {
-      //     name: 'Jason Maurer',
-      //     age: 23,
-      //   }
-      // },
-      // {
-      //   name: 'Craig Perkins',
-      //   age: 26,
-      //   friend: {
-      //     name: 'Jason Berlinsky',
-      //     age: 26,
-      //   }
-      // }]
-      data: []
+      data: [{
+        name: 'Tanner Linsley',
+        age: 26,
+        friend: {
+          name: 'Jason Maurer',
+          age: 23,
+        }
+      },
+      {
+        name: 'Craig Perkins',
+        age: 26,
+        friend: {
+          name: 'Jason Berlinsky',
+          age: 26,
+        }
+      }]
+      // data: []
     };
   }
 
@@ -71,30 +74,39 @@ class Datatable extends Component {
 
   render() {
       const { data } = this.state;
-
-      // const columns = [{
-      //   Header: 'Name',
-      //   accessor: 'name',
-      //   Cell: this.renderEditable.bind(this)
-      // }, {
-      //   Header: 'Age',
-      //   accessor: 'age',
-      //   Cell: this.renderEditable.bind(this)
-      // }, {
-      //   Header: 'Friend Name',
-      //   accessor: 'friend.name',
-      //   Cell: this.renderEditable.bind(this)
-      // }, {
-      //   Header: props => <span>Friend Age</span>,
-      //   accessor: 'friend.age',
-      //   Cell: this.renderEditable.bind(this)
-      // }]
-      const columns = [{
+      let columns = [{
         Header: ''
+      }]
+      if (this.props.csv_headers) {
+        columns = this.props.csv_headers.map(header => { 
+          return {
+            Header: header,
+            accessor: header,
+            Cell: this.renderEditable.bind(this)
+          };
+        });
+      }
+
+      columns = [{
+        Header: 'Name',
+        accessor: 'name',
+        Cell: this.renderEditable.bind(this)
+      }, {
+        Header: 'Age',
+        accessor: 'age',
+        Cell: this.renderEditable.bind(this)
+      }, {
+        Header: 'Friend Name',
+        accessor: 'friend.name',
+        Cell: this.renderEditable.bind(this)
+      }, {
+        Header: props => <span>Friend Age</span>,
+        accessor: 'friend.age',
+        Cell: this.renderEditable.bind(this)
       }]
 
     return (
-    	<div className="App-datatable">
+    	<div>
         <ReactTable
           data={data}
           className='-striped -highlight'
@@ -107,4 +119,12 @@ class Datatable extends Component {
 	}
 }
 
-export default Datatable;
+function mapStateToProps(state) {
+  return state;
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ postForm: postForm }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Datatable);

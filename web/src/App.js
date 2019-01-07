@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Header from './components/Header/Header';
 import Form from './components/Form/Form';
-import Datatable from './components/Datatable/Datatable';
+import TabbedDatatable from './components/TabbedDatatable/TabbedDatatable';
 import configureStore from './stores/RedcapLinterStore';
 import { Provider } from 'react-redux';
 import './App.css';
@@ -15,7 +15,7 @@ class App extends Component {
         <Provider store={store}>
           <Header />
           <Form />
-          <Datatable />
+          <TabbedDatatable />
         </Provider>
       </div>
     );

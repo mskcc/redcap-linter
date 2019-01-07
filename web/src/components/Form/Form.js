@@ -14,6 +14,7 @@ class Form extends Component {
 
   getStateFromProps(props) {
     return {
+      errorText: '',
       form: props.form || {
       	token: '',
       	repeatableInstruments: '',
@@ -27,8 +28,25 @@ class Form extends Component {
   }
 
   onSubmit() {
+  	let errorText = ''
+  	if (!this.state.form.token && !(this.state.form.dataDictionary && this.state.form.repeatableInstruments)) {
+  		if (!errorText) {
+  			errorText += '<ul>'
+  		}
+  		errorText += '<li>Either token and environment or Data-Dictionary and list of repeatable instruments are required.</li>'
+  	}
+  	if (!this.state.form.dataFile) {
+  		if (!errorText) {
+  			errorText += '<ul>'
+  		}
+  		errorText += '<li>Datafile is required.</li>'
+  	}
+  	if (errorText) {
+  		errorText += '</ul>'
+  		this.setState({errorText: errorText})
+  		return
+  	}
   	this.props.postForm(this.state.form);
-  	console.log(this.state);
   }
 
   handleOnChangeForm(field, e) {
@@ -94,6 +112,7 @@ class Form extends Component {
 	          <label className="App-fieldsetLabel">Data-Dictionary: </label>
 	          <input className="App-fieldsetInput"
 	            type="file"
+	            accept=".csv,.xls,.xlsx"
 	            value={form.dataDictionary}
 	            onChange={this.handleOnChangeForm.bind(this, 'dataDictionary')} />
 	        </fieldset>
@@ -112,6 +131,7 @@ class Form extends Component {
 	          <label className="App-fieldsetLabel">Datafile: </label>
 	          <input className="App-fieldsetInput"
 	            type="file"
+	            accept=".csv,.xls,.xlsx"
 	            value={form.dataFileName}
 	            onChange={this.handleSelectedFile.bind(this, 'dataFile')} />
 	        </fieldset>
@@ -119,13 +139,14 @@ class Form extends Component {
 	        <div className="Form-submitButtonDiv">
 	        	<button onClick={this.onSubmit.bind(this)} className="App-submitButton">Submit</button>
 	        </div>
+	        <div className="Form-errorText" dangerouslySetInnerHTML={{__html: this.state.errorText}}>
+	        </div>
 	      </div>
     	);
 	}
 }
 
 function mapStateToProps(state) {
-  console.log(state)
   return state;
 }
 

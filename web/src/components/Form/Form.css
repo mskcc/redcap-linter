@@ -8,3 +8,10 @@
 .Form-submitButtonDiv {
 	text-align: center;
 }
+
+.Form-errorText {
+	color: red;
+	padding-top: 5px;
+	font-size: 10pt;
+	margin-left: 10px;
+}
