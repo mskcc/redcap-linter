@@ -17,7 +17,11 @@ def post_form():
     excel = pd.read_excel(request.files['dataFile'], sheet_name=None)
     app.logger.info(list(excel.get(excel.keys()[0]).columns))
     records = None
-    results = {'csv_headers': list(excel.get(excel.keys()[0]).columns)}
+    csvHeaders = {}
+    for sheetName, sheet in excel.items():
+        csvHeaders[sheetName] = list(sheet.columns)
+    results = {'csvHeaders': csvHeaders}
+    app.logger.info(list(excel.keys()))
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

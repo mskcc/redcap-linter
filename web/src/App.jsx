@@ -1,16 +1,19 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { Provider } from 'react-redux';
 import Header from './components/Header/Header';
 import Form from './components/Form/Form';
 import TabbedDatatable from './components/TabbedDatatable/TabbedDatatable';
 import configureStore from './stores/RedcapLinterStore';
-import { Provider } from 'react-redux';
 import './App.css';
 
-const { store } = configureStore();
+const initialState = {
+  csvHeaders: {},
+};
 
-class App extends Component {
-  render() {
-    return (
+const { store } = configureStore(initialState);
+
+function App() {
+  return (
       <div className="App">
         <Provider store={store}>
           <Header />
@@ -19,7 +22,6 @@ class App extends Component {
         </Provider>
       </div>
     );
-  }
 }
 
 export default App;
