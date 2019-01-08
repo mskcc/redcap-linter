@@ -51,12 +51,19 @@ class Datatable extends Component {
   }
 
   renderEditable(cellInfo) {
+    const { data } = this.state;
+    let tableData = data;
+    const { sheetName, jsonData } = this.props;
+    if (jsonData && jsonData[sheetName]) {
+      // TODO Find a better way to do this!!!
+      tableData = JSON.parse(jsonData[sheetName]);
+    }
     return (
       <div
         contentEditable
         suppressContentEditableWarning
         onBlur={(e) => {
-          const data = [...this.state.data];
+          const data = [...tableData];
           data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
           this.setState({ data });
         }}
@@ -69,7 +76,13 @@ class Datatable extends Component {
 
   render() {
     const { data } = this.state;
-    const { csvHeaders, sheetName } = this.props;
+    let tableData = data;
+    const { csvHeaders, sheetName, jsonData } = this.props;
+    if (jsonData && jsonData[sheetName]) {
+      // TODO Find a better way to do this!!!
+      tableData = JSON.parse(jsonData[sheetName]);
+    }
+    console.log(tableData)
     const sheetHeaders = csvHeaders[sheetName] || [];
       let columns = [{
         Header: ''
@@ -79,7 +92,7 @@ class Datatable extends Component {
         return {
           Header: header,
           accessor: header,
-          Cell: this.renderEditable.bind(this)
+          // Cell: this.renderEditable.bind(this)
         };
       });
     }
@@ -105,7 +118,7 @@ class Datatable extends Component {
     return (
       <div>
         <ReactTable
-          data={data}
+          data={tableData}
           className='-striped -highlight'
           columns={columns}
           defaultPageSize={18}

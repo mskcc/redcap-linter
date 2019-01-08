@@ -18,9 +18,11 @@ def post_form():
     app.logger.info(list(excel.get(excel.keys()[0]).columns))
     records = None
     csvHeaders = {}
+    jsonData = {}
     for sheetName, sheet in excel.items():
         csvHeaders[sheetName] = list(sheet.columns)
-    results = {'csvHeaders': csvHeaders}
+        jsonData[sheetName] = sheet.to_json(orient='records')
+    results = {'csvHeaders': csvHeaders, 'jsonData': jsonData}
     app.logger.info(list(excel.keys()))
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
