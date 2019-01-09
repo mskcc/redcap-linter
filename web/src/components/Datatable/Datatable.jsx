@@ -4,7 +4,8 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { _resolve } from '../../utils/utils'
+import PropTypes from 'prop-types';
+import { _resolve } from '../../utils/utils';
 import { postForm } from '../../actions/RedcapLinterActions';
 
 class Datatable extends Component {
@@ -63,12 +64,12 @@ class Datatable extends Component {
         contentEditable
         suppressContentEditableWarning
         onBlur={(e) => {
-          const data = [...tableData];
-          data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
-          this.setState({ data });
+          const tData = [...tableData];
+          tData[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
+          this.setState({ data: tData });
         }}
         dangerouslySetInnerHTML={{
-          __html: _resolve(cellInfo.column.id, this.state.data[cellInfo.index])
+          __html: tableData[cellInfo.index][cellInfo.column.id],
         }}
       />
     );
@@ -82,13 +83,12 @@ class Datatable extends Component {
       // TODO Find a better way to do this!!!
       tableData = JSON.parse(jsonData[sheetName]);
     }
-    console.log(tableData)
     const sheetHeaders = csvHeaders[sheetName] || [];
-      let columns = [{
-        Header: ''
-      }];
-      if (sheetHeaders.length > 0) {
-        columns = sheetHeaders.map((header) => {
+    let columns = [{
+      Header: '',
+    }];
+    if (sheetHeaders.length > 0) {
+      columns = sheetHeaders.map((header) => {
         return {
           Header: header,
           accessor: header,
@@ -128,6 +128,12 @@ class Datatable extends Component {
     );
   }
 }
+
+Datatable.propTypes = {
+  csvHeaders: PropTypes.object.isRequired,
+  sheetName: PropTypes.string,
+  jsonData: PropTypes.object,
+};
 
 function mapStateToProps(state) {
   return state;

@@ -24,6 +24,11 @@ export function postForm(form) {
     const data = new FormData();
     data.append('dataFile', form.dataFile);
     data.append('dataFileName', form.dataFileName);
+    data.append('token', form.token);
+    data.append('environment', form.environment);
+    data.append('dataDictionary', form.dataDictionary);
+    data.append('dataDictionaryName', form.dataDictionaryName);
+    data.append('repeatableInstruments', form.repeatableInstruments);
 
     const request = axios({
       method: 'POST',

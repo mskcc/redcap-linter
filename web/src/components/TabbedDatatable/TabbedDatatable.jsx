@@ -10,37 +10,35 @@ import {
 import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
 import Datatable from '../Datatable/Datatable';
-import './TabbedDatatable.css'
+import './TabbedDatatable.css';
 import { postForm } from '../../actions/RedcapLinterActions';
 
 class TabbedDatatable extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      sheets: [],
-    };
+    this.state = { };
   }
 
   render() {
     const { csvHeaders } = this.props;
-    const sheets = Object.keys(csvHeaders)
-    let tabs = [];
-    let tabPanels = [];
+    const sheets = Object.keys(csvHeaders);
+    const tabs = [];
+    const tabPanels = [];
     if (sheets && sheets.length > 0) {
       sheets.forEach((sheetName) => {
-        tabs.push(<Tab key={`${sheetName}`}>{sheetName}</Tab>)
+        tabs.push(<Tab key={`${sheetName}`}>{sheetName}</Tab>);
         tabPanels.push(
           <TabPanel key={`${sheetName}`}>
             <Datatable sheetName={`${sheetName}`} />
-          </TabPanel>
+          </TabPanel>,
         );
       });
     } else {
-      tabs.push(<Tab key="sheet1">Sheet1</Tab>)
+      tabs.push(<Tab key="sheet1">Sheet1</Tab>);
       tabPanels.push(
         <TabPanel key="sheet1">
           <Datatable />
-        </TabPanel>
+        </TabPanel>,
       );
     }
     return (
@@ -57,7 +55,7 @@ class TabbedDatatable extends Component {
 
 TabbedDatatable.propTypes = {
   csvHeaders: PropTypes.object.isRequired,
-}
+};
 
 function mapStateToProps(state) {
   return state;

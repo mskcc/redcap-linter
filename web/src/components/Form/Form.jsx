@@ -3,6 +3,7 @@ import '../../App.css';
 import './Form.css';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import PropTypes from 'prop-types';
 import { postForm } from '../../actions/RedcapLinterActions';
 
 class Form extends Component {
@@ -25,7 +26,7 @@ class Form extends Component {
   onSubmit() {
     let errorText = '';
     const { form } = this.state;
-    const { postForm } = this.props;
+    const { submitForm } = this.props;
     // const { postForm } = this.props;
     if (!form.token && !(form.dataDictionary && form.repeatableInstruments)) {
       if (!errorText) {
@@ -44,7 +45,7 @@ class Form extends Component {
       this.setState({ errorText });
       return;
     }
-    postForm(form);
+    submitForm(form);
   }
 
   handleOnChangeForm(field, e) {
@@ -122,8 +123,8 @@ class Form extends Component {
             id="dataDictionary"
             type="file"
             accept=".csv,.xls,.xlsx"
-            value={form.dataDictionary}
-            onChange={this.handleOnChangeForm.bind(this, 'dataDictionary')}
+            value={form.dataDictionaryName}
+            onChange={this.handleSelectedFile.bind(this, 'dataDictionary')}
           />
         </fieldset>
         <fieldset className="App-fieldset">
@@ -163,12 +164,17 @@ class Form extends Component {
   }
 }
 
+Form.propTypes = {
+  submitForm: PropTypes.func.isRequired,
+};
+
+
 function mapStateToProps(state) {
   return state;
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ postForm }, dispatch);
+  return bindActionCreators({ submitForm: postForm }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Form);

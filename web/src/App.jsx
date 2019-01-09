@@ -8,20 +8,21 @@ import './App.css';
 
 const initialState = {
   csvHeaders: {},
+  data: {},
 };
 
 const { store } = configureStore(initialState);
 
 function App() {
   return (
-      <div className="App">
-        <Provider store={store}>
-          <Header />
-          <Form />
-          <TabbedDatatable />
-        </Provider>
-      </div>
-    );
+    <div className="App">
+      <Provider store={store}>
+        <Header />
+        <Form />
+        <TabbedDatatable />
+      </Provider>
+    </div>
+  );
 }
 
 export default App;
