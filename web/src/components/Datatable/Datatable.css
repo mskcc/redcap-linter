@@ -5,3 +5,7 @@
 .Datatable-headerError {
 	color: #E5153E;
 }
+
+.Datatable-cellError {
+	color: #E5153E;
+}

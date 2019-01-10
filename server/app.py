@@ -60,7 +60,7 @@ def post_form():
         dd_df.columns = utils.parameterize_list(list(dd_df.columns))
         dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['variable_field_name'])]
 
-    cells_with_errors, record_fields_not_in_redcap = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors, record_fields_not_in_redcap, all_errors = linter.lint_datafile(dd, records, project_info)
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #     app.logger.info(cells_with_errors['Sheet1'].iloc[:,0:8])
 
@@ -79,14 +79,14 @@ def post_form():
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
-
     results = {
         'csvHeaders': csv_headers,
         'jsonData': json_data,
         'ddHeaders': dd_headers,
         'ddData': dd_data,
         'cellsWithErrors': cells_with_errors,
-        'recordFieldsNotInRedcap': record_fields_not_in_redcap
+        'recordFieldsNotInRedcap': record_fields_not_in_redcap,
+        'allErrors': all_errors
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

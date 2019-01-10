@@ -23,7 +23,7 @@ def validate_text_type(list_to_validate, redcap_field):
     return validations
 
 
-def lint_instrument(data_dictionary, form_name, records, repeatable):
+def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors):
     instrument_errors = pd.DataFrame().reindex_like(records)
     instrument_errors[:] = False
 
@@ -38,8 +38,8 @@ def lint_instrument(data_dictionary, form_name, records, repeatable):
     matching_field_names = [f.field_name for f in matching_fields]
     output_records = records[matching_field_names].copy()
     if recordid_field.field_name not in records.columns:
-        # total_error_count += 1
-        # logging.error("Primary key {0} not present in instrument {1}.".format(recordid_field.field_name, form_name))
+        total_error_count += 1
+        all_errors.append("Primary key {0} not present in instrument {1}.".format(recordid_field.field_name, form_name))
         output_records.insert(0, recordid_field.field_name, None)
         output_records[recordid_field.field_name] = list(range(1, len(output_records.index)+1))
     output_records.insert(1, 'redcap_repeat_instrument', None)
@@ -63,18 +63,18 @@ def lint_instrument(data_dictionary, form_name, records, repeatable):
         # if redcap_field.field_name == 'mrn1':
         #     print(current_list)
         if redcap_field.field_type in ['text', 'notes']:
-            # for item in current_list:
-            #     if not item and redcap_field.required:
-            #         logging.error("Required field missing.")
+            for idx, item in enumerate(current_list):
+                if not item and redcap_field.required:
+                    all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
             validations = validate_text_type(current_list, redcap_field)
             instrument_errors[redcap_field.field_name] = [d is False for d in validations]
         elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
             choices_dict = redcap_field.choices_dict
-            # for item in current_list:
-            #     if not item and redcap_field.required:
-            #         logging.error("Required field missing.")
-            #     elif item and item not in choices_dict:
-            #         logging.error("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
+            for idx, item in enumerate(current_list):
+                if not item and redcap_field.required:
+                    all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
+                elif item and item not in choices_dict:
+                    all_errors.append("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
             if redcap_field.required:
                 instrument_errors[redcap_field.field_name] = [not d or d not in choices_dict for d in current_list]
             else:
@@ -111,8 +111,7 @@ def lint_datafile(data_dictionary, records, project_info):
     encoded_records = {}
     record_fields_not_in_redcap = {}
 
-    # log = logging.getLogger('RedcapLinter')
-    # log.info("HERE")
+    all_errors = []
 
     for instrument in records.keys():
         sheet_name = utils.parameterize(instrument)
@@ -123,9 +122,9 @@ def lint_datafile(data_dictionary, records, project_info):
         instrument_errors[:] = False
         datafile_errors[instrument] = instrument_errors
 
-        # if sheet_name not in form_names:
-        #     logging.info("Sheet {0} not found in form names of data dictionary.".format(instrument))
-        #     continue
+        if sheet_name not in form_names:
+            all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
+            continue
 
         instrument_records.columns = utils.parameterize_list(instrument_records.columns.tolist())
         recordid_field = data_dictionary[0]
@@ -138,20 +137,18 @@ def lint_datafile(data_dictionary, records, project_info):
         instrument_fields_not_in_redcap = [field for field in instrument_records.columns if field not in redcap_field_names]
         record_fields_not_in_redcap[instrument] = instrument_fields_not_in_redcap
 
-        # if len(instrument_fields_not_in_redcap) > 0:
-        #     logging.warning("Fields in Instrument {0} not present in REDCap: {1}".format(instrument, str(instrument_fields_not_in_redcap)))
-        # if len(redcap_fields_not_in_data) > 0:
-        #     logging.warning("Fields in REDCap not present in Instrument {0}: {1}".format(instrument, str(redcap_fields_not_in_data)))
+        if len(instrument_fields_not_in_redcap) > 0:
+            all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(instrument, str(instrument_fields_not_in_redcap)))
+        if len(redcap_fields_not_in_data) > 0:
+            all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(instrument, str(redcap_fields_not_in_data)))
 
     recordid_instrument = recordid_field.form_name
     recordid_instrument_records = records.get(recordid_instrument) or records.get(recordid_instrument.title())
-    # if recordid_instrument_records is None:
-    #     error_msg = ("Record ID Instrument `{0}` not found in datafile. "
-    #                  "Please make sure sheets are named with the same instrument (form) name as it appears in "
-    #                  "REDCap or the Data Dictionary.").format(recordid_instrument)
-    #     print(error_msg)
-    #     logging.error("Record ID Instrument `{0}` not found in datafile.".format(recordid_instrument))
-    #     return
+    if recordid_instrument_records is None:
+        error_msg = ("Record ID Instrument `{0}` not found in datafile. "
+                     "Please make sure sheets are named with the same instrument (form) name as it appears in "
+                     "REDCap or the Data Dictionary.").format(recordid_instrument)
+        all_errors.append(error_msg)
 
     normalized_instruments_dict = dict(zip(utils.parameterize_list(records.keys()), records.keys()))
 
@@ -160,13 +157,15 @@ def lint_datafile(data_dictionary, records, project_info):
         sheet_name = normalized_instruments_dict.get(instrument)
         instrument_records = records.get(sheet_name)
         if instrument_records is not None:
-            output, errors = lint_instrument(data_dictionary, instrument, instrument_records, repeatable)
+            output, errors = lint_instrument(data_dictionary, instrument, instrument_records, repeatable, all_errors)
             encoded_records[sheet_name] = output
             if errors is not None:
                 encoded_records[sheet_name] = output
                 instruments_with_errors.append(instrument)
                 datafile_errors[sheet_name] = errors
-        # else:
-        #     logging.warning("Instrument {0} not found in datafile.".format(instrument))
+        else:
+            all_errors.append("Instrument {0} not found in datafile.".format(instrument))
 
-    return datafile_errors, record_fields_not_in_redcap
+    all_errors = [{"error": error} for error in all_errors]
+
+    return datafile_errors, record_fields_not_in_redcap, all_errors

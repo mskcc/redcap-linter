@@ -27,6 +27,7 @@ class TabbedDatatable extends Component {
       ddData,
       cellsWithErrors,
       recordFieldsNotInRedcap,
+      allErrors,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const tabs = [];
@@ -72,6 +73,18 @@ class TabbedDatatable extends Component {
           />
         </TabPanel>,
       );
+      if (allErrors.length > 0) {
+        tabs.push(<Tab key="All-Errors">Errors</Tab>);
+        tabPanels.push(
+          <TabPanel key="All-Errors">
+            <Datatable
+              sheetName="All-Errors"
+              headers={['error']}
+              tableData={allErrors}
+            />
+          </TabPanel>,
+        );
+      }
     } else {
       tabs.push(<Tab key="sheet1">Sheet1</Tab>);
       tabPanels.push(
@@ -97,7 +110,9 @@ TabbedDatatable.propTypes = {
   jsonData: PropTypes.object,
   ddHeaders: PropTypes.array,
   ddData: PropTypes.array,
-  cellsWithErrors: PropTypes.object
+  cellsWithErrors: PropTypes.object,
+  recordFieldsNotInRedcap: PropTypes.object,
+  allErrors: PropTypes.array
 };
 
 TabbedDatatable.defaultProps = {
@@ -105,6 +120,8 @@ TabbedDatatable.defaultProps = {
   ddHeaders: [],
   ddData: [],
   cellsWithErrors: {},
+  recordFieldsNotInRedcap: {},
+  allErrors: []
 };
 
 function mapStateToProps(state) {

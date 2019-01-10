@@ -88,6 +88,7 @@ class Datatable extends Component {
       headers,
       tableData,
       tableFieldsNotInRedcap,
+      sheetName,
     } = this.props;
     let columns = [{
       Header: '',
@@ -95,12 +96,19 @@ class Datatable extends Component {
     if (headers.length > 0) {
       columns = headers.map((header) => {
         let headerClassName = '';
+        let className = '';
         if (tableFieldsNotInRedcap.includes(header)) {
           headerClassName = 'Datatable-headerError';
+        }
+        // TODO Eliminate hard coding
+        if (sheetName === 'All-Errors') {
+          headerClassName = 'Datatable-headerError';
+          className = 'Datatable-cellError';
         }
         return {
           Header: header,
           headerClassName,
+          className,
           accessor: header,
           Cell: this.renderEditable.bind(this),
           // getProps: this.renderErrors.bind(this),
@@ -145,12 +153,14 @@ Datatable.propTypes = {
   tableData: PropTypes.array,
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
+  sheetName: PropTypes.string,
 };
 
 Datatable.defaultProps = {
   tableData: [],
   tableErrors: [],
   tableFieldsNotInRedcap: [],
+  sheetName: '',
 };
 
 export default Datatable;
