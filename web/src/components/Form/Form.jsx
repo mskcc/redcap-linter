@@ -27,9 +27,9 @@ class Form extends Component {
     let errorText = '';
     const { form } = this.state;
     const { submitForm } = this.props;
-    if (!form.token && !(form.dataDictionary && form.repeatableInstruments)) {
+    if (!form.token && !form.dataDictionary) {
       if (!errorText) { errorText += '<ul>'; }
-      errorText += '<li>Either token and environment or Data-Dictionary and list of repeatable instruments are required.</li>';
+      errorText += '<li>Either token and environment or Data-Dictionary is required.</li>';
     }
     if (!form.dataFile) {
       if (!errorText) { errorText += '<ul>'; }

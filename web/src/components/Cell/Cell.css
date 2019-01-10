@@ -1,0 +1,8 @@
+.Cell-default {
+  width: 100%;
+  height: 100%;
+}
+
+.Cell-error {
+  color: #E5153E;
+}

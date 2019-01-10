@@ -4,6 +4,7 @@ import re
 import pandas as pd
 from dateutil import parser
 
+from flask import current_app
 
 def write_errors_to_excel(original_records, errors, error_cols):
     writer = pd.ExcelWriter('datafile_errors.xlsx', engine='xlsxwriter')
@@ -79,6 +80,7 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
 
 
 def validate_dates(date_list, date_format, date_min, date_max, required):
+    # current_app.logger.info(date_list)
     formatted_dates = []
     for d in date_list:
         if not d:
@@ -102,26 +104,6 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
                 formatted_dates.append(d.strftime("%Y/%m/%d"))
 
     return formatted_dates
-
-
-def intersection(list1, list2):
-    """Finds intersection of 2 lists.
-
-    Keyword arguments:
-    list1 -- the first list
-    list2 -- the second list
-    """
-    return list(set(list1).intersection(list2))
-
-
-def list_difference(list1, list2):
-    """Removes items from list1 that overlap in list2
-
-    Keyword arguments:
-    list1 -- the first list
-    list2 -- the second list
-    """
-    return list(set(list1) - set(list2))
 
 
 def parameterize(str):

@@ -49,23 +49,61 @@ class Datatable extends Component {
   }
 
   renderEditable(cellInfo) {
-    const { tableData } = this.props;
+    const {
+      tableData,
+      tableErrors,
+    } = this.props;
+    let hasError = false;
+    if (tableErrors[cellInfo.index] && tableErrors[cellInfo.index][cellInfo.column.id]) {
+      hasError = tableErrors[cellInfo.index][cellInfo.column.id];
+    }
     return (
-      <Cell cellData={tableData[cellInfo.index][cellInfo.column.id]} />
+      <Cell
+        cellData={tableData[cellInfo.index][cellInfo.column.id]}
+        hasError={hasError}
+      />
     );
   }
 
+  // renderErrors(cellInfo) {
+  //   const {
+  //     tableErrors,
+  //   } = this.props;
+  //   let hasError = false;
+  //   if (tableErrors[cellInfo.index] && tableErrors[cellInfo.index][cellInfo.column.id]) {
+  //     hasError = tableErrors[cellInfo.index][cellInfo.column.id];
+  //   }
+  //   if (hasError) {
+  //     return {
+  //       style: {
+  //         backgroundColor: '#E5153E',
+  //       },
+  //     };
+  //   }
+  //   return { };
+  // }
+
   render() {
-    const { headers, tableData } = this.props;
+    const {
+      headers,
+      tableData,
+      tableFieldsNotInRedcap,
+    } = this.props;
     let columns = [{
       Header: '',
     }];
     if (headers.length > 0) {
       columns = headers.map((header) => {
+        let headerClassName = '';
+        if (tableFieldsNotInRedcap.includes(header)) {
+          headerClassName = 'Datatable-headerError';
+        }
         return {
           Header: header,
+          headerClassName,
           accessor: header,
-          Cell: this.renderEditable.bind(this)
+          Cell: this.renderEditable.bind(this),
+          // getProps: this.renderErrors.bind(this),
         };
       });
     }
@@ -105,10 +143,14 @@ class Datatable extends Component {
 Datatable.propTypes = {
   headers: PropTypes.array.isRequired,
   tableData: PropTypes.array,
+  tableErrors: PropTypes.array,
+  tableFieldsNotInRedcap: PropTypes.array,
 };
 
 Datatable.defaultProps = {
   tableData: [],
+  tableErrors: [],
+  tableFieldsNotInRedcap: [],
 };
 
 export default Datatable;

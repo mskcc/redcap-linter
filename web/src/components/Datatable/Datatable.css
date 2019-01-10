@@ -1,3 +1,7 @@
 .ReactTable .rt-thead.-header {
 	z-index: 100;
 }
+
+.Datatable-headerError {
+	color: #E5153E;
+}

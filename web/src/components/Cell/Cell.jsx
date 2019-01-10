@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
+import './Cell.css'
 
 class Cell extends Component {
   constructor(props) {
@@ -11,9 +12,17 @@ class Cell extends Component {
   }
 
   render() {
-    const { cellData } = this.props;
+    const {
+      cellData,
+      hasError,
+    } = this.props;
+    let className = 'Cell-default'
+    if (hasError) {
+      className += ' Cell-error';
+    }
     return (
       <div
+        className={className}
         contentEditable
         suppressContentEditableWarning
         onBlur={(e) => {
