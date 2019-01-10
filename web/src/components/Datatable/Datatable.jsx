@@ -88,7 +88,7 @@ class Datatable extends Component {
       headers,
       tableData,
       tableFieldsNotInRedcap,
-      sheetName,
+      sheetInError,
     } = this.props;
     let columns = [{
       Header: '',
@@ -100,8 +100,7 @@ class Datatable extends Component {
         if (tableFieldsNotInRedcap.includes(header)) {
           headerClassName = 'Datatable-headerError';
         }
-        // TODO Eliminate hard coding
-        if (sheetName === 'All-Errors') {
+        if (sheetInError) {
           headerClassName = 'Datatable-headerError';
           className = 'Datatable-cellError';
         }
@@ -154,6 +153,7 @@ Datatable.propTypes = {
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
   sheetName: PropTypes.string,
+  sheetInError: PropTypes.bool,
 };
 
 Datatable.defaultProps = {
@@ -161,6 +161,7 @@ Datatable.defaultProps = {
   tableErrors: [],
   tableFieldsNotInRedcap: [],
   sheetName: '',
+  sheetInError: false,
 };
 
 export default Datatable;

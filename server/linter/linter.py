@@ -109,7 +109,6 @@ def lint_datafile(data_dictionary, records, project_info):
     original_records = {}
     datafile_errors = {}
     encoded_records = {}
-    record_fields_not_in_redcap = {}
 
     all_errors = []
 
@@ -121,34 +120,6 @@ def lint_datafile(data_dictionary, records, project_info):
         instrument_errors.columns = utils.parameterize_list(instrument_errors.columns.tolist())
         instrument_errors[:] = False
         datafile_errors[instrument] = instrument_errors
-
-        if sheet_name not in form_names:
-            all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
-            continue
-
-        instrument_records.columns = utils.parameterize_list(instrument_records.columns.tolist())
-        recordid_field = data_dictionary[0]
-        form_fields = [field for field in data_dictionary if field.form_name == sheet_name or field.field_name == recordid_field.field_name]
-
-        redcap_field_names = [field.field_name for field in form_fields]
-
-        redcap_fields_not_in_data = [field for field in redcap_field_names if field not in instrument_records.columns]
-
-        instrument_fields_not_in_redcap = [field for field in instrument_records.columns if field not in redcap_field_names]
-        record_fields_not_in_redcap[instrument] = instrument_fields_not_in_redcap
-
-        if len(instrument_fields_not_in_redcap) > 0:
-            all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(instrument, str(instrument_fields_not_in_redcap)))
-        if len(redcap_fields_not_in_data) > 0:
-            all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(instrument, str(redcap_fields_not_in_data)))
-
-    recordid_instrument = recordid_field.form_name
-    recordid_instrument_records = records.get(recordid_instrument) or records.get(recordid_instrument.title())
-    if recordid_instrument_records is None:
-        error_msg = ("Record ID Instrument `{0}` not found in datafile. "
-                     "Please make sure sheets are named with the same instrument (form) name as it appears in "
-                     "REDCap or the Data Dictionary.").format(recordid_instrument)
-        all_errors.append(error_msg)
 
     normalized_instruments_dict = dict(zip(utils.parameterize_list(records.keys()), records.keys()))
 
@@ -166,6 +137,4 @@ def lint_datafile(data_dictionary, records, project_info):
         else:
             all_errors.append("Instrument {0} not found in datafile.".format(instrument))
 
-    all_errors = [{"error": error} for error in all_errors]
-
-    return datafile_errors, record_fields_not_in_redcap, all_errors
+    return datafile_errors, all_errors

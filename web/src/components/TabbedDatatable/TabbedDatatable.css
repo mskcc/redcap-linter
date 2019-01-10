@@ -1,13 +1,17 @@
-.TabbedDatatable_tabList {
+.TabbedDatatable-tabList {
 	border-bottom: 0px;
 	margin-bottom: 0px;
 	margin-top: 0px;
 	padding-left: 0px;
 }
 
-.TabbedDatatable_tabs {
+.TabbedDatatable-tabs {
 	width: 75%;
 	display: inline-block;
 	float: right;
 	margin-right: 15px;
+}
+
+.TabbedDatatable-sheetError {
+	color: #E5153E;
 }

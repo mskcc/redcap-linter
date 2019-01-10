@@ -28,6 +28,7 @@ class TabbedDatatable extends Component {
       cellsWithErrors,
       recordFieldsNotInRedcap,
       allErrors,
+      sheetsNotInRedcap,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const tabs = [];
@@ -49,8 +50,15 @@ class TabbedDatatable extends Component {
         if (recordFieldsNotInRedcap && recordFieldsNotInRedcap[sheetName]) {
           tableFieldsNotInRedcap = recordFieldsNotInRedcap[sheetName];
         }
+        // TODO make this a CSS class that works with react-tabs
+        const tabStyle = { };
+        let sheetInError = false;
+        if (sheetsNotInRedcap.includes(sheetName)) {
+          sheetInError = true;
 
-        tabs.push(<Tab key={`${sheetName}`}>{sheetName}</Tab>);
+          tabStyle.color = '#E5153E';
+        }
+        tabs.push(<Tab style={tabStyle} key={`${sheetName}`}>{sheetName}</Tab>);
         tabPanels.push(
           <TabPanel key={`${sheetName}`}>
             <Datatable
@@ -59,6 +67,7 @@ class TabbedDatatable extends Component {
               tableData={tableData}
               tableErrors={tableErrors}
               tableFieldsNotInRedcap={tableFieldsNotInRedcap}
+              sheetInError={sheetInError}
             />
           </TabPanel>,
         );
@@ -79,8 +88,9 @@ class TabbedDatatable extends Component {
           <TabPanel key="All-Errors">
             <Datatable
               sheetName="All-Errors"
-              headers={['error']}
+              headers={['Error']}
               tableData={allErrors}
+              sheetInError
             />
           </TabPanel>,
         );
@@ -94,8 +104,8 @@ class TabbedDatatable extends Component {
       );
     }
     return (
-      <Tabs className="TabbedDatatable_tabs">
-        <TabList className="TabbedDatatable_tabList">
+      <Tabs className="TabbedDatatable-tabs">
+        <TabList className="TabbedDatatable-tabList">
           {tabs}
         </TabList>
 
@@ -112,7 +122,8 @@ TabbedDatatable.propTypes = {
   ddData: PropTypes.array,
   cellsWithErrors: PropTypes.object,
   recordFieldsNotInRedcap: PropTypes.object,
-  allErrors: PropTypes.array
+  allErrors: PropTypes.array,
+  sheetsNotInRedcap: PropTypes.array,
 };
 
 TabbedDatatable.defaultProps = {
@@ -121,7 +132,8 @@ TabbedDatatable.defaultProps = {
   ddData: [],
   cellsWithErrors: {},
   recordFieldsNotInRedcap: {},
-  allErrors: []
+  allErrors: [],
+  sheetsNotInRedcap: [],
 };
 
 function mapStateToProps(state) {

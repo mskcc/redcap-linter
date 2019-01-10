@@ -60,7 +60,47 @@ def post_form():
         dd_df.columns = utils.parameterize_list(list(dd_df.columns))
         dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['variable_field_name'])]
 
-    cells_with_errors, record_fields_not_in_redcap, all_errors = linter.lint_datafile(dd, records, project_info)
+    all_errors = []
+    sheets_not_in_redcap = []
+    record_fields_not_in_redcap = {}
+    recordid_field = dd[0]
+    form_names = [redcap_field.form_name for redcap_field in dd]
+    form_names = list(set(form_names))
+    for instrument in records.keys():
+        sheet_name = utils.parameterize(instrument)
+        instrument_records = records.get(instrument)
+
+        if sheet_name not in form_names:
+            sheets_not_in_redcap.append(instrument)
+            all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
+            continue
+
+        instrument_records.columns = utils.parameterize_list(instrument_records.columns.tolist())
+        form_fields = [field for field in dd if field.form_name == sheet_name or field.field_name == recordid_field.field_name]
+
+        redcap_field_names = [field.field_name for field in form_fields]
+
+        redcap_fields_not_in_data = [field for field in redcap_field_names if field not in instrument_records.columns]
+
+        instrument_fields_not_in_redcap = [field for field in instrument_records.columns if field not in redcap_field_names]
+        record_fields_not_in_redcap[instrument] = instrument_fields_not_in_redcap
+
+        if len(instrument_fields_not_in_redcap) > 0:
+            all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(instrument, str(instrument_fields_not_in_redcap)))
+        if len(redcap_fields_not_in_data) > 0:
+            all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(instrument, str(redcap_fields_not_in_data)))
+
+    recordid_instrument = recordid_field.form_name
+    recordid_instrument_records = records.get(recordid_instrument) or records.get(recordid_instrument.title())
+    if recordid_instrument_records is None:
+        error_msg = ("Record ID Instrument `{0}` not found in datafile. "
+                     "Please make sure sheets are named with the same instrument (form) name as it appears in "
+                     "REDCap or the Data Dictionary.").format(recordid_instrument)
+        all_errors.append(error_msg)
+
+    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    all_errors += linting_errors
+    all_errors = [{"Error": error} for error in all_errors]
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #     app.logger.info(cells_with_errors['Sheet1'].iloc[:,0:8])
 
@@ -86,7 +126,8 @@ def post_form():
         'ddData': dd_data,
         'cellsWithErrors': cells_with_errors,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
-        'allErrors': all_errors
+        'allErrors': all_errors,
+        'sheetsNotInRedcap': sheets_not_in_redcap,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
