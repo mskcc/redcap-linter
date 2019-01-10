@@ -2,11 +2,8 @@ import React, { Component } from 'react';
 import './Datatable.css';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { _resolve } from '../../utils/utils';
-import { postForm } from '../../actions/RedcapLinterActions';
+import Cell from '../Cell/Cell';
 
 class Datatable extends Component {
   constructor(props) {
@@ -40,7 +37,7 @@ class Datatable extends Component {
         onClick: (e) => {
           this.setState({
             selected: rowInfo.index,
-          })
+          });
         },
         style: {
           background: rowInfo.index === selected ? '#00afec' : 'white',
@@ -52,47 +49,23 @@ class Datatable extends Component {
   }
 
   renderEditable(cellInfo) {
-    const { data } = this.state;
-    let tableData = data;
-    const { sheetName, jsonData } = this.props;
-    if (jsonData && jsonData[sheetName]) {
-      // TODO Find a better way to do this!!!
-      tableData = JSON.parse(jsonData[sheetName]);
-    }
+    const { tableData } = this.props;
     return (
-      <div
-        contentEditable
-        suppressContentEditableWarning
-        onBlur={(e) => {
-          const tData = [...tableData];
-          tData[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
-          this.setState({ data: tData });
-        }}
-        dangerouslySetInnerHTML={{
-          __html: tableData[cellInfo.index][cellInfo.column.id],
-        }}
-      />
+      <Cell cellData={tableData[cellInfo.index][cellInfo.column.id]} />
     );
   }
 
   render() {
-    const { data } = this.state;
-    let tableData = data;
-    const { csvHeaders, sheetName, jsonData } = this.props;
-    if (jsonData && jsonData[sheetName]) {
-      // TODO Find a better way to do this!!!
-      tableData = JSON.parse(jsonData[sheetName]);
-    }
-    const sheetHeaders = csvHeaders[sheetName] || [];
+    const { headers, tableData } = this.props;
     let columns = [{
       Header: '',
     }];
-    if (sheetHeaders.length > 0) {
-      columns = sheetHeaders.map((header) => {
+    if (headers.length > 0) {
+      columns = headers.map((header) => {
         return {
           Header: header,
           accessor: header,
-          // Cell: this.renderEditable.bind(this)
+          Cell: this.renderEditable.bind(this)
         };
       });
     }
@@ -119,7 +92,7 @@ class Datatable extends Component {
       <div>
         <ReactTable
           data={tableData}
-          className='-striped -highlight'
+          className="-striped -highlight"
           columns={columns}
           defaultPageSize={18}
           minRows={18}
@@ -130,17 +103,12 @@ class Datatable extends Component {
 }
 
 Datatable.propTypes = {
-  csvHeaders: PropTypes.object.isRequired,
-  sheetName: PropTypes.string,
-  jsonData: PropTypes.object,
+  headers: PropTypes.array.isRequired,
+  tableData: PropTypes.array,
 };
 
-function mapStateToProps(state) {
-  return state;
-}
+Datatable.defaultProps = {
+  tableData: [],
+};
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ postForm }, dispatch);
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Datatable);
+export default Datatable;

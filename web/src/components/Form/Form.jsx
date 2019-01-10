@@ -27,17 +27,12 @@ class Form extends Component {
     let errorText = '';
     const { form } = this.state;
     const { submitForm } = this.props;
-    // const { postForm } = this.props;
     if (!form.token && !(form.dataDictionary && form.repeatableInstruments)) {
-      if (!errorText) {
-        errorText += '<ul>';
-      }
+      if (!errorText) { errorText += '<ul>'; }
       errorText += '<li>Either token and environment or Data-Dictionary and list of repeatable instruments are required.</li>';
     }
     if (!form.dataFile) {
-      if (!errorText) {
-        errorText += '<ul>';
-      }
+      if (!errorText) { errorText += '<ul>'; }
       errorText += '<li>Datafile is required.</li>';
     }
     if (errorText) {
@@ -45,6 +40,7 @@ class Form extends Component {
       this.setState({ errorText });
       return;
     }
+    this.setState({ errorText });
     submitForm(form);
   }
 
@@ -68,88 +64,107 @@ class Form extends Component {
   }
 
   render() {
-    const { form, errorText } = this.state;
+    const { form } = this.state;
+    let { errorText } = this.state;
+    const { error } = this.props;
+    if (error) {
+      errorText = `<ul><li>${error}</li></ul>`;
+    }
     return (
       <div className="App-fieldsetColumn">
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel">Environment</label>
-          <label className="App-fieldsetRadioLabel">
+          <label className="App-fieldsetRadioLabel" htmlFor="development">
             <input
               className="App-fieldsetRadio"
               type="radio"
+              id="development"
               value="development"
-              checked={this.state.form.environment === 'development'}
+              checked={form.environment === 'development'}
               onChange={this.handleOnChangeForm.bind(this, 'environment')}
             />
               Development
           </label>
-          <label className="App-fieldsetRadioLabel">
+          <label className="App-fieldsetRadioLabel" htmlFor="test">
             <input
               className="App-fieldsetRadio"
               type="radio"
+              id="test"
               value="test"
-              checked={this.state.form.environment === 'test'}
+              checked={form.environment === 'test'}
               onChange={this.handleOnChangeForm.bind(this, 'environment')}
             />
              Test
           </label>
-            <label className="App-fieldsetRadioLabel">
-              <input
-                className="App-fieldsetRadio"
-                type="radio"
-                value="production"
-                checked={this.state.form.environment === 'production'}
-                onChange={this.handleOnChangeForm.bind(this, 'environment')}
-              />
-              Production
-            </label>
+          <label className="App-fieldsetRadioLabel" htmlFor="production">
+            <input
+              className="App-fieldsetRadio"
+              type="radio"
+              id="production"
+              value="production"
+              checked={form.environment === 'production'}
+              onChange={this.handleOnChangeForm.bind(this, 'environment')}
+            />
+            Production
+          </label>
         </fieldset>
         <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel">Token: </label>
-          <input className="App-fieldsetInput"
-            type="text"
-            placeholder="Token"
-            value={form.token}
-            onChange={this.handleOnChangeForm.bind(this, 'token')}
-          />
+          <label className="App-fieldsetLabel" htmlFor="token">
+            Token:
+            <input
+              className="App-fieldsetInput"
+              id="token"
+              type="text"
+              placeholder="Token"
+              value={form.token}
+              onChange={this.handleOnChangeForm.bind(this, 'token')}
+            />
+          </label>
         </fieldset>
 
         <div className="emphasis">OR</div>
 
         <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel" htmlFor="dataDictionary">Data-Dictionary: </label>
-          <input
-            className="App-fieldsetInput"
-            id="dataDictionary"
-            type="file"
-            accept=".csv,.xls,.xlsx"
-            value={form.dataDictionaryName}
-            onChange={this.handleSelectedFile.bind(this, 'dataDictionary')}
-          />
+          <label className="App-fieldsetLabel" htmlFor="dataDictionary">
+            Data-Dictionary:
+            <input
+              className="App-fieldsetInput"
+              id="dataDictionary"
+              type="file"
+              accept=".csv,.xls,.xlsx"
+              value={form.dataDictionaryName}
+              onChange={this.handleSelectedFile.bind(this, 'dataDictionary')}
+            />
+          </label>
         </fieldset>
         <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">Repeatable Instruments: </label>
-          <input
-            className="App-fieldsetInput"
-            id="repeatableInstruments"
-            type="text"
-            placeholder="Ex. Pathology, Imaging, etc."
-            value={form.repeatableInstruments}
-            onChange={this.handleOnChangeForm.bind(this, 'repeatableInstruments')}
-          />
+          <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">
+            Repeatable Instruments:
+            <input
+              className="App-fieldsetInput"
+              id="repeatableInstruments"
+              type="text"
+              placeholder="Ex. Pathology, Imaging, etc."
+              value={form.repeatableInstruments}
+              onChange={this.handleOnChangeForm.bind(this, 'repeatableInstruments')}
+            />
+          </label>
         </fieldset>
 
         <hr />
 
         <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel">Datafile: </label>
-          <input
-            className="App-fieldsetInput"
-            type="file"
-            accept=".csv,.xls,.xlsx"
-            value={form.dataFileName}
-            onChange={this.handleSelectedFile.bind(this, 'dataFile')}
-          />
+          <label className="App-fieldsetLabel" htmlFor="dataFile">
+            Datafile:
+            <input
+              className="App-fieldsetInput"
+              type="file"
+              id="dataFile"
+              accept=".csv,.xls,.xlsx"
+              value={form.dataFileName}
+              onChange={this.handleSelectedFile.bind(this, 'dataFile')}
+            />
+          </label>
         </fieldset>
 
         <div className="Form-submitButtonDiv">
@@ -166,6 +181,11 @@ class Form extends Component {
 
 Form.propTypes = {
   submitForm: PropTypes.func.isRequired,
+  error: PropTypes.string,
+};
+
+Form.defaultProps = {
+  error: '',
 };
 
 

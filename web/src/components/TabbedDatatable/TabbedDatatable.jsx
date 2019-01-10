@@ -20,24 +20,50 @@ class TabbedDatatable extends Component {
   }
 
   render() {
-    const { csvHeaders } = this.props;
+    const {
+      csvHeaders,
+      jsonData,
+      ddHeaders,
+      ddData,
+    } = this.props;
     const sheets = Object.keys(csvHeaders);
     const tabs = [];
     const tabPanels = [];
+    let tableData = [];
+    let headers = [];
     if (sheets && sheets.length > 0) {
       sheets.forEach((sheetName) => {
+        headers = csvHeaders[sheetName];
+        if (jsonData && jsonData[sheetName]) {
+          // TODO Find a better way to do this!!!
+          tableData = jsonData[sheetName];
+        }
         tabs.push(<Tab key={`${sheetName}`}>{sheetName}</Tab>);
         tabPanels.push(
           <TabPanel key={`${sheetName}`}>
-            <Datatable sheetName={`${sheetName}`} />
+            <Datatable
+              sheetName={`${sheetName}`}
+              headers={headers}
+              tableData={tableData}
+            />
           </TabPanel>,
         );
       });
+      tabs.push(<Tab key="Data-Dictionary">Data-Dictionary</Tab>);
+      tabPanels.push(
+        <TabPanel key="Data-Dictionary">
+          <Datatable
+            sheetName="Data-Dictionary"
+            headers={ddHeaders}
+            tableData={ddData}
+          />
+        </TabPanel>,
+      );
     } else {
       tabs.push(<Tab key="sheet1">Sheet1</Tab>);
       tabPanels.push(
         <TabPanel key="sheet1">
-          <Datatable />
+          <Datatable headers={headers} tableData={tableData} />
         </TabPanel>,
       );
     }
@@ -55,6 +81,15 @@ class TabbedDatatable extends Component {
 
 TabbedDatatable.propTypes = {
   csvHeaders: PropTypes.object.isRequired,
+  jsonData: PropTypes.object,
+  ddHeaders: PropTypes.array,
+  ddData: PropTypes.array,
+};
+
+TabbedDatatable.defaultProps = {
+  jsonData: {},
+  ddHeaders: [],
+  ddData: [],
 };
 
 function mapStateToProps(state) {
