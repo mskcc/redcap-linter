@@ -128,6 +128,7 @@ def post_form():
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
         'allErrors': all_errors,
         'sheetsNotInRedcap': sheets_not_in_redcap,
+        'formNames': form_names,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

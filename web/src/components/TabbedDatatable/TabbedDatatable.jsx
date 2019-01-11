@@ -9,6 +9,7 @@ import {
 } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
+import Select from 'react-select';
 import Datatable from '../Datatable/Datatable';
 import './TabbedDatatable.css';
 import { postForm } from '../../actions/RedcapLinterActions';
@@ -29,6 +30,7 @@ class TabbedDatatable extends Component {
       recordFieldsNotInRedcap,
       allErrors,
       sheetsNotInRedcap,
+      formNames,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const tabs = [];
@@ -37,8 +39,13 @@ class TabbedDatatable extends Component {
     let tableErrors = [];
     let tableFieldsNotInRedcap = [];
     let headers = [];
+    const options = formNames.map(sheet => ({
+      value: sheet,
+      label: sheet,
+    }));
     if (sheets && sheets.length > 0) {
       sheets.forEach((sheetName) => {
+        let tab = sheetName;
         headers = csvHeaders[sheetName];
         if (jsonData && jsonData[sheetName]) {
           // TODO Find a better way to do this!!!
@@ -56,9 +63,18 @@ class TabbedDatatable extends Component {
         if (sheetsNotInRedcap.includes(sheetName)) {
           sheetInError = true;
 
+          const defaultOption = {
+            value: sheetName,
+            label: sheetName,
+          };
+
+          options.unshift(defaultOption);
+
+          tab = [<Select options={options} defaultValue={defaultOption} />];
+
           tabStyle.color = '#E5153E';
         }
-        tabs.push(<Tab style={tabStyle} key={`${sheetName}`}>{sheetName}</Tab>);
+        tabs.push(<Tab style={tabStyle} key={`${sheetName}`}>{tab}</Tab>);
         tabPanels.push(
           <TabPanel key={`${sheetName}`}>
             <Datatable
@@ -126,6 +142,7 @@ TabbedDatatable.propTypes = {
   recordFieldsNotInRedcap: PropTypes.object,
   allErrors: PropTypes.array,
   sheetsNotInRedcap: PropTypes.array,
+  formNames: PropTypes.array,
 };
 
 TabbedDatatable.defaultProps = {
@@ -136,6 +153,7 @@ TabbedDatatable.defaultProps = {
   recordFieldsNotInRedcap: {},
   allErrors: [],
   sheetsNotInRedcap: [],
+  formNames: [],
 };
 
 function mapStateToProps(state) {

@@ -4,6 +4,7 @@ services:
   server:
     container_name: server
     restart: always
+    image: server
     build: .
     command:
       - "flask"
@@ -18,7 +19,7 @@ services:
 
   web:
     container_name: web
-    build: .
+    image: server
     command:
       - "npm"
       - "start"
@@ -34,4 +35,3 @@ services:
     environment:
       - NODE_ENV=development
       - NODE_PATH=./src
-
