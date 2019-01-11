@@ -66,9 +66,29 @@ class Form extends Component {
   render() {
     const { form } = this.state;
     let { errorText } = this.state;
-    const { error } = this.props;
+    const { error, projectInfo } = this.props;
+    let project = '';
     if (error) {
       errorText = `<ul><li>${error}</li></ul>`;
+    } else {
+      console.log(projectInfo);
+      project += '<ul>'
+      if (projectInfo.project_id) {
+        project += `<li>Project ID: ${projectInfo.project_id}</li>`
+      }
+      if (projectInfo.project_title) {
+        project += `<li>Project Title: ${projectInfo.project_title}</li>`
+      }
+      if (projectInfo.repeatable_instruments && projectInfo.repeatable_instruments.length > 0) {
+        project += `<li>Repeatable Instruments: ${projectInfo.repeatable_instruments.join(', ')}</li>`
+      }
+      if (projectInfo.custom_record_label) {
+        project += `<li>Custom Record Label: ${projectInfo.custom_record_label}</li>`
+      }
+      if (projectInfo.secondary_unique_field) {
+        project += `<li>Secondary Unique Field: ${projectInfo.secondary_unique_field}</li>`
+      }
+      project += '</ul>'
     }
     return (
       <div className="App-fieldsetColumn">
@@ -174,6 +194,10 @@ class Form extends Component {
           className="Form-errorText"
           dangerouslySetInnerHTML={{ __html: errorText }}
         />
+        <div
+          className="Form-projectInfo"
+          dangerouslySetInnerHTML={{ __html: project }}
+        />
       </div>
     );
   }
@@ -181,11 +205,13 @@ class Form extends Component {
 
 Form.propTypes = {
   submitForm: PropTypes.func.isRequired,
+  projectInfo: PropTypes.object,
   error: PropTypes.string,
 };
 
 Form.defaultProps = {
   error: '',
+  projectInfo: {},
 };
 
 

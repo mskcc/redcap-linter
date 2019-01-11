@@ -70,7 +70,7 @@ class TabbedDatatable extends Component {
 
           options.unshift(defaultOption);
 
-          tab = [<Select options={options} defaultValue={defaultOption} />];
+          tab = [<Select key={`${sheetName}`} options={options} defaultValue={defaultOption} />];
 
           tabStyle.color = '#E5153E';
         }
