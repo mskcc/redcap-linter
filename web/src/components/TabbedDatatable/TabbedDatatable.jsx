@@ -79,6 +79,7 @@ class TabbedDatatable extends Component {
             sheetName="Data-Dictionary"
             headers={ddHeaders}
             tableData={ddData}
+            editable={false}
           />
         </TabPanel>,
       );
@@ -91,6 +92,7 @@ class TabbedDatatable extends Component {
               headers={['Error']}
               tableData={allErrors}
               sheetInError
+              editable={false}
             />
           </TabPanel>,
         );

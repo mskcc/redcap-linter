@@ -48,10 +48,11 @@ class Datatable extends Component {
     return { };
   }
 
-  renderEditable(cellInfo) {
+  renderCell(cellInfo) {
     const {
       tableData,
       tableErrors,
+      editable,
     } = this.props;
     let hasError = false;
     if (tableErrors[cellInfo.index] && tableErrors[cellInfo.index][cellInfo.column.id]) {
@@ -61,6 +62,7 @@ class Datatable extends Component {
       <Cell
         cellData={tableData[cellInfo.index][cellInfo.column.id]}
         hasError={hasError}
+        editable={editable}
       />
     );
   }
@@ -109,7 +111,7 @@ class Datatable extends Component {
           headerClassName,
           className,
           accessor: header,
-          Cell: this.renderEditable.bind(this),
+          Cell: this.renderCell.bind(this),
           // getProps: this.renderErrors.bind(this),
         };
       });
@@ -154,6 +156,7 @@ Datatable.propTypes = {
   tableFieldsNotInRedcap: PropTypes.array,
   sheetName: PropTypes.string,
   sheetInError: PropTypes.bool,
+  editable: PropTypes.bool,
 };
 
 Datatable.defaultProps = {
@@ -161,7 +164,7 @@ Datatable.defaultProps = {
   tableErrors: [],
   tableFieldsNotInRedcap: [],
   sheetName: '',
-  sheetInError: false,
+  editable: true,
 };
 
 export default Datatable;

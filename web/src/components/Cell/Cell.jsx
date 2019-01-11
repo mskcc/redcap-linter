@@ -15,6 +15,7 @@ class Cell extends Component {
     const {
       cellData,
       hasError,
+      editable
     } = this.props;
     let className = 'Cell-default'
     if (hasError) {
@@ -23,7 +24,7 @@ class Cell extends Component {
     return (
       <div
         className={className}
-        contentEditable
+        contentEditable={editable}
         suppressContentEditableWarning
         onBlur={(e) => {
           this.setState({ cellData: e.target.innerHTML });
@@ -37,10 +38,14 @@ class Cell extends Component {
 
 Cell.propTypes = {
   cellData: PropTypes.any,
+  hasError: PropTypes.bool,
+  editable: PropTypes.bool,
 };
 
 Cell.defaultProps = {
   cellData: '',
+  hasError: false,
+  editable: true,
 };
 
 export default Cell;
