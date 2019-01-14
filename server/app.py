@@ -12,6 +12,12 @@ from utils import utils
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+@app.route('/match_fields', methods=['GET', 'POST', 'OPTIONS'])
+def match_fields():
+    results = {'error': "Error"}
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
@@ -51,11 +57,11 @@ def post_form():
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response
     else:
-        dataDictionaryName = form.get("dataDictionaryName")
-        if dataDictionaryName.endswith(".csv"):
+        dataDictionaryName = form.get('dataDictionaryName')
+        if dataDictionaryName.endswith('.csv'):
             dd_df = pd.read_csv(request.files['dataDictionary'])
             dd_df.fillna('', inplace=True)
-        elif dataDictionaryName.endswith(".xlsx") or dataDictionaryName.endswith(".xls"):
+        elif dataDictionaryName.endswith('.xlsx') or dataDictionaryName.endswith('.xls'):
             dd_df = pd.read_excel(request.files['dataDictionary'])
         dd_df.columns = utils.parameterize_list(list(dd_df.columns))
         dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['variable_field_name'])]
@@ -130,6 +136,7 @@ def post_form():
         'sheetsNotInRedcap': sheets_not_in_redcap,
         'formNames': form_names,
         'projectInfo': project_info,
+        'page': 'matchFields'
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

@@ -21,7 +21,7 @@
 
 .App-fieldsetInput, .App-fieldsetTextarea {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 15px;
   margin: 5px;
   padding: 7px 10px;
   width: 95%;
@@ -38,14 +38,14 @@
 
 .App-fieldsetLabel, .App-uppercaseFieldsetLabel {
   display: block;
-  font-size: 18px;
-  margin-bottom: 6px;
+  font-size: 14px;
+  margin-bottom: 2px;
 }
 
 .App-fieldsetRadioLabel {
-  display: block;
-  font-size: 12px;
-  margin-bottom: 6px;
+  font-size: 11px;
+  margin-right: 7px;
+  margin-bottom: 2px;
 }
 
 .App-fieldsetRadio {

@@ -136,7 +136,7 @@ class Datatable extends Component {
     // }]
 
     return (
-      <div>
+      <div className="Datatable-table">
         <ReactTable
           data={tableData}
           className="-striped -highlight"

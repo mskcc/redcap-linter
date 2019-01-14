@@ -11,10 +11,10 @@ import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
 import Datatable from '../Datatable/Datatable';
-import './TabbedDatatable.css';
+import './MatchFields.css';
 import { postForm } from '../../actions/RedcapLinterActions';
 
-class TabbedDatatable extends Component {
+class MatchFields extends Component {
   constructor(props) {
     super(props);
     this.state = { };
@@ -71,11 +71,11 @@ class TabbedDatatable extends Component {
           options.unshift(defaultOption);
 
           const tabWidth = 8 * sheetName.length + 60;
-          const longestOption = formNames.sort((a, b) => b.length - a.length)[0];
+          const longestOption = formNames.sort(function (a, b) { return b.length - a.length; })[0];
           const menuWidth = 8 * longestOption + 60;
 
           const customStyles = {
-            control: provided => ({
+            control: (provided) => ({
               ...provided,
               border: 'none',
               boxShadow: 'none',
@@ -83,8 +83,8 @@ class TabbedDatatable extends Component {
             menu: () => ({
               // none of react-select's styles are passed to <Control />
               width: `${menuWidth}px`,
-            }),
-          };
+            })
+          }
 
           tab = [
             <Select
@@ -92,11 +92,11 @@ class TabbedDatatable extends Component {
               options={options}
               styles={customStyles}
               defaultValue={defaultOption}
-            />,
+            />
           ];
 
           tabStyle.color = '#E5153E';
-          tabStyle.minWidth = `${tabWidth}px`;
+          tabStyle.minWidth = `${tabWidth}px`
         }
         tabs.push(<Tab style={tabStyle} key={`${sheetName}`}>{tab}</Tab>);
         tabPanels.push(
@@ -157,7 +157,7 @@ class TabbedDatatable extends Component {
   }
 }
 
-TabbedDatatable.propTypes = {
+MatchFields.propTypes = {
   csvHeaders: PropTypes.object.isRequired,
   jsonData: PropTypes.object,
   ddHeaders: PropTypes.array,
@@ -169,7 +169,7 @@ TabbedDatatable.propTypes = {
   formNames: PropTypes.array,
 };
 
-TabbedDatatable.defaultProps = {
+MatchFields.defaultProps = {
   jsonData: {},
   ddHeaders: [],
   ddData: [],
@@ -188,4 +188,4 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ postForm }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TabbedDatatable);
+export default connect(mapStateToProps, mapDispatchToProps)(MatchFields);
