@@ -3,6 +3,7 @@ from flask import request
 import logging
 import json
 import pandas as pd
+from fuzzywuzzy import fuzz
 from flask_cors import CORS, cross_origin
 from models.redcap_field import RedcapField
 from api.redcap.redcap_api import RedcapApi
@@ -24,10 +25,10 @@ def post_form():
     records = pd.read_excel(request.files['dataFile'], sheet_name=None)
     for key in records:
         records.get(key).replace('nan', '', inplace=True)
-    form = request.form.to_dict()
+    form  = request.form.to_dict()
     token = form.get('token')
-    env = form.get('environment')
-    ri = form.get('repeatableInstruments')
+    env   = form.get('environment')
+    ri    = form.get('repeatableInstruments')
 
     project_info = {
         'custom_record_label': '',
@@ -66,10 +67,41 @@ def post_form():
         dd_df.columns = utils.parameterize_list(list(dd_df.columns))
         dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['variable_field_name'])]
 
-    all_errors = []
-    sheets_not_in_redcap = []
+    all_csv_headers = []
+    dd_headers  = []
+    dd_data     = {}
+    if data_dictionary is not None:
+        dd_headers = data_dictionary[0].keys()
+        dd_data = data_dictionary
+    else:
+        dd_headers = list(dd_df.columns)
+        dd_data = json.loads(dd_df.to_json(orient='records'))
+
+    for sheetName, sheet in records.items():
+        all_csv_headers += utils.parameterize_list(list(sheet.columns))
+
+    all_field_names = [f.field_name for f in dd]
+
+    field_candidates = {}
+
+    matching_headers = list(set(all_field_names) & set(all_csv_headers))
+    fields_not_in_redcap = [f for f in all_field_names if f not in all_csv_headers]
+    unmatched_redcap_fields = [f for f in all_csv_headers if f not in all_field_names]
+    for f1 in unmatched_redcap_fields:
+        for f2 in fields_not_in_redcap:
+            if not field_candidates.get(f1):
+                field_candidates[f1] = []
+            field_candidates[f1].append({
+                'candidate': f2,
+                'score': fuzz.ratio(f1, f2)
+            })
+
+    # TODO Make the code below a separate endpoint for after the headers are matched.
+
+    all_errors                  = []
+    sheets_not_in_redcap        = []
     record_fields_not_in_redcap = {}
-    recordid_field = dd[0]
+    recordid_field              = dd[0]
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
     for instrument in records.keys():
@@ -81,7 +113,7 @@ def post_form():
             all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
             continue
 
-        instrument_records.columns = utils.parameterize_list(instrument_records.columns.tolist())
+        instrument_records.columns = utils.parameterize_list(list(instrument_records.columns))
         form_fields = [field for field in dd if field.form_name == sheet_name or field.field_name == recordid_field.field_name]
 
         redcap_field_names = [field.field_name for field in form_fields]
@@ -111,32 +143,28 @@ def post_form():
     #     app.logger.info(cells_with_errors['Sheet1'].iloc[:,0:8])
 
     csv_headers = {}
-    json_data = {}
-    dd_headers = []
-    dd_data = {}
-    if data_dictionary is not None:
-        dd_headers = data_dictionary[0].keys()
-        dd_data = data_dictionary
-    else:
-        dd_headers = list(dd_df.columns)
-        dd_data = json.loads(dd_df.to_json(orient='records'))
+    json_data   = {}
+
     for sheetName, sheet in records.items():
         csv_headers[sheetName] = list(sheet.columns)
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     results = {
-        'csvHeaders': csv_headers,
-        'jsonData': json_data,
-        'ddHeaders': dd_headers,
-        'ddData': dd_data,
-        'cellsWithErrors': cells_with_errors,
+        'csvHeaders':              csv_headers,
+        'jsonData':                json_data,
+        'ddHeaders':               dd_headers,
+        'ddData':                  dd_data,
+        'cellsWithErrors':         cells_with_errors,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
-        'allErrors': all_errors,
-        'sheetsNotInRedcap': sheets_not_in_redcap,
-        'formNames': form_names,
-        'projectInfo': project_info,
-        'page': 'matchFields'
+        'allErrors':               all_errors,
+        'sheetsNotInRedcap':       sheets_not_in_redcap,
+        'formNames':               form_names,
+        'projectInfo':             project_info,
+        'matchingHeaders':         matching_headers,
+        'fieldCandidates':        field_candidates,
+        'unmatchedRedcapFields':   unmatched_redcap_fields,
+        'page':                    'matchFields'
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

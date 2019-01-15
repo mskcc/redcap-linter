@@ -5,13 +5,31 @@
 	padding-left: 0px;
 }
 
-.TabbedDatatable-tabs {
-	width: 75%;
+.TabbedDatatable-sheetError {
+	color: #E5153E;
+}
+
+.MatchFields-container {
+  width: 75%;
 	display: inline-block;
 	float: right;
 	margin-right: 15px;
 }
 
-.TabbedDatatable-sheetError {
-	color: #E5153E;
+.MatchFields-matchedFields {
+  display: inline-block;
+  width: 30%;
+  padding-left: 10px;
+}
+
+.MatchFields-unmatchedFields {
+  display: inline-block;
+  width: 60%;
+  padding-left: 10px;
+}
+
+.MatchFields-title {
+  text-align: center;
+  font-size: 16px;
+  margin: 7px;
 }

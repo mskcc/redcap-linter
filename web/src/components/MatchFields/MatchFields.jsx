@@ -1,16 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {
-  Tab,
-  Tabs,
-  TabList,
-  TabPanel,
-} from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
 import Datatable from '../Datatable/Datatable';
+import FieldMatcher from '../FieldMatcher/FieldMatcher';
 import './MatchFields.css';
 import { postForm } from '../../actions/RedcapLinterActions';
 
@@ -21,163 +15,47 @@ class MatchFields extends Component {
   }
 
   render() {
-    const {
-      csvHeaders,
-      jsonData,
-      ddHeaders,
-      ddData,
-      cellsWithErrors,
-      recordFieldsNotInRedcap,
-      allErrors,
-      sheetsNotInRedcap,
-      formNames,
+    let {
+      matchingHeaders,
     } = this.props;
-    const sheets = Object.keys(csvHeaders);
-    const tabs = [];
-    const tabPanels = [];
-    let tableData = [];
-    let tableErrors = [];
-    let tableFieldsNotInRedcap = [];
-    let headers = [];
-    const options = formNames.map(sheet => ({
-      value: sheet,
-      label: sheet,
+    const { unmatchedRedcapFields, fieldCandidates } = this.props;
+    matchingHeaders = matchingHeaders.map(header => ({
+      'REDCap Field': header,
+      'Data Field': header,
     }));
-    if (sheets && sheets.length > 0) {
-      sheets.forEach((sheetName) => {
-        let tab = sheetName;
-        headers = csvHeaders[sheetName];
-        if (jsonData && jsonData[sheetName]) {
-          // TODO Find a better way to do this!!!
-          tableData = jsonData[sheetName];
-        }
-        if (cellsWithErrors && cellsWithErrors[sheetName]) {
-          tableErrors = cellsWithErrors[sheetName];
-        }
-        if (recordFieldsNotInRedcap && recordFieldsNotInRedcap[sheetName]) {
-          tableFieldsNotInRedcap = recordFieldsNotInRedcap[sheetName];
-        }
-        // TODO make this a CSS class that works with react-tabs
-        const tabStyle = { };
-        let sheetInError = false;
-        if (sheetsNotInRedcap.includes(sheetName)) {
-          sheetInError = true;
-
-          const defaultOption = {
-            value: sheetName,
-            label: sheetName,
-          };
-
-          options.unshift(defaultOption);
-
-          const tabWidth = 8 * sheetName.length + 60;
-          const longestOption = formNames.sort(function (a, b) { return b.length - a.length; })[0];
-          const menuWidth = 8 * longestOption + 60;
-
-          const customStyles = {
-            control: (provided) => ({
-              ...provided,
-              border: 'none',
-              boxShadow: 'none',
-            }),
-            menu: () => ({
-              // none of react-select's styles are passed to <Control />
-              width: `${menuWidth}px`,
-            })
-          }
-
-          tab = [
-            <Select
-              key={`${sheetName}`}
-              options={options}
-              styles={customStyles}
-              defaultValue={defaultOption}
-            />
-          ];
-
-          tabStyle.color = '#E5153E';
-          tabStyle.minWidth = `${tabWidth}px`
-        }
-        tabs.push(<Tab style={tabStyle} key={`${sheetName}`}>{tab}</Tab>);
-        tabPanels.push(
-          <TabPanel key={`${sheetName}`}>
-            <Datatable
-              sheetName={`${sheetName}`}
-              headers={headers}
-              tableData={tableData}
-              tableErrors={tableErrors}
-              tableFieldsNotInRedcap={tableFieldsNotInRedcap}
-              sheetInError={sheetInError}
-            />
-          </TabPanel>,
-        );
-      });
-      tabs.push(<Tab key="Data-Dictionary">Data-Dictionary</Tab>);
-      tabPanels.push(
-        <TabPanel key="Data-Dictionary">
+    return (
+      <div className="MatchFields-container">
+        <div className="MatchFields-matchedFields">
+          <div className="MatchFields-title">Matched Fields</div>
           <Datatable
-            sheetName="Data-Dictionary"
-            headers={ddHeaders}
-            tableData={ddData}
+            sheetName="Matched Fields"
+            headers={['REDCap Field', 'Data Field']}
+            tableData={matchingHeaders}
             editable={false}
           />
-        </TabPanel>,
-      );
-      if (allErrors.length > 0) {
-        tabs.push(<Tab key="All-Errors">Errors</Tab>);
-        tabPanels.push(
-          <TabPanel key="All-Errors">
-            <Datatable
-              sheetName="All-Errors"
-              headers={['Error']}
-              tableData={allErrors}
-              sheetInError
-              editable={false}
-            />
-          </TabPanel>,
-        );
-      }
-    } else {
-      tabs.push(<Tab key="sheet1">Sheet1</Tab>);
-      tabPanels.push(
-        <TabPanel key="sheet1">
-          <Datatable headers={headers} tableData={tableData} />
-        </TabPanel>,
-      );
-    }
-    return (
-      <Tabs className="TabbedDatatable-tabs">
-        <TabList className="TabbedDatatable-tabList">
-          {tabs}
-        </TabList>
-
-        {tabPanels}
-      </Tabs>
+        </div>
+        <div className="MatchFields-unmatchedFields">
+          <div className="MatchFields-title">Unmatched Fields</div>
+          <FieldMatcher
+            fieldsToMatch={unmatchedRedcapFields}
+            fieldCandidates={fieldCandidates}
+          />
+        </div>
+      </div>
     );
   }
 }
 
 MatchFields.propTypes = {
-  csvHeaders: PropTypes.object.isRequired,
-  jsonData: PropTypes.object,
-  ddHeaders: PropTypes.array,
-  ddData: PropTypes.array,
-  cellsWithErrors: PropTypes.object,
-  recordFieldsNotInRedcap: PropTypes.object,
-  allErrors: PropTypes.array,
-  sheetsNotInRedcap: PropTypes.array,
-  formNames: PropTypes.array,
+  matchingHeaders: PropTypes.array,
+  unmatchedRedcapFields: PropTypes.array,
+  fieldCandidates: PropTypes.object,
 };
 
 MatchFields.defaultProps = {
-  jsonData: {},
-  ddHeaders: [],
-  ddData: [],
-  cellsWithErrors: {},
-  recordFieldsNotInRedcap: {},
-  allErrors: [],
-  sheetsNotInRedcap: [],
-  formNames: [],
+  matchingHeaders: [],
+  unmatchedRedcapFields: [],
+  fieldCandidates: {},
 };
 
 function mapStateToProps(state) {
