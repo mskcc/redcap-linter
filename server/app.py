@@ -37,12 +37,9 @@ def download_progress():
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
         df.to_excel(writer, sheet_name=sheet, index=False)
-    writer.save()
+    writer.close()
     output.seek(0)
-    # response = flask.make_response(output.getvalue)
-    # response.headers['Content-Disposition', 'attachment; filename=' + new_datafile_name)
-    # response.headers['Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
-    return flask.send_file(output, attachment_filename=new_datafile_name,as_attachment=True,mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
 
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():

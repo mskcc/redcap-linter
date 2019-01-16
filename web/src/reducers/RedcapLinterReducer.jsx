@@ -7,10 +7,7 @@ import {
   DOWNLOAD_PROGRESS_FAILURE,
 } from '../actions/RedcapLinterActions';
 
-const fileSaver = require('file-saver');
-
 export default function (state = {}, action) {
-  console.log(action);
   switch (action.type) {
     case POST_FORM_SUCCESS: {
       const error = { error: '' };
@@ -25,8 +22,6 @@ export default function (state = {}, action) {
       });
     }
     case DOWNLOAD_PROGRESS_SUCCESS: {
-      // const data = s2ab(action.payload.data);
-      // fileSaver.saveAs(new Blob([data], { type: 'application/octet-stream' }), 'test.xlsx');
       return Object.assign({}, state);
     }
     case DOWNLOAD_PROGRESS_FAILURE: {
@@ -61,13 +56,4 @@ export default function (state = {}, action) {
       return state;
     }
   }
-}
-
-export function s2ab(s) {
-  const buf = new ArrayBuffer(s.length);
-  const view = new Uint8Array(buf);
-  for (let i = 0; i !== s.length; ++i) {
-    view[i] = s.charCodeAt(i) & 0xFF;
-  }
-  return buf;
 }

@@ -103,6 +103,7 @@ export function downloadProgress(payload) {
       method: 'POST',
       url: 'http://localhost:5000/download_progress',
       headers: { 'Content-Type': 'multipart/form-data' },
+      resonseType: 'blob',
       data,
     });
 

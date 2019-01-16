@@ -12,36 +12,47 @@ class Breadcrumbs extends Component {
     this.state = { };
   }
 
-  onClick() {
-    const {
-      jsonData,
-      redcapFieldToDataFieldMap,
-      dataFileName,
-      downloadProgress,
-    } = this.props;
-    const payload = {
-      jsonData,
-      redcapFieldToDataFieldMap,
-      dataFileName,
-    };
-    downloadProgress(payload);
-  }
+  // onClick() {
+  //   const {
+  //     jsonData,
+  //     redcapFieldToDataFieldMap,
+  //     dataFileName,
+  //     downloadProgress,
+  //   } = this.props;
+  //   const payload = {
+  //     jsonData,
+  //     redcapFieldToDataFieldMap,
+  //     dataFileName,
+  //   };
+  //   downloadProgress(payload);
+  // }
 
   render() {
     const { page } = this.props;
     if (page === 'intro') {
       return <div className="Breadcrumbs-navigation">Intro</div>;
     }
+    const {
+      jsonData,
+      redcapFieldToDataFieldMap,
+      dataFileName,
+    } = this.props;
+
     if (page === 'matchFields') {
       return (
         <div className="Breadcrumbs-navigation">
           Match Fields
-          <a href="#" className="Breadcrumbs-download" onClick={this.onClick.bind(this)}>
+          <form id="downloadForm" action="http://localhost:5000/download_progress" className="Breadcrumbs-hidden" method="POST">
+            <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />
+            <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+            <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
+          </form>
+          <button type="submit" form="downloadForm" className="Breadcrumbs-download" value="Submit">
             <div className="Breadcrumbs-downloadIcon">
               <DownloadIcon />
             </div>
             Download current progress
-          </a>
+          </button>
         </div>
       );
     }
@@ -53,10 +64,12 @@ class Breadcrumbs extends Component {
 
 Breadcrumbs.propTypes = {
   page: PropTypes.string,
+  redcapFieldToDataFieldMap: PropTypes.object,
 };
 
 Breadcrumbs.defaultProps = {
   page: 'intro',
+  redcapFieldToDataFieldMap: {},
 };
 
 function mapStateToProps(state) {
