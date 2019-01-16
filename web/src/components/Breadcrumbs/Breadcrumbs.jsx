@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import DownloadIcon from '../DownloadIcon/DownloadIcon';
-import { downloadProgress } from '../../actions/RedcapLinterActions';
+// import { downloadProgress } from '../../actions/RedcapLinterActions';
 
 class Breadcrumbs extends Component {
   constructor(props) {
@@ -77,7 +77,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ downloadProgress }, dispatch);
+  return bindActionCreators({ }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Breadcrumbs);

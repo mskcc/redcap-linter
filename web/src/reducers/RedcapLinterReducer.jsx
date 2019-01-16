@@ -3,8 +3,8 @@ import {
   POST_FORM_FAILURE,
   MATCH_FIELDS_SUCCESS,
   MATCH_FIELDS_FAILURE,
-  DOWNLOAD_PROGRESS_SUCCESS,
-  DOWNLOAD_PROGRESS_FAILURE,
+  SAVE_FIELDS_SUCCESS,
+  SAVE_FIELDS_FAILURE,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -21,14 +21,21 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
-    case DOWNLOAD_PROGRESS_SUCCESS: {
+    case SAVE_FIELDS_SUCCESS: {
       return Object.assign({}, state);
     }
-    case DOWNLOAD_PROGRESS_FAILURE: {
+    case SAVE_FIELDS_FAILURE: {
       return Object.assign({}, state);
     }
     case MATCH_FIELDS_SUCCESS: {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
+      const fieldCandidates = state.fieldCandidates || {};
+      delete fieldCandidates[action.payload.redcapField];
+      Object.keys(fieldCandidates).forEach((field) => {
+        const dataFieldCandidate = fieldCandidates[field].find(candidate => candidate.candidate === action.payload.dataField);
+        const idx = fieldCandidates[field].indexOf(dataFieldCandidate);
+        fieldCandidates[field].splice(idx, 1);
+      });
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
@@ -36,7 +43,7 @@ export default function (state = {}, action) {
       const idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
       if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
       redcapFieldToDataFieldMap[action.payload.redcapField] = action.payload.dataField;
-      return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields });
+      return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields, fieldCandidates });
     }
     case MATCH_FIELDS_FAILURE: {
       let noMatchFields = [];

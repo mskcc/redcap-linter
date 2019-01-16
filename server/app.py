@@ -17,8 +17,28 @@ from utils import utils
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
-@app.route('/match_fields', methods=['GET', 'POST', 'OPTIONS'])
-def match_fields():
+@app.route('/save_fields', methods=['GET', 'POST', 'OPTIONS'])
+def save_fields():
+    form  = request.form.to_dict()
+    redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    # data field -> REDCap field
+    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items()}
+    json_data = json.loads(form.get('jsonData'))
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df.rename(index=str, columns=matched_field_dict, inplace=True)
+        records[sheet] = df
+
+    dd_data = json.loads(form.get('ddData'))
+    dd = [RedcapField.from_json(field) for field in dd_data]
+    # for field in dd:
+    #     app.logger.info(field.field_name)
+    #     app.logger.info(field.form_name)
+
+    project_info = json.loads(form.get('projectInfo'))
+    app.logger.info(project_info)
+
     results = {'error': "Error"}
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -28,6 +48,9 @@ def match_fields():
 def download_progress():
     form  = request.form.to_dict()
     datafile_name = form.get('dataFileName')
+    redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    # data field -> REDCap field
+    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items()}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
@@ -36,6 +59,7 @@ def download_progress():
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
+        df.rename(index=str, columns=matched_field_dict, inplace=True)
         df.to_excel(writer, sheet_name=sheet, index=False)
     writer.close()
     output.seek(0)
@@ -107,8 +131,8 @@ def post_form():
     field_candidates = {}
 
     matching_headers = list(set(all_field_names) & set(all_csv_headers))
-    fields_not_in_redcap = [f for f in all_field_names if f not in all_csv_headers]
-    unmatched_redcap_fields = [f for f in all_csv_headers if f not in all_field_names]
+    unmatched_redcap_fields = [f for f in all_field_names if f not in all_csv_headers]
+    fields_not_in_redcap = [f for f in all_csv_headers if f not in all_field_names]
     for f1 in unmatched_redcap_fields:
         for f2 in fields_not_in_redcap:
             if not field_candidates.get(f1):

@@ -7,8 +7,8 @@ export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 export const MATCH_FIELDS_SUCCESS = 'MATCH_FIELDS_SUCCESS';
 export const MATCH_FIELDS_FAILURE = 'MATCH_FIELDS_FAILURE';
 
-export const DOWNLOAD_PROGRESS_SUCCESS = 'DOWNLOAD_PROGRESS_SUCCESS';
-export const DOWNLOAD_PROGRESS_FAILURE = 'DOWNLOAD_PROGRESS_FAILURE';
+export const SAVE_FIELDS_SUCCESS = 'SAVE_FIELDS_SUCCESS';
+export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
 
 export function postFormSuccess(results) {
@@ -77,39 +77,39 @@ export function matchFields(redcapField, dataField) {
   };
 }
 
-export function downloadProgressSuccess(payload) {
+export function saveFieldsSuccess(payload) {
   return {
-    type: DOWNLOAD_PROGRESS_SUCCESS,
+    type: SAVE_FIELDS_SUCCESS,
     payload,
   };
 }
 
-export function downloadProgressError(payload) {
+export function saveFieldsError(payload) {
   return {
-    type: DOWNLOAD_PROGRESS_FAILURE,
+    type: SAVE_FIELDS_FAILURE,
     payload,
   };
 }
 
 
-export function downloadProgress(payload) {
+export function saveFields(payload) {
   return function action(dispatch) {
     const data = new FormData();
     data.append('jsonData', JSON.stringify(payload.jsonData));
-    data.append('redcapFieldToDataFieldMap', payload.redcapFieldToDataFieldMap);
-    data.append('dataFileName', payload.dataFileName);
+    data.append('redcapFieldToDataFieldMap', JSON.stringify(payload.redcapFieldToDataFieldMap));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('ddData', JSON.stringify(payload.ddData));
 
     const request = axios({
       method: 'POST',
-      url: 'http://localhost:5000/download_progress',
+      url: 'http://localhost:5000/save_fields',
       headers: { 'Content-Type': 'multipart/form-data' },
-      resonseType: 'blob',
       data,
     });
 
     return request.then(
-      response => dispatch(downloadProgressSuccess(response)),
-      err => dispatch(downloadProgressError(err)),
+      response => dispatch(saveFieldsSuccess(response)),
+      err => dispatch(saveFieldsError(err)),
     );
   };
 }

@@ -22,3 +22,9 @@
   font-size: 16px;
   margin: 7px;
 }
+
+.MatchFields-saveAndContinue {
+  padding-top: 15px;
+  padding-right: 25px;
+  float: right;
+}

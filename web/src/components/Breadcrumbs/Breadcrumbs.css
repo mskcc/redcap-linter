@@ -8,8 +8,8 @@
 }
 
 .Breadcrumbs-downloadIcon {
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   display: inline-block;
   float: right;
 }
@@ -17,8 +17,11 @@
 .Breadcrumbs-download {
   display: inline-block;
   float: right;
-  line-height: 30px;
+  line-height: 25px;
   height: 30px;
+  margin-right: 25px;
+  margin-top: 5px;
+  vertical-align: middle;
 }
 
 .Breadcrumbs-hidden {

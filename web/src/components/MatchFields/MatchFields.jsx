@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import MatchedFields from '../MatchedFields/MatchedFields';
 import FieldMatcher from '../FieldMatcher/FieldMatcher';
 import './MatchFields.css';
-import { postForm } from '../../actions/RedcapLinterActions';
+import { saveFields } from '../../actions/RedcapLinterActions';
 
 class MatchFields extends Component {
   constructor(props) {
@@ -14,13 +14,31 @@ class MatchFields extends Component {
     this.state = { };
   }
 
+  saveAndContinue(e) {
+    const {
+      jsonData,
+      redcapFieldToDataFieldMap,
+      projectInfo,
+      ddData,
+      saveFields,
+    } = this.props;
+    const payload = {
+      jsonData,
+      redcapFieldToDataFieldMap,
+      projectInfo,
+      ddData,
+    };
+    saveFields(payload);
+  }
+
   render() {
     const {
       matchingHeaders,
       redcapFieldToDataFieldMap,
       noMatchFields,
+      unmatchedRedcapFields,
+      fieldCandidates,
     } = this.props;
-    const { unmatchedRedcapFields, fieldCandidates } = this.props;
     let matchedFields = matchingHeaders.map(header => ({
       'REDCap Field': header,
       'Data Field': header,
@@ -48,6 +66,9 @@ class MatchFields extends Component {
             fieldCandidates={fieldCandidates}
           />
         </div>
+        <div className="MatchFields-saveAndContinue">
+          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
+        </div>
       </div>
     );
   }
@@ -74,7 +95,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ postForm }, dispatch);
+  return bindActionCreators({ saveFields }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MatchFields);

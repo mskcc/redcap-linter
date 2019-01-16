@@ -94,7 +94,7 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
             logging.warning("{0} is outside the acceptable range. min: {0}, max: {1}".format(date_min, date_max))
             formatted_dates.append(False)
         else:
-            if isinstance(d, str):
+            if isinstance(d, str) or isinstance(d, unicode):
                 d = parser.parse(d)
             if date_format == 'date_mdy':
                 formatted_dates.append(d.strftime("%m/%d/%Y"))
