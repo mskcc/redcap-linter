@@ -2,7 +2,11 @@ import flask
 from flask import request
 import logging
 import json
+import io
+import os
+import ntpath
 import pandas as pd
+from datetime import datetime
 from fuzzywuzzy import fuzz
 from flask_cors import CORS, cross_origin
 from models.redcap_field import RedcapField
@@ -20,6 +24,26 @@ def match_fields():
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+@app.route('/download_progress', methods=['GET', 'POST', 'OPTIONS'])
+def download_progress():
+    form  = request.form.to_dict()
+    datafile_name = form.get('dataFileName')
+    datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
+    current_date = datetime.now().strftime("%m-%d-%Y")
+    new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
+    json_data = json.loads(form.get('jsonData'))
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df.to_excel(writer, sheet_name=sheet, index=False)
+    writer.save()
+    output.seek(0)
+    # response = flask.make_response(output.getvalue)
+    # response.headers['Content-Disposition', 'attachment; filename=' + new_datafile_name)
+    # response.headers['Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    return flask.send_file(output, attachment_filename=new_datafile_name,as_attachment=True,mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
     records = pd.read_excel(request.files['dataFile'], sheet_name=None)
@@ -29,6 +53,7 @@ def post_form():
     token = form.get('token')
     env   = form.get('environment')
     ri    = form.get('repeatableInstruments')
+    datafile_name = form.get('dataFileName')
 
     project_info = {
         'custom_record_label': '',
@@ -162,8 +187,9 @@ def post_form():
         'formNames':               form_names,
         'projectInfo':             project_info,
         'matchingHeaders':         matching_headers,
-        'fieldCandidates':        field_candidates,
+        'fieldCandidates':         field_candidates,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
+        'dataFileName':            datafile_name,
         'page':                    'matchFields'
     }
     response = flask.jsonify(results)

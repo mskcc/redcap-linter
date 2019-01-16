@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
+import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import MatchFields from '../MatchFields/MatchFields';
 import { postForm } from '../../actions/RedcapLinterActions';
@@ -16,14 +17,20 @@ class Linter extends Component {
 
   render() {
     const { page } = this.props;
+    let currentPage = '';
     console.log(this.props);
     if (page === 'intro') {
-      return <Intro />;
+      currentPage = <Intro />;
     } else if (page === 'matchFields') {
-      return <MatchFields />
+      currentPage = <MatchFields />;
+    } else if (page === 'lint') {
+      currentPage = <TabbedDatatable />;
     }
     return (
-      <TabbedDatatable />
+      <div>
+        <Breadcrumbs page={page} />
+        {currentPage}
+      </div>
     );
   }
 }

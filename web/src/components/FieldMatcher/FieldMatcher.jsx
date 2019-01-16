@@ -3,26 +3,55 @@ import './FieldMatcher.css';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../Cell/Cell';
+import { matchFields } from '../../actions/RedcapLinterActions';
 
 class FieldMatcher extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selected: '',
-      data: [],
+      redcapFieldToDataFieldMap: {},
+      noMatch: '',
     };
   }
 
-  renderCell(cellInfo) {
+  handleMatch(fieldToMatch) {
     const {
-      editable,
+      redcapFieldToDataFieldMap,
+    } = this.state;
+    const {
+      matchFields,
     } = this.props;
+    const match = redcapFieldToDataFieldMap[fieldToMatch] || '';
+    matchFields(fieldToMatch, match);
+  }
+
+  handleNoMatch(fieldToMatch) {
+    const {
+      noMatch,
+    } = this.state;
+    const {
+      matchFields,
+    } = this.props;
+    matchFields(fieldToMatch, noMatch);
+  }
+
+  handleChange(fieldToMatch, e) {
+    const {
+      redcapFieldToDataFieldMap,
+    } = this.state;
+    redcapFieldToDataFieldMap[fieldToMatch] = e.value;
+    this.setState({ redcapFieldToDataFieldMap });
+  }
+
+  renderCell(cellInfo) {
     return (
       <Cell
         cellData={cellInfo.value}
-        editable={editable}
+        editable={false}
       />
     );
   }
@@ -31,20 +60,50 @@ class FieldMatcher extends Component {
     const {
       fieldCandidates,
     } = this.props;
+    const {
+      redcapFieldToDataFieldMap,
+    } = this.state;
+    const redcapField = cellInfo.original['REDCap Field'];
+    const value = redcapFieldToDataFieldMap[redcapField];
+    let selectedValue = '';
+    if (value) {
+      selectedValue = {
+        value: value,
+        label: value,
+      };
+    }
     const fieldToMatch = cellInfo.value;
-    let scores = fieldCandidates[fieldToMatch]
+    let scores = fieldCandidates[fieldToMatch];
     scores = scores.sort((a, b) => b.score - a.score);
-    console.log(scores);
     const options = scores.map(score => ({
       value: score.candidate,
       label: score.candidate,
     }));
-    const defaultOption = options[0];
     return (
       <Select
         options={options}
-        defaultValue={defaultOption}
+        isSearchable
+        value={selectedValue}
+        onChange={e => this.handleChange(fieldToMatch, e)}
+        placeholder="Select..."
       />
+    );
+  }
+
+  renderMatchButton(cellInfo) {
+    const fieldToMatch = cellInfo.original['REDCap Field'];
+    const {
+      redcapFieldToDataFieldMap,
+    } = this.state;
+    let disabled = true;
+    if (redcapFieldToDataFieldMap[fieldToMatch]) {
+      disabled = false;
+    }
+    return (
+      <div>
+        <button type="button" disabled={disabled} onClick={e => this.handleMatch(fieldToMatch, e)} className="App-submitButton">Match</button>
+        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="FieldMatcher-noMatchButton">No Match</button>
+      </div>
     );
   }
 
@@ -55,7 +114,6 @@ class FieldMatcher extends Component {
     let columns = [{
       Header: '',
     }];
-    const headers = ['REDCap Field', 'Candidate', 'Match'];
     columns = [{
       Header: 'REDCap Field',
       accessor: 'REDCap Field',
@@ -65,13 +123,15 @@ class FieldMatcher extends Component {
     {
       Header: 'Candidate',
       accessor: 'Candidate',
+      style: { overflow: 'visible' },
       Cell: this.renderCandidates.bind(this),
       // getProps: this.renderErrors.bind(this),
     },
     {
       Header: 'Match',
       accessor: 'Match',
-      Cell: this.renderCell.bind(this),
+      style: { overflow: 'visible' },
+      Cell: this.renderMatchButton.bind(this),
       // getProps: this.renderErrors.bind(this),
     }];
     const tableData = fieldsToMatch.map(f => ({
@@ -106,4 +166,12 @@ FieldMatcher.defaultProps = {
   editable: true,
 };
 
-export default FieldMatcher;
+function mapStateToProps(state) {
+  return state;
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ matchFields }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(FieldMatcher);

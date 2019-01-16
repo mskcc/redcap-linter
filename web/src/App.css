@@ -69,6 +69,11 @@
   border-radius: 10px;
 }
 
+.App-submitButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

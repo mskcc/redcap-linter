@@ -12,6 +12,9 @@ def validate_text_type(list_to_validate, redcap_field):
     text_min = redcap_field.text_min
     text_max = redcap_field.text_max
     required = redcap_field.required
+    for idx, item in enumerate(list_to_validate):
+        if not item and required:
+            all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
     if text_validation in ['date_mdy', 'date_dmy', 'date_ymd']:
         validations = utils.validate_dates(list_to_validate, text_validation, text_min, text_max, required)
     elif text_validation in ['number_2dp', 'integer']:
@@ -63,9 +66,6 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors)
         # if redcap_field.field_name == 'mrn1':
         #     print(current_list)
         if redcap_field.field_type in ['text', 'notes']:
-            for idx, item in enumerate(current_list):
-                if not item and redcap_field.required:
-                    all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
             validations = validate_text_type(current_list, redcap_field)
             instrument_errors[redcap_field.field_name] = [d is False for d in validations]
         elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:

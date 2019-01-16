@@ -45,7 +45,7 @@ Cell.propTypes = {
 Cell.defaultProps = {
   cellData: '',
   hasError: false,
-  editable: true,
+  editable: false,
 };
 
 export default Cell;

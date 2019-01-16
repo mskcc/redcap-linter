@@ -80,8 +80,9 @@ class TabbedDatatable extends Component {
               border: 'none',
               boxShadow: 'none',
             }),
-            menu: () => ({
+            menu: provided => ({
               // none of react-select's styles are passed to <Control />
+              ...provided,
               width: `${menuWidth}px`,
             }),
           };

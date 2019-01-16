@@ -1,6 +1,16 @@
-import { POST_FORM_SUCCESS, POST_FORM_FAILURE } from '../actions/RedcapLinterActions';
+import {
+  POST_FORM_SUCCESS,
+  POST_FORM_FAILURE,
+  MATCH_FIELDS_SUCCESS,
+  MATCH_FIELDS_FAILURE,
+  DOWNLOAD_PROGRESS_SUCCESS,
+  DOWNLOAD_PROGRESS_FAILURE,
+} from '../actions/RedcapLinterActions';
+
+const fileSaver = require('file-saver');
 
 export default function (state = {}, action) {
+  console.log(action);
   switch (action.type) {
     case POST_FORM_SUCCESS: {
       const error = { error: '' };
@@ -14,8 +24,50 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
+    case DOWNLOAD_PROGRESS_SUCCESS: {
+      // const data = s2ab(action.payload.data);
+      // fileSaver.saveAs(new Blob([data], { type: 'application/octet-stream' }), 'test.xlsx');
+      return Object.assign({}, state);
+    }
+    case DOWNLOAD_PROGRESS_FAILURE: {
+      return Object.assign({}, state);
+    }
+    case MATCH_FIELDS_SUCCESS: {
+      const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
+      let unmatchedRedcapFields = [];
+      if (state.unmatchedRedcapFields) {
+        unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
+      }
+      const idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
+      if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
+      redcapFieldToDataFieldMap[action.payload.redcapField] = action.payload.dataField;
+      return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields });
+    }
+    case MATCH_FIELDS_FAILURE: {
+      let noMatchFields = [];
+      if (state.noMatchFields) {
+        noMatchFields = state.noMatchFields.slice();
+      }
+      noMatchFields.push(action.payload.redcapField);
+      let unmatchedRedcapFields = [];
+      if (state.unmatchedRedcapFields) {
+        unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
+      }
+      const idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
+      if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
+      return Object.assign({}, state, { noMatchFields, unmatchedRedcapFields });
+    }
     default: {
       return state;
     }
   }
+}
+
+export function s2ab(s) {
+  const buf = new ArrayBuffer(s.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i !== s.length; ++i) {
+    view[i] = s.charCodeAt(i) & 0xFF;
+  }
+  return buf;
 }
