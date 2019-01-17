@@ -38,9 +38,14 @@ def save_fields():
     dd = [RedcapField.from_json(field) for field in dd_data]
 
     project_info = json.loads(form.get('projectInfo'))
-    app.logger.info(project_info)
 
     cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    columns_in_error = {}
+    for inst in cells_with_errors:
+        instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
+        if len(instrument_columns_in_error) > 0:
+            columns_in_error[inst] = instrument_columns_in_error
+
     # Note this will override the previous all errors
     all_errors = linting_errors
     all_errors = [{"Error": error} for error in all_errors]
@@ -56,8 +61,33 @@ def save_fields():
         'jsonData':                json_data,
         'cellsWithErrors':         cells_with_errors,
         'allErrors':               all_errors,
+        'columnsInError':          columns_in_error,
         'page':                    'lint',
         'new':                     False,
+    }
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/resolve_column', methods=['GET', 'POST', 'OPTIONS'])
+def resolve_column():
+    form  = request.form.to_dict()
+    csv_headers = json.loads(form.get('csvHeaders'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df = df[csv_headers[sheet]]
+        records[sheet] = df
+
+    dd_data = json.loads(form.get('ddData'))
+    dd = [RedcapField.from_json(field) for field in dd_data]
+
+    project_info = json.loads(form.get('projectInfo'))
+    workingColumn = json.loads(form.get('workingColumn'))
+
+    results = {
+        'workingColumn':           workingColumn,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -178,10 +208,11 @@ def post_form():
         sheet_name = utils.parameterize(instrument)
         instrument_records = records.get(instrument)
 
-        if sheet_name not in form_names:
-            sheets_not_in_redcap.append(instrument)
-            all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
-            continue
+        # Uncomment if sheet name must match instrument name
+        # if sheet_name not in form_names:
+        #     sheets_not_in_redcap.append(instrument)
+        #     all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
+        #     continue
 
         instrument_records.columns = utils.parameterize_list(list(instrument_records.columns))
 

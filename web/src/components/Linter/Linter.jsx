@@ -3,7 +3,7 @@ import './Linter.css';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
+import ResolveErrors from '../ResolveErrors/ResolveErrors';
 import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import MatchFields from '../MatchFields/MatchFields';
@@ -24,7 +24,7 @@ class Linter extends Component {
     } else if (page === 'matchFields') {
       currentPage = <MatchFields />;
     } else if (page === 'lint') {
-      currentPage = <TabbedDatatable />;
+      currentPage = <ResolveErrors />;
     }
     return (
       <div>

@@ -6,10 +6,8 @@
 }
 
 .TabbedDatatable-tabs {
-	width: 75%;
+	width: 95%;
 	display: inline-block;
-	float: right;
-	margin-right: 15px;
 }
 
 .TabbedDatatable-sheetError {

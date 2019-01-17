@@ -13,6 +13,9 @@ export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
 export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
+export const RESOLVE_COLUMN_SUCCESS = 'RESOLVE_COLUMN_SUCCESS';
+export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
+
 
 export function postFormSuccess(results) {
   return {
@@ -125,7 +128,7 @@ export function navigateToSuccess(payload) {
   };
 }
 
-export function navigateToFailure(payload) {
+export function navigateToError(payload) {
   return {
     type: NAVIGATE_TO_FAILURE,
     payload,
@@ -138,8 +141,45 @@ export function navigateTo(page) {
       page,
     };
     if (!page) {
-      return dispatch(navigateToFailure(payload));
+      return dispatch(navigateToError(payload));
     }
     return dispatch(navigateToSuccess(payload));
+  };
+}
+
+export function resolveColumnSuccess(payload) {
+  return {
+    type: RESOLVE_COLUMN_SUCCESS,
+    payload,
+  };
+}
+
+export function resolveColumnError(payload) {
+  return {
+    type: RESOLVE_COLUMN_FAILURE,
+    payload,
+  };
+}
+
+export function resolveColumn(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
+    data.append('workingColumn', JSON.stringify(payload.workingColumn));
+
+    const request = axios({
+      method: 'POST',
+      url: 'http://localhost:5000/resolve_column',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(resolveColumnSuccess(response)),
+      err => dispatch(resolveColumnError(err)),
+    );
   };
 }

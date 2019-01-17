@@ -14,18 +14,17 @@ class Breadcrumbs extends Component {
     };
   }
 
-  componentWillReceiveProps(newProps) {
-    const pages = ['intro', 'matchFields', 'lint']
-    if (newProps.new) {
-      this.setState({ currentPage: 'matchFields' });
-      return;
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const pages = ['intro', 'matchFields', 'lint'];
+    if (nextProps.new) {
+      return { currentPage: 'matchFields' };
     }
-    const { page } = newProps;
-    let { currentPage } = this.state;
+    const { page } = nextProps;
+    const { currentPage } = prevState;
     if (pages.indexOf(page) > pages.indexOf(currentPage)) {
-      this.setState({ currentPage: page });
-      currentPage = page;
+      return { currentPage: page };
     }
+    return null;
   }
 
   goTo(page) {

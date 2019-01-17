@@ -7,6 +7,8 @@ import {
   SAVE_FIELDS_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
+  RESOLVE_COLUMN_SUCCESS,
+  RESOLVE_COLUMN_FAILURE,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -35,6 +37,14 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload);
     }
     case NAVIGATE_TO_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case RESOLVE_COLUMN_SUCCESS: {
+      return Object.assign({}, state, action.payload.data);
+    }
+    case RESOLVE_COLUMN_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

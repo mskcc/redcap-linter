@@ -35,7 +35,8 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors)
     repeat_instance_dict = {}  # Dict from recordid to repeat instance number, auto-increment from 1
 
     recordid_field = data_dictionary[0]
-    form_fields = [f for f in data_dictionary if f.form_name == form_name or f.field_name == recordid_field.field_name]
+    # form_fields = [f for f in data_dictionary if f.form_name == form_name or f.field_name == recordid_field.field_name]
+    form_fields = data_dictionary
 
     matching_fields = [f for f in form_fields if f.field_name in records.columns]
     matching_field_names = [f.field_name for f in matching_fields]
@@ -117,23 +118,24 @@ def lint_datafile(data_dictionary, records, project_info):
         instrument_records = records.get(instrument)
         original_records[instrument] = instrument_records.copy()
         instrument_errors = pd.DataFrame().reindex_like(instrument_records)
-        instrument_errors.columns = utils.parameterize_list(instrument_errors.columns.tolist())
+        instrument_errors.columns = utils.parameterize_list(list(instrument_errors.columns))
         instrument_errors[:] = False
         datafile_errors[instrument] = instrument_errors
 
     normalized_instruments_dict = dict(zip(utils.parameterize_list(records.keys()), records.keys()))
 
-    for instrument in form_names:
+    # for instrument in form_names:
+    for instrument in records.keys():
         repeatable = instrument in utils.parameterize_list(project_info['repeatable_instruments'])
-        sheet_name = normalized_instruments_dict.get(instrument)
-        instrument_records = records.get(sheet_name)
+        # sheet_name = normalized_instruments_dict.get(instrument)
+        instrument_records = records.get(instrument)
         if instrument_records is not None:
             output, errors = lint_instrument(data_dictionary, instrument, instrument_records, repeatable, all_errors)
-            encoded_records[sheet_name] = output
+            encoded_records[instrument] = output
             if errors is not None:
-                encoded_records[sheet_name] = output
+                encoded_records[instrument] = output
                 instruments_with_errors.append(instrument)
-                datafile_errors[sheet_name] = errors
+                datafile_errors[instrument] = errors
         else:
             all_errors.append("Instrument {0} not found in datafile.".format(instrument))
 

@@ -1,0 +1,10 @@
+.ResolveErrors-resolveError {
+  width: 75%;
+  float: right;
+  text-align: left;
+  margin-right: 15px;
+}
+
+.ResolveErrors-container {
+  text-align: center;
+}
