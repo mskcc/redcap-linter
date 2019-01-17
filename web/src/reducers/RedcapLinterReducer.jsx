@@ -5,6 +5,8 @@ import {
   MATCH_FIELDS_FAILURE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
+  NAVIGATE_TO_SUCCESS,
+  NAVIGATE_TO_FAILURE,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -14,7 +16,7 @@ export default function (state = {}, action) {
       if (action.payload.data && action.payload.data.error) {
         error.error = action.payload.data.error;
       }
-      return Object.assign({}, state, action.payload.data, error);
+      return Object.assign({}, action.payload.data, error);
     }
     case POST_FORM_FAILURE: {
       return Object.assign({}, state, {
@@ -22,10 +24,20 @@ export default function (state = {}, action) {
       });
     }
     case SAVE_FIELDS_SUCCESS: {
-      return Object.assign({}, state);
+      return Object.assign({}, state, action.payload.data);
     }
     case SAVE_FIELDS_FAILURE: {
-      return Object.assign({}, state);
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case NAVIGATE_TO_SUCCESS: {
+      return Object.assign({}, state, action.payload);
+    }
+    case NAVIGATE_TO_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
     }
     case MATCH_FIELDS_SUCCESS: {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};

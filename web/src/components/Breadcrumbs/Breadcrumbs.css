@@ -15,13 +15,15 @@
 }
 
 .Breadcrumbs-download {
+  line-height: 25px;
+}
+
+.Breadcrumbs-downloadButton {
   display: inline-block;
   float: right;
-  line-height: 25px;
   height: 30px;
   margin-right: 25px;
   margin-top: 5px;
-  vertical-align: middle;
 }
 
 .Breadcrumbs-hidden {

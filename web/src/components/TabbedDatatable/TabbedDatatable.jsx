@@ -39,10 +39,6 @@ class TabbedDatatable extends Component {
     let tableErrors = [];
     let tableFieldsNotInRedcap = [];
     let headers = [];
-    const options = formNames.map(sheet => ({
-      value: sheet,
-      label: sheet,
-    }));
     if (sheets && sheets.length > 0) {
       sheets.forEach((sheetName) => {
         let tab = sheetName;
@@ -68,6 +64,10 @@ class TabbedDatatable extends Component {
             label: sheetName,
           };
 
+          const options = formNames.map(sheet => ({
+            value: sheet,
+            label: sheet,
+          }));
           options.unshift(defaultOption);
 
           const tabWidth = 8 * sheetName.length + 60;

@@ -20,6 +20,7 @@ class MatchFields extends Component {
       redcapFieldToDataFieldMap,
       projectInfo,
       ddData,
+      csvHeaders,
       saveFields,
     } = this.props;
     const payload = {
@@ -27,6 +28,7 @@ class MatchFields extends Component {
       redcapFieldToDataFieldMap,
       projectInfo,
       ddData,
+      csvHeaders,
     };
     saveFields(payload);
   }

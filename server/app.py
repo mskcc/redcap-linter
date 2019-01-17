@@ -7,6 +7,7 @@ import os
 import ntpath
 import pandas as pd
 from datetime import datetime
+from collections import OrderedDict
 from fuzzywuzzy import fuzz
 from flask_cors import CORS, cross_origin
 from models.redcap_field import RedcapField
@@ -21,25 +22,42 @@ app.logger.setLevel(logging.INFO)
 def save_fields():
     form  = request.form.to_dict()
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    csv_headers = json.loads(form.get('csvHeaders'))
     # data field -> REDCap field
     matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items()}
-    json_data = json.loads(form.get('jsonData'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
+        csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         df = pd.DataFrame(json_data[sheet])
-        df.rename(index=str, columns=matched_field_dict, inplace=True)
+        df = df.rename(index=str, columns=matched_field_dict)
+        df = df[csv_headers[sheet]]
         records[sheet] = df
 
     dd_data = json.loads(form.get('ddData'))
     dd = [RedcapField.from_json(field) for field in dd_data]
-    # for field in dd:
-    #     app.logger.info(field.field_name)
-    #     app.logger.info(field.form_name)
 
     project_info = json.loads(form.get('projectInfo'))
     app.logger.info(project_info)
 
-    results = {'error': "Error"}
+    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    # Note this will override the previous all errors
+    all_errors = linting_errors
+    all_errors = [{"Error": error} for error in all_errors]
+
+    json_data   = {}
+
+    for sheetName, sheet in records.items():
+        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+
+    results = {
+        'csvHeaders':              csv_headers,
+        'jsonData':                json_data,
+        'cellsWithErrors':         cells_with_errors,
+        'allErrors':               all_errors,
+        'page':                    'lint'
+    }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -49,17 +67,21 @@ def download_progress():
     form  = request.form.to_dict()
     datafile_name = form.get('dataFileName')
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    csv_headers = json.loads(form.get('csvHeaders'))
     # data field -> REDCap field
     matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items()}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
-    json_data = json.loads(form.get('jsonData'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     for sheet in json_data:
+        app.logger.info(sheet)
+        csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         df = pd.DataFrame(json_data[sheet])
         df.rename(index=str, columns=matched_field_dict, inplace=True)
+        df = df[csv_headers[sheet]]
         df.to_excel(writer, sheet_name=sheet, index=False)
     writer.close()
     output.seek(0)
@@ -137,6 +159,7 @@ def post_form():
         for f2 in fields_not_in_redcap:
             if not field_candidates.get(f1):
                 field_candidates[f1] = []
+            # TODO include form name in this if column name repeats?
             field_candidates[f1].append({
                 'candidate': f2,
                 'score': fuzz.ratio(f1, f2)
@@ -160,7 +183,11 @@ def post_form():
             continue
 
         instrument_records.columns = utils.parameterize_list(list(instrument_records.columns))
-        form_fields = [field for field in dd if field.form_name == sheet_name or field.field_name == recordid_field.field_name]
+
+        # Commented out line assumes that the sheet name matches form name in data Dictionary
+        # and only compares the columns in that form.
+        # [field for field in dd if field.form_name == sheet_name or field.field_name == recordid_field.field_name]
+        form_fields = dd
 
         redcap_field_names = [field.field_name for field in form_fields]
 

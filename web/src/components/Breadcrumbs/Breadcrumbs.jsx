@@ -4,60 +4,95 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import DownloadIcon from '../DownloadIcon/DownloadIcon';
-// import { downloadProgress } from '../../actions/RedcapLinterActions';
+import { navigateTo } from '../../actions/RedcapLinterActions';
 
 class Breadcrumbs extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {
+      currentPage: 'intro',
+    };
   }
 
-  // onClick() {
-  //   const {
-  //     jsonData,
-  //     redcapFieldToDataFieldMap,
-  //     dataFileName,
-  //     downloadProgress,
-  //   } = this.props;
-  //   const payload = {
-  //     jsonData,
-  //     redcapFieldToDataFieldMap,
-  //     dataFileName,
-  //   };
-  //   downloadProgress(payload);
-  // }
+  componentWillReceiveProps(newProps) {
+    const pages = ['intro', 'matchFields', 'lint']
+    const { page } = newProps;
+    let { currentPage } = this.state;
+    if (pages.indexOf(page) > pages.indexOf(currentPage)) {
+      this.setState({ currentPage: page });
+      currentPage = page;
+    }
+  }
+
+  goTo(page) {
+    const {
+      navigateTo,
+    } = this.props;
+    navigateTo(page);
+  }
 
   render() {
     const { page } = this.props;
-    if (page === 'intro') {
-      return <div className="Breadcrumbs-navigation">Intro</div>;
-    }
+    const { currentPage } = this.state;
+    const pages = ['intro', 'matchFields', 'lint']
+
     const {
       jsonData,
       redcapFieldToDataFieldMap,
+      csvHeaders,
       dataFileName,
     } = this.props;
 
-    if (page === 'matchFields') {
-      return (
-        <div className="Breadcrumbs-navigation">
-          Match Fields
-          <form id="downloadForm" action="http://localhost:5000/download_progress" className="Breadcrumbs-hidden" method="POST">
-            <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />
-            <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
-            <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
-          </form>
-          <button type="submit" form="downloadForm" className="Breadcrumbs-download" value="Submit">
-            <div className="Breadcrumbs-downloadIcon">
-              <DownloadIcon />
-            </div>
-            Download current progress
-          </button>
-        </div>
-      );
+    const downloadButton = (
+      <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
+        <form id="downloadForm" action="http://localhost:5000/download_progress" className="Breadcrumbs-hidden" method="POST">
+          <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />
+          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+          <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders)} />
+          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
+        </form>
+        <button type="submit" form="downloadForm" className="Breadcrumbs-download" value="Submit">
+          <div className="Breadcrumbs-downloadIcon">
+            <DownloadIcon />
+          </div>
+          Download Progress
+        </button>
+      </div>
+    );
+
+    const breadcrumbs = [];
+
+    if (currentPage === 'intro' || page === 'intro') {
+      breadcrumbs.push('Intro');
+    } else {
+      breadcrumbs.push(<a key="intro" href="#" onClick={e => this.goTo('intro', e)}>Intro</a>);
+    }
+
+    if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
+      breadcrumbs.push(' / ');
+      if (page === 'matchFields') {
+        breadcrumbs.push('Match Fields')
+      } else {
+        breadcrumbs.push(<a key="matchFields" href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a>)
+      }
+    }
+
+    if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
+      breadcrumbs.push(' / ');
+      if (page === 'lint') {
+        breadcrumbs.push('Lint')
+      } else {
+        breadcrumbs.push(<a key="lint" href="#" onClick={e => this.goTo('lint', e)}>Lint</a>)
+      }
+    }
+
+    if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
+      breadcrumbs.push(downloadButton)
     }
     return (
-      <div className="Breadcrumbs-navigation">Lint</div>
+      <div className="Breadcrumbs-navigation">
+        { breadcrumbs }
+      </div>
     );
   }
 }
@@ -77,7 +112,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ }, dispatch);
+  return bindActionCreators({ navigateTo }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Breadcrumbs);

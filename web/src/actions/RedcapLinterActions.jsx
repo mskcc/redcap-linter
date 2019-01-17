@@ -10,6 +10,9 @@ export const MATCH_FIELDS_FAILURE = 'MATCH_FIELDS_FAILURE';
 export const SAVE_FIELDS_SUCCESS = 'SAVE_FIELDS_SUCCESS';
 export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
+export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
+export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
+
 
 export function postFormSuccess(results) {
   return {
@@ -99,6 +102,7 @@ export function saveFields(payload) {
     data.append('redcapFieldToDataFieldMap', JSON.stringify(payload.redcapFieldToDataFieldMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
 
     const request = axios({
       method: 'POST',
@@ -111,5 +115,31 @@ export function saveFields(payload) {
       response => dispatch(saveFieldsSuccess(response)),
       err => dispatch(saveFieldsError(err)),
     );
+  };
+}
+
+export function navigateToSuccess(payload) {
+  return {
+    type: NAVIGATE_TO_SUCCESS,
+    payload,
+  };
+}
+
+export function navigateToFailure(payload) {
+  return {
+    type: NAVIGATE_TO_FAILURE,
+    payload,
+  };
+}
+
+export function navigateTo(page) {
+  return function action(dispatch) {
+    const payload = {
+      page,
+    };
+    if (!page) {
+      return dispatch(navigateToFailure(payload));
+    }
+    return dispatch(navigateToSuccess(payload));
   };
 }

@@ -15,3 +15,7 @@
 .TabbedDatatable-sheetError {
 	color: #E5153E;
 }
+
+.react-tabs__tab {
+	padding-bottom: 0px;
+}
