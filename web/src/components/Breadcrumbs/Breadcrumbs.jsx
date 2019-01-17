@@ -16,6 +16,10 @@ class Breadcrumbs extends Component {
 
   componentWillReceiveProps(newProps) {
     const pages = ['intro', 'matchFields', 'lint']
+    if (newProps.new) {
+      this.setState({ currentPage: 'matchFields' });
+      return;
+    }
     const { page } = newProps;
     let { currentPage } = this.state;
     if (pages.indexOf(page) > pages.indexOf(currentPage)) {

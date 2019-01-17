@@ -56,7 +56,8 @@ def save_fields():
         'jsonData':                json_data,
         'cellsWithErrors':         cells_with_errors,
         'allErrors':               all_errors,
-        'page':                    'lint'
+        'page':                    'lint',
+        'new':                     False,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -238,7 +239,8 @@ def post_form():
         'fieldCandidates':         field_candidates,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'dataFileName':            datafile_name,
-        'page':                    'matchFields'
+        'page':                    'matchFields',
+        'new':                     True
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

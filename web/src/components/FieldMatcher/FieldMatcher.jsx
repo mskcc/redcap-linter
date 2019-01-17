@@ -15,6 +15,7 @@ class FieldMatcher extends Component {
     this.state = {
       redcapFieldToDataFieldMap: {},
       noMatch: '',
+      search: '',
     };
   }
 
@@ -111,14 +112,13 @@ class FieldMatcher extends Component {
     const {
       fieldsToMatch,
     } = this.props;
-    let columns = [{
-      Header: '',
-    }];
-    columns = [{
+    const {
+      search,
+    } = this.state;
+    const columns = [{
       Header: 'REDCap Field',
       accessor: 'REDCap Field',
       Cell: this.renderCell.bind(this),
-      // getProps: this.renderErrors.bind(this),
     },
     {
       Header: 'Candidate',
@@ -139,11 +139,16 @@ class FieldMatcher extends Component {
       'Candidate': f,
       'Match': '',
     }));
+    let data = tableData;
+    if (search) {
+      data = data.filter(row => row['REDCap Field'].includes(search));
+    }
 
     return (
       <div className="FieldMatcher-table">
+        Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
         <ReactTable
-          data={tableData}
+          data={data}
           className="-striped -highlight"
           columns={columns}
           defaultPageSize={18}
