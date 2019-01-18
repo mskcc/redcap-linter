@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import '../../App.css';
-import './Form.css';
+import '../../App.scss';
+import './Form.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';

@@ -1,0 +1,13 @@
+/*
+ *
+ * Galapagos Sass Mixins
+ *
+ */
+
+//  Define background and font color of an element
+@mixin bg-font-color($bg-color, $f-color){
+  background-color: $bg-color;
+  color: $f-color;
+
+  // ToDo: Conditional if $bg-color > #A3A3A3
+}

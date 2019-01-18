@@ -3,8 +3,12 @@ import {
   POST_FORM_FAILURE,
   MATCH_FIELDS_SUCCESS,
   MATCH_FIELDS_FAILURE,
+  MATCH_CHOICES_SUCCESS,
+  MATCH_CHOICES_FAILURE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
+  SAVE_CHOICES_SUCCESS,
+  SAVE_CHOICES_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
   RESOLVE_COLUMN_SUCCESS,
@@ -33,6 +37,14 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
+    case SAVE_CHOICES_SUCCESS: {
+      return Object.assign({}, state, action.payload.data);
+    }
+    case SAVE_CHOICES_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
     case NAVIGATE_TO_SUCCESS: {
       return Object.assign({}, state, action.payload);
     }
@@ -45,6 +57,24 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload.data);
     }
     case RESOLVE_COLUMN_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case MATCH_CHOICES_SUCCESS: {
+      const dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
+      dataFieldToChoiceMap[action.payload.dataField] = action.payload.permissibleValue;
+      const fieldErrors = state.fieldErrors || {};
+      let unmatchedChoices = [];
+      if (fieldErrors.unmatchedChoices) {
+        unmatchedChoices = fieldErrors.unmatchedChoices.slice();
+      }
+      const idx = unmatchedChoices.indexOf(action.payload.dataField);
+      if (idx !== -1) unmatchedChoices.splice(idx, 1);
+      fieldErrors.unmatchedChoices = unmatchedChoices;
+      return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
+    }
+    case MATCH_CHOICES_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

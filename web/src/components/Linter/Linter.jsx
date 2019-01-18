@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './Linter.css';
+import './Linter.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';

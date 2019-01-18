@@ -83,11 +83,40 @@ def resolve_column():
     dd_data = json.loads(form.get('ddData'))
     dd = [RedcapField.from_json(field) for field in dd_data]
 
+    columns_in_error = json.loads(form.get('columnsInError'))
+    sheet_name = json.loads(form.get('sheetName'))
     project_info = json.loads(form.get('projectInfo'))
-    workingColumn = json.loads(form.get('workingColumn'))
+    working_column = json.loads(form.get('workingColumn'))
+    error_cols = columns_in_error[sheet_name]
+    if working_column in error_cols:
+        error_cols.remove(working_column)
+        if not error_cols:
+            del columns_in_error[sheet_name]
+
+    # TODO Suggest column changes
+    dd_field = [f for f in dd if f.field_name == working_column][0]
+    field_errors = {}
+    if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+        current_list = list(records[sheet_name][working_column])
+        field_errors['fieldType'] = dd_field.field_type
+        field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+        field_errors['unmatchedChoices'] = list({r for r in current_list if r not in dd_field.choices_dict})
+        choice_candidates = {}
+        for f1 in field_errors['unmatchedChoices']:
+            for f2 in dd_field.choices_dict.keys():
+                if not choice_candidates.get(f1):
+                    choice_candidates[f1] = []
+                # TODO include form name in this if column name repeats?
+                choice_candidates[f1].append({
+                    'candidate': f2,
+                    'score': fuzz.ratio(f1, f2)
+                })
+        field_errors['choiceCandidates'] = choice_candidates
 
     results = {
-        'workingColumn':           workingColumn,
+        'workingColumn':  working_column,
+        'columnsInError': columns_in_error,
+        'fieldErrors':    field_errors,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

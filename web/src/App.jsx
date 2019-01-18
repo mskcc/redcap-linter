@@ -4,7 +4,7 @@ import Header from './components/Header/Header';
 import Form from './components/Form/Form';
 import Linter from './components/Linter/Linter';
 import configureStore from './stores/RedcapLinterStore';
-import './App.css';
+import './App.scss';
 
 const initialState = {
   csvHeaders: {},

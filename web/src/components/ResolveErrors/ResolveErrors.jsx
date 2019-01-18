@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import './ResolveErrors.css';
+import './ResolveErrors.scss';
+import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import MatchChoices from '../MatchChoices/MatchChoices';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import { resolveColumn } from '../../actions/RedcapLinterActions';
 
@@ -30,6 +32,33 @@ class ResolveErrors extends Component {
         projectInfo,
         ddData,
         csvHeaders,
+        columnsInError,
+        sheetName,
+        workingColumn: nextColumn,
+      };
+      resolveColumn(payload);
+    }
+  }
+
+  resolveNextColumn(e) {
+    const {
+      jsonData,
+      projectInfo,
+      ddData,
+      csvHeaders,
+      columnsInError,
+      resolveColumn
+    } = this.props;
+    if (Object.keys(columnsInError).length > 0) {
+      const sheetName = Object.keys(columnsInError)[0];
+      const nextColumn = columnsInError[sheetName][0];
+      const payload = {
+        jsonData,
+        projectInfo,
+        ddData,
+        csvHeaders,
+        columnsInError,
+        sheetName,
         workingColumn: nextColumn,
       };
       resolveColumn(payload);
@@ -39,10 +68,11 @@ class ResolveErrors extends Component {
   render() {
     const { workingColumn } = this.props;
 
+    // <button type="button" onClick={this.resolveNextColumn.bind(this)} className="App-submitButton">Next Column</button>
     return (
       <div className="ResolveErrors-container">
         <div className="ResolveErrors-resolveError">
-          { workingColumn }
+          <MatchChoices />
         </div>
         <TabbedDatatable />
       </div>

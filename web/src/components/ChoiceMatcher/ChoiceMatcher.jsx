@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './FieldMatcher.scss';
+import './ChoiceMatcher.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -7,13 +7,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../Cell/Cell';
-import { matchFields } from '../../actions/RedcapLinterActions';
+import { matchChoices } from '../../actions/RedcapLinterActions';
 
-class FieldMatcher extends Component {
+class ChoiceMatcher extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      redcapFieldToDataFieldMap: {},
+      dataFieldToChoiceMap: {},
       noMatch: '',
       search: '',
     };
@@ -21,13 +21,13 @@ class FieldMatcher extends Component {
 
   handleMatch(fieldToMatch) {
     const {
-      redcapFieldToDataFieldMap,
+      dataFieldToChoiceMap,
     } = this.state;
     const {
-      matchFields,
+      matchChoices,
     } = this.props;
-    const match = redcapFieldToDataFieldMap[fieldToMatch] || '';
-    matchFields(fieldToMatch, match);
+    const match = dataFieldToChoiceMap[fieldToMatch] || '';
+    matchChoices(fieldToMatch, match);
   }
 
   handleNoMatch(fieldToMatch) {
@@ -35,17 +35,17 @@ class FieldMatcher extends Component {
       noMatch,
     } = this.state;
     const {
-      matchFields,
+      matchChoices,
     } = this.props;
-    matchFields(fieldToMatch, noMatch);
+    matchChoices(fieldToMatch, noMatch);
   }
 
   handleChange(fieldToMatch, e) {
     const {
-      redcapFieldToDataFieldMap,
+      dataFieldToChoiceMap,
     } = this.state;
-    redcapFieldToDataFieldMap[fieldToMatch] = e.value;
-    this.setState({ redcapFieldToDataFieldMap });
+    dataFieldToChoiceMap[fieldToMatch] = e.value;
+    this.setState({ dataFieldToChoiceMap });
   }
 
   renderCell(cellInfo) {
@@ -59,13 +59,14 @@ class FieldMatcher extends Component {
 
   renderCandidates(cellInfo) {
     const {
-      fieldCandidates,
+      fieldErrors,
     } = this.props;
+    const choiceCandidates = fieldErrors.choiceCandidates || {};
     const {
-      redcapFieldToDataFieldMap,
+      dataFieldToChoiceMap,
     } = this.state;
-    const redcapField = cellInfo.original['REDCap Field'];
-    const value = redcapFieldToDataFieldMap[redcapField];
+    const dataField = cellInfo.original['Data Field'];
+    const value = dataFieldToChoiceMap[dataField];
     let selectedValue = '';
     if (value) {
       selectedValue = {
@@ -74,7 +75,7 @@ class FieldMatcher extends Component {
       };
     }
     const fieldToMatch = cellInfo.value;
-    let scores = fieldCandidates[fieldToMatch];
+    let scores = choiceCandidates[fieldToMatch];
     scores = scores.sort((a, b) => b.score - a.score);
     const options = scores.map(score => ({
       value: score.candidate,
@@ -92,18 +93,18 @@ class FieldMatcher extends Component {
   }
 
   renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo.original['REDCap Field'];
+    const fieldToMatch = cellInfo.original['Data Field'];
     const {
-      redcapFieldToDataFieldMap,
+      dataFieldToChoiceMap,
     } = this.state;
     let disabled = true;
-    if (redcapFieldToDataFieldMap[fieldToMatch]) {
+    if (dataFieldToChoiceMap[fieldToMatch]) {
       disabled = false;
     }
     return (
-      <div className="FieldMatcher-buttons">
+      <div className="ChoiceMatcher-buttons">
         <button type="button" disabled={disabled} onClick={e => this.handleMatch(fieldToMatch, e)} className="App-submitButton">Match</button>
-        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="FieldMatcher-noMatchButton">No Match</button>
+        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="ChoiceMatcher-noMatchButton">No Match</button>
       </div>
     );
   }
@@ -116,8 +117,8 @@ class FieldMatcher extends Component {
       search,
     } = this.state;
     const columns = [{
-      Header: 'REDCap Field',
-      accessor: 'REDCap Field',
+      Header: 'Data Field',
+      accessor: 'Data Field',
       Cell: this.renderCell.bind(this),
     },
     {
@@ -135,40 +136,38 @@ class FieldMatcher extends Component {
       // getProps: this.renderErrors.bind(this),
     }];
     const tableData = fieldsToMatch.map(f => ({
-      'REDCap Field': f,
+      'Data Field': f,
       'Candidate': f,
       'Match': '',
     }));
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['REDCap Field'].includes(search));
+      data = data.filter(row => row['Data Field'].includes(search));
     }
 
     return (
-      <div className="FieldMatcher-table">
+      <div className="ChoiceMatcher-table">
         Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
         <ReactTable
           data={data}
           className="-striped -highlight"
           columns={columns}
-          defaultPageSize={18}
-          minRows={18}
+          defaultPageSize={12}
+          minRows={12}
         />
       </div>
     );
   }
 }
 
-FieldMatcher.propTypes = {
+ChoiceMatcher.propTypes = {
   fieldsToMatch: PropTypes.array,
-  fieldCandidates: PropTypes.object,
-  editable: PropTypes.bool,
+  fieldErrors: PropTypes.object,
 };
 
-FieldMatcher.defaultProps = {
+ChoiceMatcher.defaultProps = {
   fieldsToMatch: [],
-  fieldCandidates: {},
-  editable: true,
+  fieldErrors: {},
 };
 
 function mapStateToProps(state) {
@@ -176,7 +175,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ matchFields }, dispatch);
+  return bindActionCreators({ matchChoices }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(FieldMatcher);
+export default connect(mapStateToProps, mapDispatchToProps)(ChoiceMatcher);

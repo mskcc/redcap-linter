@@ -11,7 +11,7 @@ import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
 import Datatable from '../Datatable/Datatable';
-import './TabbedDatatable.css';
+import './TabbedDatatable.scss';
 import { postForm } from '../../actions/RedcapLinterActions';
 
 class TabbedDatatable extends Component {

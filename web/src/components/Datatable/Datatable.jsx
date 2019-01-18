@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './Datatable.css';
+import './Datatable.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';

@@ -10,6 +10,12 @@ export const MATCH_FIELDS_FAILURE = 'MATCH_FIELDS_FAILURE';
 export const SAVE_FIELDS_SUCCESS = 'SAVE_FIELDS_SUCCESS';
 export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
+export const MATCH_CHOICES_SUCCESS = 'MATCH_CHOICES_SUCCESS';
+export const MATCH_CHOICES_FAILURE = 'MATCH_CHOICES_FAILURE';
+
+export const SAVE_CHOICES_SUCCESS = 'SAVE_CHOICES_SUCCESS';
+export const SAVE_CHOICES_FAILURE = 'SAVE_CHOICES_FAILURE';
+
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
 export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
@@ -121,10 +127,76 @@ export function saveFields(payload) {
   };
 }
 
+
+export function saveChoicesSuccess(payload) {
+  return {
+    type: SAVE_CHOICES_SUCCESS,
+    payload,
+  };
+}
+
+export function saveChoicesError(payload) {
+  return {
+    type: SAVE_CHOICES_FAILURE,
+    payload,
+  };
+}
+
+
+export function saveChoices(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('redcapFieldToDataFieldMap', JSON.stringify(payload.redcapFieldToDataFieldMap));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
+
+    const request = axios({
+      method: 'POST',
+      url: 'http://localhost:5000/save_choices',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(saveChoicesSuccess(response)),
+      err => dispatch(saveChoicesError(err)),
+    );
+  };
+}
+
 export function navigateToSuccess(payload) {
   return {
     type: NAVIGATE_TO_SUCCESS,
     payload,
+  };
+}
+
+export function matchChoicesSuccess(payload) {
+  return {
+    type: MATCH_CHOICES_SUCCESS,
+    payload,
+  };
+}
+
+export function matchChoicesFailure(payload) {
+  return {
+    type: MATCH_CHOICES_FAILURE,
+    payload,
+  };
+}
+
+export function matchChoices(dataField, permissibleValue) {
+  return function action(dispatch) {
+    const payload = {
+      dataField,
+      permissibleValue,
+    };
+    if (!dataField) {
+      return dispatch(matchChoicesFailure(payload));
+    }
+    return dispatch(matchChoicesSuccess(payload));
   };
 }
 
@@ -169,6 +241,8 @@ export function resolveColumn(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('workingColumn', JSON.stringify(payload.workingColumn));
+    data.append('columnsInError', JSON.stringify(payload.columnsInError));
+    data.append('sheetName', JSON.stringify(payload.sheetName));
 
     const request = axios({
       method: 'POST',

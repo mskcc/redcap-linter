@@ -5,6 +5,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "eslint": "5.6.0",
+    "node-sass": "^4.11.0",
     "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
@@ -20,7 +21,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "npm rebuild node-sass"
   },
   "eslintConfig": {
     "extends": "react-app"

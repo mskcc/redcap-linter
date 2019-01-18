@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import './MatchedFields.scss';
+import './MatchedChoices.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
 
-class MatchedFields extends Component {
+class MatchedChoices extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -14,8 +14,8 @@ class MatchedFields extends Component {
 
   renderCell(cellInfo) {
     let className = '';
-    if (!cellInfo.original['Data Field']) {
-      className = 'MatchedFields-cellError';
+    if (!cellInfo.original['Permissible Value']) {
+      className = 'MatchedChoices-cellError';
     }
     return (
       <div className={className}>
@@ -32,40 +32,40 @@ class MatchedFields extends Component {
       search,
     } = this.state;
     const columns = [{
-      Header: 'REDCap Field',
-      accessor: 'REDCap Field',
+      Header: 'Data Field',
+      accessor: 'Data Field',
       Cell: this.renderCell.bind(this),
     },
     {
-      Header: 'Data Field',
-      accessor: 'Data Field',
+      Header: 'Permissible Value',
+      accessor: 'Permissible Value',
       Cell: this.renderCell.bind(this),
     }];
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['REDCap Field'].includes(search) || row['Data Field'].includes(search));
+      data = data.filter(row => row['Data Field'].includes(search) || row['Permissible Value'].includes(search));
     }
     return (
-      <div className="MatchedFields-table">
+      <div className="MatchedChoices-table">
         Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
         <ReactTable
           data={data}
           className="-striped -highlight"
           columns={columns}
-          defaultPageSize={18}
-          minRows={18}
+          defaultPageSize={12}
+          minRows={12}
         />
       </div>
     );
   }
 }
 
-MatchedFields.propTypes = {
+MatchedChoices.propTypes = {
   tableData: PropTypes.array,
 };
 
-MatchedFields.defaultProps = {
+MatchedChoices.defaultProps = {
   tableData: [],
 };
 
-export default MatchedFields;
+export default MatchedChoices;

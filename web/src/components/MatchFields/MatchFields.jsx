@@ -5,7 +5,7 @@ import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
 import MatchedFields from '../MatchedFields/MatchedFields';
 import FieldMatcher from '../FieldMatcher/FieldMatcher';
-import './MatchFields.css';
+import './MatchFields.scss';
 import { saveFields } from '../../actions/RedcapLinterActions';
 
 class MatchFields extends Component {
