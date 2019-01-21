@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import MatchedChoices from '../MatchedChoices/MatchedChoices';
 import ChoiceMatcher from '../ChoiceMatcher/ChoiceMatcher';
 import './MatchChoices.scss';
-import { saveChoices } from '../../actions/RedcapLinterActions';
+import { saveChoices, resolveColumn } from '../../actions/RedcapLinterActions';
 
 class MatchChoices extends Component {
   constructor(props) {
@@ -14,12 +14,14 @@ class MatchChoices extends Component {
     this.state = { };
   }
 
-  saveAndContinue(e) {
+  saveChanges(e) {
     const {
       jsonData,
       dataFieldToChoiceMap,
       projectInfo,
       ddData,
+      workingColumn,
+      workingSheetName,
       csvHeaders,
       saveChoices,
     } = this.props;
@@ -27,10 +29,37 @@ class MatchChoices extends Component {
       jsonData,
       dataFieldToChoiceMap,
       projectInfo,
+      workingColumn,
+      workingSheetName,
       ddData,
       csvHeaders,
     };
     saveChoices(payload);
+  }
+
+  saveAndContinue(e) {
+    const {
+      jsonData,
+      dataFieldToChoiceMap,
+      workingColumn,
+      workingSheetName,
+      projectInfo,
+      ddData,
+      csvHeaders,
+      columnsInError,
+      resolveColumn,
+    } = this.props;
+    const payload = {
+      jsonData,
+      dataFieldToChoiceMap,
+      projectInfo,
+      workingColumn,
+      workingSheetName,
+      columnsInError,
+      ddData,
+      csvHeaders,
+    };
+    resolveColumn(payload);
   }
 
   render() {
@@ -69,7 +98,7 @@ class MatchChoices extends Component {
           />
         </div>
         <div className="MatchChoices-saveAndContinue">
-          <button type="button" onClick={this.saveAndContinue.bind(this)} className="MatchChoices-save">Save</button>
+          <button type="button" onClick={this.saveChanges.bind(this)} className="MatchChoices-save">Save</button>
           <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
         </div>
       </div>
@@ -94,7 +123,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveChoices }, dispatch);
+  return bindActionCreators({ saveChoices, resolveColumn }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MatchChoices);

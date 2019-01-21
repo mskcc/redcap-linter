@@ -147,8 +147,10 @@ export function saveChoices(payload) {
   return function action(dispatch) {
     const data = new FormData();
     data.append('jsonData', JSON.stringify(payload.jsonData));
-    data.append('redcapFieldToDataFieldMap', JSON.stringify(payload.redcapFieldToDataFieldMap));
+    data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('workingColumn', JSON.stringify(payload.workingColumn));
+    data.append('workingSheetName', JSON.stringify(payload.workingSheetName));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
 
@@ -240,7 +242,11 @@ export function resolveColumn(payload) {
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-    data.append('workingColumn', JSON.stringify(payload.workingColumn));
+    data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap || {}));
+    data.append('nextColumn', payload.nextColumn ? JSON.stringify(payload.nextColumn) : '')
+    data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '')
+    data.append('workingColumn', payload.workingColumn ? JSON.stringify(payload.workingColumn) : '');
+    data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
     data.append('sheetName', JSON.stringify(payload.sheetName));
 

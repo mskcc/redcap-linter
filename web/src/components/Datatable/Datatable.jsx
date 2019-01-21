@@ -10,23 +10,8 @@ class Datatable extends Component {
     super(props);
     this.state = {
       selected: '',
-      // data: [{
-      //   name: 'Tanner Linsley',
-      //   age: 26,
-      //   friend: {
-      //     name: 'Jason Maurer',
-      //     age: 23,
-      //   }
-      // },
-      // {
-      //   name: 'Craig Perkins',
-      //   age: 26,
-      //   friend: {
-      //     name: 'Jason Berlinsky',
-      //     age: 26,
-      //   }
-      // }],
-      data: [],
+      search: '',
+      filterErrors: {},
     };
   }
 
@@ -50,17 +35,23 @@ class Datatable extends Component {
 
   renderCell(cellInfo) {
     const {
-      tableData,
       tableErrors,
       editable,
     } = this.props;
+    let tErrors = filterErrors;
+    if (!filterErrors) {
+      tErrors = tableErrors;
+    }
+    const {
+      filterErrors,
+    } = this.state;
     let hasError = false;
-    if (tableErrors[cellInfo.index] && tableErrors[cellInfo.index][cellInfo.column.id]) {
-      hasError = tableErrors[cellInfo.index][cellInfo.column.id];
+    if (tErrors[cellInfo.index] && tErrors[cellInfo.index][cellInfo.column.id]) {
+      hasError = tErrors[cellInfo.index][cellInfo.column.id];
     }
     return (
       <Cell
-        cellData={tableData[cellInfo.index][cellInfo.column.id]}
+        cellData={cellInfo.value}
         hasError={hasError}
         editable={editable}
       />
@@ -89,9 +80,11 @@ class Datatable extends Component {
     const {
       headers,
       tableData,
+      tableErrors,
       tableFieldsNotInRedcap,
       sheetInError,
     } = this.props;
+    const { search } = this.state;
     let columns = [{
       Header: '',
     }];
@@ -135,10 +128,33 @@ class Datatable extends Component {
     //   Cell: this.renderEditable.bind(this)
     // }]
 
+    let data = tableData;
+    let filterErrors = tableErrors;
+    if (search) {
+      data = data.filter((row) => {
+        for (let i = 0; i < headers.length; i++) {
+          if (row[headers[i]] && row[headers[i]].toString().includes(search)) {
+            return true;
+          }
+        }
+        return false;
+      });
+      filterErrors = filterErrors.filter((row) => {
+        for (let i = 0; i < headers.length; i++) {
+          if (row[headers[i]] && row[headers[i]].toString().includes(search)) {
+            return true;
+          }
+        }
+        return false;
+      });
+    }
     return (
       <div className="Datatable-table">
+        <div className="Datatable-searchBar">
+          Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value, filterErrors})} />
+        </div>
         <ReactTable
-          data={tableData}
+          data={data}
           className="-striped -highlight"
           columns={columns}
           defaultPageSize={18}

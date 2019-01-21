@@ -22,53 +22,25 @@ class ResolveErrors extends Component {
       csvHeaders,
       workingColumn,
       columnsInError,
-      resolveColumn
+      resolveColumn,
     } = this.props;
     if (!workingColumn && Object.keys(columnsInError).length > 0) {
-      const sheetName = Object.keys(columnsInError)[0];
-      const nextColumn = columnsInError[sheetName][0];
+      const nextSheetName = Object.keys(columnsInError)[0];
+      const nextColumn = columnsInError[nextSheetName][0];
       const payload = {
         jsonData,
         projectInfo,
         ddData,
         csvHeaders,
         columnsInError,
-        sheetName,
-        workingColumn: nextColumn,
-      };
-      resolveColumn(payload);
-    }
-  }
-
-  resolveNextColumn(e) {
-    const {
-      jsonData,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      columnsInError,
-      resolveColumn
-    } = this.props;
-    if (Object.keys(columnsInError).length > 0) {
-      const sheetName = Object.keys(columnsInError)[0];
-      const nextColumn = columnsInError[sheetName][0];
-      const payload = {
-        jsonData,
-        projectInfo,
-        ddData,
-        csvHeaders,
-        columnsInError,
-        sheetName,
-        workingColumn: nextColumn,
+        nextSheetName,
+        nextColumn,
       };
       resolveColumn(payload);
     }
   }
 
   render() {
-    const { workingColumn } = this.props;
-
-    // <button type="button" onClick={this.resolveNextColumn.bind(this)} className="App-submitButton">Next Column</button>
     return (
       <div className="ResolveErrors-container">
         <div className="ResolveErrors-resolveError">

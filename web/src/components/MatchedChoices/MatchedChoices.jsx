@@ -47,7 +47,11 @@ class MatchedChoices extends Component {
     }
     return (
       <div className="MatchedChoices-table">
-        Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+        <div className="MatchedChoices-tableTitle">
+            <span className="MatchedChoices-searchBar">
+          Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+          </span>
+        </div>
         <ReactTable
           data={data}
           className="-striped -highlight"
