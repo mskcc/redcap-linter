@@ -69,54 +69,150 @@ def save_fields():
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-@app.route('/resolve_column', methods=['GET', 'POST', 'OPTIONS'])
-def resolve_column():
+
+@app.route('/save_choices', methods=['GET', 'POST', 'OPTIONS'])
+def save_choices():
     form  = request.form.to_dict()
+    data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
+    working_column = json.loads(form.get('workingColumn'))
+    working_sheet_name = json.loads(form.get('workingSheetName'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
         df = df[csv_headers[sheet]]
+        if sheet == working_sheet_name:
+            new_list = [data_field_to_choice_map.get(f) or f for f in list(df[working_column])]
+            df[working_column] = new_list
         records[sheet] = df
 
-    dd_data = json.loads(form.get('ddData'))
-    dd = [RedcapField.from_json(field) for field in dd_data]
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
-    columns_in_error = json.loads(form.get('columnsInError'))
-    sheet_name = json.loads(form.get('sheetName'))
     project_info = json.loads(form.get('projectInfo'))
-    working_column = json.loads(form.get('workingColumn'))
-    error_cols = columns_in_error[sheet_name]
-    if working_column in error_cols:
-        error_cols.remove(working_column)
-        if not error_cols:
-            del columns_in_error[sheet_name]
 
-    # TODO Suggest column changes
-    dd_field = [f for f in dd if f.field_name == working_column][0]
-    field_errors = {}
-    if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
-        current_list = list(records[sheet_name][working_column])
-        field_errors['fieldType'] = dd_field.field_type
-        field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
-        field_errors['unmatchedChoices'] = list({r for r in current_list if r not in dd_field.choices_dict})
-        choice_candidates = {}
-        for f1 in field_errors['unmatchedChoices']:
-            for f2 in dd_field.choices_dict.keys():
-                if not choice_candidates.get(f1):
-                    choice_candidates[f1] = []
-                # TODO include form name in this if column name repeats?
-                choice_candidates[f1].append({
-                    'candidate': f2,
-                    'score': fuzz.ratio(f1, f2)
-                })
-        field_errors['choiceCandidates'] = choice_candidates
+    # TODO Lint specific column
+    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    columns_in_error = {}
+    for inst in cells_with_errors:
+        instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
+        if len(instrument_columns_in_error) > 0:
+            columns_in_error[inst] = instrument_columns_in_error
+
+    # Note this will override the previous all errors
+    all_errors = linting_errors
+    all_errors = [{"Error": error} for error in all_errors]
+
+    json_data   = {}
+
+    for sheetName, sheet in records.items():
+        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     results = {
-        'workingColumn':  working_column,
-        'columnsInError': columns_in_error,
-        'fieldErrors':    field_errors,
+        'csvHeaders':              csv_headers,
+        'jsonData':                json_data,
+        'cellsWithErrors':         cells_with_errors,
+        'allErrors':               all_errors,
+        'columnsInError':          columns_in_error,
+    }
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/resolve_column', methods=['GET', 'POST', 'OPTIONS'])
+def resolve_column():
+    form  = request.form.to_dict()
+    # TODO Take in form param to navigate to any unresolved columns
+    csv_headers = json.loads(form.get('csvHeaders'))
+    # Working column is the column being saved
+    next_column = json.loads(form.get('nextColumn') or '""')
+    next_sheet_name = json.loads(form.get('nextSheetName') or '""')
+    working_column = json.loads(form.get('workingColumn') or '""')
+    working_sheet_name = json.loads(form.get('workingSheetName') or '""')
+    data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df = df[csv_headers[sheet]]
+        if sheet == working_sheet_name:
+            app.logger.info(data_field_to_choice_map)
+            new_list = [data_field_to_choice_map.get(f) or f for f in list(df[working_column])]
+            df[working_column] = new_list
+        records[sheet] = df
+
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    columns_in_error = json.loads(form.get('columnsInError'))
+    project_info = json.loads(form.get('projectInfo'))
+
+    # TODO work on case of no more errors
+
+    # TODO Suggest column changes and simplify this
+    next_sheet = False
+    for sheet in columns_in_error:
+        if next_sheet:
+            next_sheet_name = sheet
+            next_column = columns_in_error[sheet][0]
+        if sheet == working_sheet_name:
+            cols_in_error = columns_in_error[sheet]
+            if sheet == working_sheet_name and working_column == cols_in_error[-1]:
+                next_sheet = True
+            elif sheet == working_sheet_name:
+                next_sheet_name = sheet
+                next_column = cols_in_error[cols_in_error.index(working_column)+1]
+
+    # TODO only remove if errors are resolved
+    # if working_sheet_name:
+    #     error_cols = columns_in_error[working_sheet_name]
+    #     if working_column in error_cols:
+    #         error_cols.remove(working_column)
+    #         if not error_cols:
+    #             del columns_in_error[working_sheet_name]
+
+    field_errors = {}
+    if next_column:
+        dd_field = [f for f in dd if f.field_name == next_column][0]
+        if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+            current_list = list(records[next_sheet_name][next_column])
+            field_errors['fieldType'] = dd_field.field_type
+            field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+            field_errors['unmatchedChoices'] = list({r for r in current_list if r and r not in dd_field.choices_dict})
+            choice_candidates = {}
+            for f1 in field_errors['unmatchedChoices']:
+                for f2 in dd_field.choices_dict.keys():
+                    if not choice_candidates.get(f1):
+                        choice_candidates[f1] = []
+                    # TODO include form name in this if column name repeats?
+                    choice_candidates[f1].append({
+                        'candidate': f2,
+                        'score': fuzz.ratio(f1, f2)
+                    })
+            field_errors['choiceCandidates'] = choice_candidates
+
+    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+
+    columns_in_error = {}
+    for inst in cells_with_errors:
+        instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
+        if len(instrument_columns_in_error) > 0:
+            columns_in_error[inst] = instrument_columns_in_error
+
+    json_data   = {}
+
+    for sheetName, sheet in records.items():
+        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+
+    results = {
+        'workingColumn':    next_column,
+        'workingSheetName': next_sheet_name,
+        'jsonData':         json_data,
+        'dataFieldToChoiceMap': {},
+        'cellsWithErrors':  cells_with_errors,
+        'columnsInError':   columns_in_error,
+        'fieldErrors':      field_errors,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -228,7 +324,7 @@ def post_form():
     # TODO Make the code below a separate endpoint for after the headers are matched.
 
     all_errors                  = []
-    sheets_not_in_redcap        = []
+    # sheets_not_in_redcap        = []
     record_fields_not_in_redcap = {}
     recordid_field              = dd[0]
     form_names = [redcap_field.form_name for redcap_field in dd]
@@ -292,7 +388,7 @@ def post_form():
         'cellsWithErrors':         cells_with_errors,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
         'allErrors':               all_errors,
-        'sheetsNotInRedcap':       sheets_not_in_redcap,
+        # 'sheetsNotInRedcap':       sheets_not_in_redcap,
         'formNames':               form_names,
         'projectInfo':             project_info,
         'matchingHeaders':         matching_headers,

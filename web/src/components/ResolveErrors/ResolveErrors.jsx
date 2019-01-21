@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import MatchChoices from '../MatchChoices/MatchChoices';
+import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import { resolveColumn } from '../../actions/RedcapLinterActions';
 
@@ -41,10 +42,19 @@ class ResolveErrors extends Component {
   }
 
   render() {
+    const {
+      columnsInError,
+    } = this.props;
+    let content = '';
+    if (Object.keys(columnsInError).length === 0) {
+      content = <ErrorsResolved />;
+    } else {
+      content = <MatchChoices />;
+    }
     return (
       <div className="ResolveErrors-container">
         <div className="ResolveErrors-resolveError">
-          <MatchChoices />
+          { content }
         </div>
         <TabbedDatatable />
       </div>

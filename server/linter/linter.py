@@ -63,6 +63,7 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors)
 
     for redcap_field in matching_fields:
         current_list = list(records[redcap_field.field_name])
+        current_list = [i.strip() if isinstance(i, basestring) else i for i in current_list]
         # Figure out leading zeros problem
         # if redcap_field.field_name == 'mrn1':
         #     print(current_list)
