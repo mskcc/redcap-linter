@@ -5,6 +5,7 @@ import json
 import io
 import os
 import ntpath
+import numbers
 import pandas as pd
 from datetime import datetime
 from collections import OrderedDict
@@ -31,6 +32,7 @@ def save_fields():
     for sheet in json_data:
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         df = pd.DataFrame(json_data[sheet])
+        df.replace('nan', '', inplace=True)
         df = df.rename(index=str, columns=matched_field_dict)
         df = df[csv_headers[sheet]]
         records[sheet] = df
@@ -82,9 +84,10 @@ def save_choices():
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
+        df.replace('nan', '', inplace=True)
         df = df[csv_headers[sheet]]
         if sheet == working_sheet_name:
-            new_list = [data_field_to_choice_map.get(f) or f for f in list(df[working_column])]
+            new_list = [data_field_to_choice_map.get(str(f)) or f for f in list(df[working_column])]
             df[working_column] = new_list
         records[sheet] = df
 
@@ -137,9 +140,9 @@ def resolve_column():
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
         df = df[csv_headers[sheet]]
+        df.fillna('',inplace=True)
         if sheet == working_sheet_name:
-            app.logger.info(data_field_to_choice_map)
-            new_list = [data_field_to_choice_map.get(f) or f for f in list(df[working_column])]
+            new_list = [data_field_to_choice_map.get(str(f)) or f for f in list(df[working_column])]
             df[working_column] = new_list
         records[sheet] = df
 
@@ -177,9 +180,13 @@ def resolve_column():
         dd_field = [f for f in dd if f.field_name == next_column][0]
         if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
             current_list = list(records[next_sheet_name][next_column])
+            if dd_field.field_type in ['yesno', 'truefalse']:
+                current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
+            elif dd_field.field_type in ['radio', 'dropdown', 'checkbox']:
+                current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
             field_errors['fieldType'] = dd_field.field_type
             field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
-            field_errors['unmatchedChoices'] = list({r for r in current_list if r and r not in dd_field.choices_dict})
+            field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
             choice_candidates = {}
             for f1 in field_errors['unmatchedChoices']:
                 for f2 in dd_field.choices_dict.keys():
@@ -236,6 +243,7 @@ def download_progress():
     for sheet in json_data:
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         df = pd.DataFrame(json_data[sheet])
+        df.replace('nan', '', inplace=True)
         df.rename(index=str, columns=matched_field_dict, inplace=True)
         df = df[csv_headers[sheet]]
         df.to_excel(writer, sheet_name=sheet, index=False)
@@ -258,6 +266,7 @@ def download_output():
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
+        df.replace('nan', '', inplace=True)
         df = df[csv_headers[sheet]]
         records[sheet] = df
 
@@ -341,11 +350,15 @@ def post_form():
 
     for sheetName, sheet in records.items():
         all_csv_headers += utils.parameterize_list(list(sheet.columns))
+        all_csv_headers = [i for i in all_csv_headers if 'unnamed' not in i]
 
     all_field_names = [f.field_name for f in dd]
 
     field_candidates = {}
 
+    all_csv_headers = list(set(all_csv_headers))
+
+    # TODO matches the variable on all sheets, do variables need to be sheet specific?
     matching_headers = list(set(all_field_names) & set(all_csv_headers))
     unmatched_redcap_fields = [f for f in all_field_names if f not in all_csv_headers]
     fields_not_in_redcap = [f for f in all_csv_headers if f not in all_field_names]

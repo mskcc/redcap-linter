@@ -83,7 +83,7 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
     # current_app.logger.info(date_list)
     formatted_dates = []
     for d in date_list:
-        if not d:
+        if not d or pd.isnull(d):
             if required:
                 logging.error("Required field missing.")
                 formatted_dates.append(False)

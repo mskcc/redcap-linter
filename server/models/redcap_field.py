@@ -41,12 +41,12 @@ class RedcapField(object):
     @classmethod
     def from_json(cls, field_json):
         field = {
-            'field_name': field_json.get('field_name'),
+            'field_name': field_json.get('field_name') or field_json.get('variable_field_name'),
             'field_type': field_json.get('field_type'),
             'text_validation': field_json.get('text_validation_type_or_show_slider_number'),
             'text_min': field_json.get('text_validation_min'),
             'text_max': field_json.get('text_validation_max'),
-            'choices': field_json.get('select_choices_or_calculations'),
+            'choices': field_json.get('select_choices_or_calculations') or field_json.get('choices_calculations_or_slider_labels'),
             'form_name': field_json.get('form_name'),
             'required': field_json.get('required_field') == 'y'
         }

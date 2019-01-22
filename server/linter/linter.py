@@ -6,6 +6,11 @@ import numbers
 from models.redcap_field import RedcapField
 from api.redcap.redcap_api import RedcapApi
 from utils import utils
+import logging
+import flask
+
+app = flask.Flask(__name__)
+app.logger.setLevel(logging.INFO)
 
 def validate_text_type(list_to_validate, redcap_field):
     text_validation = redcap_field.text_validation
@@ -72,15 +77,17 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
             instrument_errors[redcap_field.field_name] = [d is False for d in validations]
         elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
             choices_dict = redcap_field.choices_dict
+            if redcap_field.field_type in ['yesno', 'truefalse']:
+                current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
             for idx, item in enumerate(current_list):
                 if not item and redcap_field.required:
                     all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
                 elif item and item not in choices_dict:
                     all_errors.append("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
             if redcap_field.required:
-                instrument_errors[redcap_field.field_name] = [not d or d not in choices_dict for d in current_list]
+                instrument_errors[redcap_field.field_name] = [not d or str(d) not in choices_dict for d in current_list]
             else:
-                instrument_errors[redcap_field.field_name] = [d not in choices_dict if d else None for d in current_list]
+                instrument_errors[redcap_field.field_name] = [str(d) not in choices_dict if d else None for d in current_list]
 
             if redcap_field.field_type == 'checkbox':
                 for key, value in choices_dict.items():
@@ -88,7 +95,7 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
                     output_records["{0}__{1}".format(redcap_field.field_name, value)] = checked_list
                 output_records.drop(redcap_field.field_name, 1, inplace=True)
             else:
-                current_list = [int(item) if isinstance(item, numbers.Number) and float(item).is_integer() else item for item in current_list]
+                current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
                 replaced_choices = [choices_dict.get(item) for item in current_list]
                 output_records[redcap_field.field_name] = replaced_choices
         else:

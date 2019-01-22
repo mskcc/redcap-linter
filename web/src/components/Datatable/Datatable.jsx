@@ -41,9 +41,9 @@ class Datatable extends Component {
     const {
       filterErrors,
     } = this.state;
-    let tErrors = filterErrors;
+    let tErrors = tableErrors;
     if (!filterErrors) {
-      tErrors = tableErrors;
+      tErrors = filterErrors;
     }
     let hasError = false;
     if (tErrors[cellInfo.index] && tErrors[cellInfo.index][cellInfo.column.id]) {
