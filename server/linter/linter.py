@@ -26,7 +26,7 @@ def validate_text_type(list_to_validate, redcap_field):
     return validations
 
 
-def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors):
+def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=[]):
     instrument_errors = pd.DataFrame().reindex_like(records)
     instrument_errors[:] = False
 
@@ -110,7 +110,6 @@ def lint_datafile(data_dictionary, records, project_info):
     instruments_with_errors = []
     original_records = {}
     datafile_errors = {}
-    encoded_records = {}
 
     all_errors = []
 
@@ -131,13 +130,24 @@ def lint_datafile(data_dictionary, records, project_info):
         # sheet_name = normalized_instruments_dict.get(instrument)
         instrument_records = records.get(instrument)
         if instrument_records is not None:
-            output, errors = lint_instrument(data_dictionary, instrument, instrument_records, repeatable, all_errors)
-            encoded_records[instrument] = output
+            _, errors = lint_instrument(data_dictionary, instrument, instrument_records, repeatable, all_errors)
             if errors is not None:
-                encoded_records[instrument] = output
                 instruments_with_errors.append(instrument)
                 datafile_errors[instrument] = errors
         else:
             all_errors.append("Instrument {0} not found in datafile.".format(instrument))
 
     return datafile_errors, all_errors
+
+def encode_datafile(data_dictionary, records, project_info):
+    encoded_records = {}
+
+    all_errors = []
+    for instrument in records.keys():
+        repeatable = instrument in utils.parameterize_list(project_info['repeatable_instruments'])
+        instrument_records = records.get(instrument)
+        if instrument_records is not None:
+            output, _ = lint_instrument(data_dictionary, instrument, instrument_records, repeatable, all_errors)
+            encoded_records[instrument] = output
+
+    return encoded_records

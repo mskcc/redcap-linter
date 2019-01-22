@@ -38,13 +38,13 @@ class Datatable extends Component {
       tableErrors,
       editable,
     } = this.props;
+    const {
+      filterErrors,
+    } = this.state;
     let tErrors = filterErrors;
     if (!filterErrors) {
       tErrors = tableErrors;
     }
-    const {
-      filterErrors,
-    } = this.state;
     let hasError = false;
     if (tErrors[cellInfo.index] && tErrors[cellInfo.index][cellInfo.column.id]) {
       hasError = tErrors[cellInfo.index][cellInfo.column.id];

@@ -14,6 +14,7 @@ from models.redcap_field import RedcapField
 from api.redcap.redcap_api import RedcapApi
 from linter import linter
 from utils import utils
+from openpyxl import load_workbook
 
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -233,7 +234,6 @@ def download_progress():
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     for sheet in json_data:
-        app.logger.info(sheet)
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         df = pd.DataFrame(json_data[sheet])
         df.rename(index=str, columns=matched_field_dict, inplace=True)
@@ -243,9 +243,47 @@ def download_progress():
     output.seek(0)
     return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
 
+@app.route('/download_output', methods=['GET', 'POST', 'OPTIONS'])
+def download_output():
+    form  = request.form.to_dict()
+    datafile_name = form.get('dataFileName')
+    csv_headers = json.loads(form.get('csvHeaders'))
+    project_info = json.loads(form.get('projectInfo'))
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+    datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
+    current_date = datetime.now().strftime("%m-%d-%Y")
+    new_datafile_name = datafile_name + '-' + current_date + '-Encoded.xlsx'
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df = df[csv_headers[sheet]]
+        records[sheet] = df
+
+    output_records = linter.encode_datafile(dd, records, project_info)
+
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    for sheet, df in output_records.iteritems():
+        df.to_excel(writer, sheet_name=sheet, index=False)
+    writer.close()
+    output.seek(0)
+    return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
+
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
     records = pd.read_excel(request.files['dataFile'], sheet_name=None)
+    records_with_format = load_workbook(request.files['dataFile'])
+    for sheet in records_with_format.sheetnames:
+        for row in records_with_format[sheet].iter_rows():
+            for cell in row:
+                # MRN
+                if cell.value in list(records[sheet].columns) and cell.number_format == '00000000':
+                    current_list = list(records[sheet][cell.value])
+                    current_list = [str(i).rjust(8, '0') if isinstance(i, int) else i for i in current_list]
+                    records[sheet][cell.value] = current_list
+            break
     for key in records:
         records.get(key).replace('nan', '', inplace=True)
     form  = request.form.to_dict()

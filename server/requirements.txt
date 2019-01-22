@@ -1,14 +1,17 @@
 certifi==2018.11.29
 chardet==3.0.4
 Click==7.0
+et-xmlfile==1.0.1
 Flask==1.0.2
 Flask-Cors==3.0.7
 fuzzywuzzy==0.17.0
 idna==2.8
 itsdangerous==1.1.0
+jdcal==1.4
 Jinja2==2.10
 MarkupSafe==1.1.0
 numpy==1.15.4
+openpyxl==2.5.12
 pandas==0.23.4
 powerline-gitstatus==1.2.1
 powerline-status==2.7
