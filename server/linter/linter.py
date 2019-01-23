@@ -24,6 +24,8 @@ def validate_text_type(list_to_validate, redcap_field):
         validations = utils.validate_dates(list_to_validate, text_validation, text_min, text_max, required)
     elif text_validation in ['number_2dp', 'integer']:
         validations = utils.validate_numbers(list_to_validate, text_validation, text_min, text_max, required)
+    elif text_validation in ['alpha_only']:
+        validations = [str(i).isalpha() if i else None for i in list_to_validate]
     elif required:
         validations = [d and d != '' for d in list_to_validate]
     else:
