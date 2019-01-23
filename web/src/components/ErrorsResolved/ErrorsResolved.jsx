@@ -24,6 +24,7 @@ class ErrorsResolved extends Component {
         <p>All errors are resolved!</p>
         <p>Please take the time now to ensure all column names are matched by navigating to the Match Fields screen.</p>
         <p>If all fields have been matched and all errors resolved you may now download your progress to prevent from having to resolve errors a second time.</p>
+        <p>Date/Times from the original file may have been truncated to fit the upload format for REDCap.</p>
         <p>Please fill out the form below to generate an output file containing the records encoded and ready to upload to REDCap.</p>
         <form id="downloadOutput" action="http://localhost:5000/download_output" className="ErrorsResolved-hidden" method="POST">
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />

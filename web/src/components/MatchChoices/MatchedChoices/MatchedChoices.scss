@@ -1,9 +1,11 @@
+@import '../../Utilities/color';
+
 .MatchedChoices-headerError {
-	color: #E5153E;
+	color: color(red500);
 }
 
 .MatchedChoices-cellError {
-	color: #E5153E;
+	color: color(red500);
 }
 
 .MatchedChoices-tableTitle {

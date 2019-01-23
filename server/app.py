@@ -178,13 +178,14 @@ def resolve_column():
     field_errors = {}
     if next_column:
         dd_field = [f for f in dd if f.field_name == next_column][0]
+        field_errors['fieldType'] = dd_field.field_type
+        field_errors['required'] = dd_field.required
         if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
             current_list = list(records[next_sheet_name][next_column])
             if dd_field.field_type in ['yesno', 'truefalse']:
                 current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
             elif dd_field.field_type in ['radio', 'dropdown', 'checkbox']:
                 current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
-            field_errors['fieldType'] = dd_field.field_type
             field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
             field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
             choice_candidates = {}
@@ -198,6 +199,10 @@ def resolve_column():
                         'score': fuzz.ratio(f1, f2)
                     })
             field_errors['choiceCandidates'] = choice_candidates
+        if dd_field.field_type in ['text', 'notes']:
+            field_errors['textValidation']    = dd_field.text_validation
+            field_errors['textValidationMin'] = dd_field.text_min
+            field_errors['textValidationMax'] = dd_field.text_max
 
     cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
 

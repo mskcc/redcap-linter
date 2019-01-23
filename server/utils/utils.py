@@ -56,7 +56,7 @@ def get_from_data_dictionary(data_dictionary, field_name, col):
 def validate_numbers(numbers_list, number_format, number_min, number_max, required):
     formatted_numbers = []
     for d in numbers_list:
-        if not d:
+        if not d or pd.isnull(d):
             if required:
                 logging.error("Required field missing.")
                 formatted_numbers.append(False)
@@ -67,6 +67,7 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
             logging.error("{0} is outside the acceptable range. min: {0}, max: {1}".format(number_min, number_max))
             formatted_numbers.append(False)
         else:
+            d = float(d)
             if number_format == 'number_2dp':
                 formatted_numbers.append("{:.2f}".format(d))
             elif number_format == 'integer':
@@ -108,7 +109,7 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
 
 def parameterize(str):
     # \W = [^a-zA-Z0-9_]
-    parameterized_str = re.sub(r'([^\s\w-]|_)+', '', str)
+    parameterized_str = re.sub(r'([^\s\w-]|)+', '', str)
     parameterized_str = re.sub('\s+', '_', parameterized_str)
     parameterized_str = parameterized_str.lower()
     return parameterized_str

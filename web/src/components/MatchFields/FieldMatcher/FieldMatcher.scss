@@ -1,13 +1,13 @@
-@import '../Utilities/variables';
-@import '../Utilities/color';
-@import '../Utilities/mixins';
+@import '../../Utilities/variables';
+@import '../../Utilities/color';
+@import '../../Utilities/mixins';
 
 .FieldMatcher-headerError {
-	color: #E5153E;
+	color: color(red500);
 }
 
 .FieldMatcher-cellError {
-	color: #E5153E;
+	color: color(red500);
 }
 
 .FieldMatcher-dropdown {

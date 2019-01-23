@@ -6,8 +6,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
-import Cell from '../Cell/Cell';
-import { matchChoices, resolveColumn } from '../../actions/RedcapLinterActions';
+import Cell from '../../Cell/Cell';
+import { matchChoices, resolveColumn } from '../../../actions/RedcapLinterActions';
 
 class ChoiceMatcher extends Component {
   constructor(props) {

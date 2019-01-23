@@ -1,0 +1,17 @@
+@import '../../Utilities/color';
+
+.ResolvedTextErrors-headerError {
+	color: color(red500);
+}
+
+.ResolvedTextErrors-cellError {
+	color: color(red500);
+}
+
+.ResolvedTextErrors-tableTitle {
+  height: 40px;
+}
+
+.ResolvedTextErrors-searchBar {
+  float: left;
+}

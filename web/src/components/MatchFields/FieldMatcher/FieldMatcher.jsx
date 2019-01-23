@@ -6,8 +6,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
-import Cell from '../Cell/Cell';
-import { matchFields } from '../../actions/RedcapLinterActions';
+import Cell from '../../Cell/Cell';
+import { matchFields } from '../../../actions/RedcapLinterActions';
 
 class FieldMatcher extends Component {
   constructor(props) {
@@ -80,12 +80,28 @@ class FieldMatcher extends Component {
       value: score.candidate,
       label: score.candidate,
     }));
+
+    const longestOption = scores.map(score => score.candidate).sort((a, b) => b.length - a.length)[0];
+    const selectWidth = 8 * longestOption.length + 60;
+
+    const selectStyles = {
+      control: provided => ({
+        ...provided,
+      }),
+      menu: provided => ({
+        // none of react-select's styles are passed to <Control />
+        ...provided,
+        overflow: 'visible',
+        minWidth: `${selectWidth}px`,
+      }),
+    };
     return (
       <Select
         options={options}
         isSearchable
         value={selectedValue}
         onChange={e => this.handleChange(fieldToMatch, e)}
+        styles={selectStyles}
         placeholder="Select..."
       />
     );

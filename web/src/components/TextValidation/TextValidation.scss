@@ -2,19 +2,37 @@
 @import '../Utilities/color';
 @import '../Utilities/mixins';
 
-.ChoiceMatcher-headerError {
-	color: #E5153E;
+.TextValidation-container {
+  width: 100%;
+	display: inline-block;
+	margin-right: 15px;
 }
 
-.ChoiceMatcher-cellError {
-	color: #E5153E;
+.TextValidation-matchedChoices {
+  display: inline-block;
+  width: 32%;
+  padding-left: 10px;
 }
 
-.ChoiceMatcher-dropdown {
-  overflow: visible;
+.TextValidation-unmatchedChoices {
+  display: inline-block;
+  width: 63%;
+  padding-left: 10px;
 }
 
-.ChoiceMatcher-noMatchButton {
+.TextValidation-title {
+  text-align: center;
+  font-size: 16px;
+  margin: 7px;
+}
+
+.TextValidation-saveAndContinue {
+  padding-top: 15px;
+  padding-right: 25px;
+  float: right;
+}
+
+.TextValidation-save {
 	background: transparent;
   border-color: color(blue500);
   border-style: solid;
@@ -29,24 +47,7 @@
   border-radius: 2px;
 }
 
-.ChoiceMatcher-noMatchButton:hover:enabled {
+.TextValidation-save:hover:enabled {
   border-color: darken(color(blue500), 10%);
   color: darken(color(blue500), 10%);
-}
-
-.ChoiceMatcher-buttons {
-	text-align: center;
-}
-
-.ChoiceMatcher-tableTitle {
-  height: 40px;
-}
-
-.ChoiceMatcher-searchBar {
-  float: left;
-}
-
-.ChoiceMatcher-tableLabel {
-  float: right;
-  min-width: 200px;
 }

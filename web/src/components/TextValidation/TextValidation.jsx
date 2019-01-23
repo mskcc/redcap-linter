@@ -3,12 +3,12 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import 'react-tabs/style/react-tabs.css';
 import PropTypes from 'prop-types';
-import MatchedChoices from './MatchedChoices/MatchedChoices';
-import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
-import './MatchChoices.scss';
+import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
+import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
+import './TextValidation.scss';
 import { saveChoices, resolveColumn } from '../../actions/RedcapLinterActions';
 
-class MatchChoices extends Component {
+class TextValidation extends Component {
   constructor(props) {
     super(props);
     this.state = { };
@@ -67,7 +67,7 @@ class MatchChoices extends Component {
       fieldErrors,
       dataFieldToChoiceMap,
     } = this.props;
-    const noMatchChoices = fieldErrors.noMatchChoices || [];
+    const noTextValidation = fieldErrors.noTextValidation || [];
     let matchedChoices = fieldErrors.matchedChoices || [];
     matchedChoices = matchedChoices.map(header => ({
       'Data Field': header,
@@ -77,28 +77,28 @@ class MatchChoices extends Component {
       'Data Field': dataField,
       'Permissible Value': dataFieldToChoiceMap[dataField],
     })));
-    matchedChoices = matchedChoices.concat(noMatchChoices.map(dataField => ({
+    matchedChoices = matchedChoices.concat(noTextValidation.map(dataField => ({
       'Data Field': dataField,
       'Permissible Value': '',
     })));
 
     return (
-      <div className="MatchChoices-container">
-        <div className="MatchChoices-matchedChoices">
-          <div className="MatchChoices-title">Matched Choices</div>
-          <MatchedChoices
+      <div className="TextValidation-container">
+        <div className="TextValidation-matchedChoices">
+          <div className="TextValidation-title">Corrected Values</div>
+          <ResolvedTextErrors
             tableData={matchedChoices}
           />
         </div>
-        <div className="MatchChoices-unmatchedChoices">
-          <div className="MatchChoices-title">Unmatched Choices</div>
-          <ChoiceMatcher
+        <div className="TextValidation-unmatchedChoices">
+          <div className="TextValidation-title">Values in Error</div>
+          <TextErrorResolver
             fieldsToMatch={fieldErrors.unmatchedChoices}
             fieldCandidates={fieldErrors.choiceCandidates}
           />
         </div>
-        <div className="MatchChoices-saveAndContinue">
-          <button type="button" onClick={this.saveChanges.bind(this)} className="MatchChoices-save">Save</button>
+        <div className="TextValidation-saveAndContinue">
+          <button type="button" onClick={this.saveChanges.bind(this)} className="TextValidation-save">Save</button>
           <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
         </div>
       </div>
@@ -106,16 +106,16 @@ class MatchChoices extends Component {
   }
 }
 
-MatchChoices.propTypes = {
+TextValidation.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
-  noMatchChoices: PropTypes.array,
+  noTextValidation: PropTypes.array,
 };
 
-MatchChoices.defaultProps = {
+TextValidation.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
-  noMatchChoices: [],
+  noTextValidation: [],
 };
 
 function mapStateToProps(state) {
@@ -126,4 +126,4 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ saveChoices, resolveColumn }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MatchChoices);
+export default connect(mapStateToProps, mapDispatchToProps)(TextValidation);
