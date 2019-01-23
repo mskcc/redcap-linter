@@ -55,6 +55,10 @@ def get_from_data_dictionary(data_dictionary, field_name, col):
 
 def validate_numbers(numbers_list, number_format, number_min, number_max, required):
     formatted_numbers = []
+    if number_min and (isinstance(number_min, str) or isinstance(number_min, unicode)):
+        number_min = float(number_min)
+    if number_max and (isinstance(number_max, str) or isinstance(number_max, unicode)):
+        number_max = float(number_max)
     for d in numbers_list:
         if not d or pd.isnull(d):
             if required:
@@ -62,14 +66,19 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
                 formatted_numbers.append(False)
             else:
                 formatted_numbers.append(None)
-        elif ((number_min and d < number_min) or
+            continue
+        d = float(d)
+        if ((number_min and d < number_min) or
               (number_max and d > number_max)):
             logging.error("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, number_min, number_max))
             formatted_numbers.append(False)
         else:
-            d = float(d)
             if number_format == 'number_2dp':
-                formatted_numbers.append("{:.2f}".format(d))
+                if float(d).is_integer():
+                    logging.error("Expected decimal point, but received: {0}".format(d))
+                    formatted_numbers.append(False)
+                else:
+                    formatted_numbers.append("{:.2f}".format(d))
             elif number_format == 'integer':
                 if float(d).is_integer():
                     formatted_numbers.append("{:.0f}".format(d))
@@ -81,7 +90,6 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
 
 
 def validate_dates(date_list, date_format, date_min, date_max, required):
-    # current_app.logger.info(date_list)
     formatted_dates = []
 
     if date_min and (isinstance(date_min, str) or isinstance(date_min, unicode)):
