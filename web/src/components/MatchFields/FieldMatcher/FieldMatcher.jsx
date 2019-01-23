@@ -78,7 +78,7 @@ class FieldMatcher extends Component {
     scores = scores.sort((a, b) => b.score - a.score);
     const options = scores.map(score => ({
       value: score.candidate,
-      label: score.candidate,
+      label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.sheets.toString()}</span></span>,
     }));
 
     const longestOption = scores.map(score => score.candidate).sort((a, b) => b.length - a.length)[0];

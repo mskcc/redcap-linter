@@ -379,22 +379,37 @@ def post_form():
     all_field_names = [f.field_name for f in dd]
 
     field_candidates = {}
+    csv_headers = {}
+    fields_not_in_redcap = {}
+
+    for sheet_name, sheet in records.items():
+        csv_headers[sheet_name] = list(sheet.columns)
+        normalized_list = utils.parameterize_list(list(sheet.columns))
+        normalized_list = [item for item in normalized_list if 'unnamed' not in item]
+        fields_not_in_redcap[sheet_name] = [item for item in normalized_list if item not in all_field_names]
 
     all_csv_headers = list(set(all_csv_headers))
 
     # TODO matches the variable on all sheets, do variables need to be sheet specific?
     matching_headers = list(set(all_field_names) & set(all_csv_headers))
     unmatched_redcap_fields = [f for f in all_field_names if f not in all_csv_headers]
-    fields_not_in_redcap = [f for f in all_csv_headers if f not in all_field_names]
+
+
     for f1 in unmatched_redcap_fields:
-        for f2 in fields_not_in_redcap:
-            if not field_candidates.get(f1):
-                field_candidates[f1] = []
-            # TODO include form name in this if column name repeats?
-            field_candidates[f1].append({
-                'candidate': f2,
-                'score': fuzz.ratio(f1, f2)
-            })
+        for sheet in fields_not_in_redcap:
+            for f2 in fields_not_in_redcap[sheet]:
+                if not field_candidates.get(f1):
+                    field_candidates[f1] = []
+                # TODO include form name in this if column name repeats?
+                existing_candidate = [item for item in field_candidates[f1] if item['candidate'] == f2]
+                if len(existing_candidate) > 0:
+                    existing_candidate[0]['sheets'].append(sheet)
+                else:
+                    field_candidates[f1].append({
+                        'candidate': f2,
+                        'sheets': [sheet],
+                        'score': fuzz.ratio(f1, f2)
+                    })
 
     # TODO Make the code below a separate endpoint for after the headers are matched.
 
@@ -447,11 +462,9 @@ def post_form():
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #     app.logger.info(cells_with_errors['Sheet1'].iloc[:,0:8])
 
-    csv_headers = {}
     json_data   = {}
 
     for sheetName, sheet in records.items():
-        csv_headers[sheetName] = list(sheet.columns)
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
