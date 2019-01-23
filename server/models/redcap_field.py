@@ -3,7 +3,7 @@ import json
 
 
 class RedcapField(object):
-    yesno_dict = {'Yes': 1, 'No': 0, 'Y': 1, 'N': 0, '1': 1, '0': 0, 'True': 1, 'False': 0}
+    yesno_dict = {'Yes': '1', 'No': '0', 'Y': '1', 'N': '0', '1': '1', '0': '0', 'True': '1', 'False': '0'}
 
     def __init__(self, **kwargs):
         self.field_name = kwargs.get('field_name')
