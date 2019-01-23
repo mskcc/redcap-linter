@@ -17,7 +17,7 @@ class TextValidation extends Component {
   saveChanges(e) {
     const {
       jsonData,
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
       projectInfo,
       ddData,
       workingColumn,
@@ -27,7 +27,7 @@ class TextValidation extends Component {
     } = this.props;
     const payload = {
       jsonData,
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
       projectInfo,
       workingColumn,
       workingSheetName,
@@ -40,7 +40,7 @@ class TextValidation extends Component {
   saveAndContinue(e) {
     const {
       jsonData,
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
       workingColumn,
       workingSheetName,
       projectInfo,
@@ -51,7 +51,7 @@ class TextValidation extends Component {
     } = this.props;
     const payload = {
       jsonData,
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
       projectInfo,
       workingColumn,
       workingSheetName,
@@ -64,38 +64,32 @@ class TextValidation extends Component {
 
   render() {
     const {
-      fieldErrors,
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
     } = this.props;
-    const noTextValidation = fieldErrors.noTextValidation || [];
-    let matchedChoices = fieldErrors.matchedChoices || [];
-    matchedChoices = matchedChoices.map(header => ({
-      'Data Field': header,
-      'Permissible Value': header,
-    }));
-    matchedChoices = matchedChoices.concat(Object.keys(dataFieldToChoiceMap).map(dataField => ({
-      'Data Field': dataField,
-      'Permissible Value': dataFieldToChoiceMap[dataField],
-    })));
-    matchedChoices = matchedChoices.concat(noTextValidation.map(dataField => ({
-      'Data Field': dataField,
-      'Permissible Value': '',
-    })));
+    // const noTextValidation = fieldErrors.noTextValidation || [];
+    let correctedValues = [];
+    if (originalToCorrectedValueMap) {
+      correctedValues = Object.keys(originalToCorrectedValueMap).map(originalValue => ({
+        'Original Value': originalValue,
+        'Corrected Value': originalToCorrectedValueMap[originalValue],
+      }));
+    }
+    // correctedValues = correctedValues.concat(noTextValidation.map(dataField => ({
+    //   'Original Value': dataField,
+    //   'Corrected Value': '',
+    // })));
 
     return (
       <div className="TextValidation-container">
         <div className="TextValidation-matchedChoices">
           <div className="TextValidation-title">Corrected Values</div>
           <ResolvedTextErrors
-            tableData={matchedChoices}
+            tableData={correctedValues}
           />
         </div>
         <div className="TextValidation-unmatchedChoices">
           <div className="TextValidation-title">Values in Error</div>
-          <TextErrorResolver
-            fieldsToMatch={fieldErrors.unmatchedChoices}
-            fieldCandidates={fieldErrors.choiceCandidates}
-          />
+          <TextErrorResolver />
         </div>
         <div className="TextValidation-saveAndContinue">
           <button type="button" onClick={this.saveChanges.bind(this)} className="TextValidation-save">Save</button>

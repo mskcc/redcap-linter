@@ -77,17 +77,21 @@ def save_fields():
 def save_choices():
     form  = request.form.to_dict()
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
+    original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     working_column = json.loads(form.get('workingColumn'))
     working_sheet_name = json.loads(form.get('workingSheetName'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
+    transform_map = data_field_to_choice_map
+    if not transform_map:
+        transform_map = original_to_correct_value_map
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
         df.replace('nan', '', inplace=True)
         df = df[csv_headers[sheet]]
         if sheet == working_sheet_name:
-            new_list = [data_field_to_choice_map.get(str(f)) or f for f in list(df[working_column])]
+            new_list = [transform_map.get(str(f)) or f for f in list(df[working_column])]
             df[working_column] = new_list
         records[sheet] = df
 
@@ -135,14 +139,19 @@ def resolve_column():
     working_column = json.loads(form.get('workingColumn') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
+    original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    transform_map = data_field_to_choice_map
+    if not transform_map:
+        transform_map = original_to_correct_value_map
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
         df = df[csv_headers[sheet]]
         df.fillna('',inplace=True)
         if sheet == working_sheet_name:
-            new_list = [data_field_to_choice_map.get(str(f)) or f for f in list(df[working_column])]
+            new_list = [transform_map.get(str(f)) or f for f in list(df[working_column])]
             df[working_column] = new_list
         records[sheet] = df
 
@@ -165,7 +174,10 @@ def resolve_column():
                 next_sheet = True
             elif sheet == working_sheet_name:
                 next_sheet_name = sheet
-                next_column = cols_in_error[cols_in_error.index(working_column)+1]
+                if cols_in_error.index(working_column) == -1:
+                    next_column = cols_in_error[0]
+                else:
+                    next_column = cols_in_error[cols_in_error.index(working_column)+1]
 
     # TODO only remove if errors are resolved
     # if working_sheet_name:
@@ -200,6 +212,10 @@ def resolve_column():
                     })
             field_errors['choiceCandidates'] = choice_candidates
         if dd_field.field_type in ['text', 'notes']:
+            current_list = list(records[next_sheet_name][next_column])
+            validations = linter.validate_text_type(current_list, dd_field)
+            textErrors = [val for val, valid in zip(current_list, validations) if valid is False]
+            field_errors['textErrors']        = textErrors
             field_errors['textValidation']    = dd_field.text_validation
             field_errors['textValidationMin'] = dd_field.text_min
             field_errors['textValidationMax'] = dd_field.text_max
@@ -297,6 +313,10 @@ def post_form():
                     current_list = list(records[sheet][cell.value])
                     current_list = [str(i).rjust(8, '0') if isinstance(i, int) else i for i in current_list]
                     records[sheet][cell.value] = current_list
+                if cell.value in list(records[sheet].columns) and cell.number_format == 'mm-dd-yy':
+                    current_list = list(records[sheet][cell.value])
+                    current_list = [i.strftime('%m/%d/%Y') if isinstance(i, datetime) and not pd.isnull(i) else i for i in current_list]
+                    records[sheet][cell.value] = current_list
             break
     for key in records:
         records.get(key).replace('nan', '', inplace=True)
@@ -317,7 +337,6 @@ def post_form():
         project_info['repeatable_instruments'] = [utils.titleize(instrument) for instrument in ri.split(',')]
 
     redcap_api = RedcapApi(env)
-    app.logger.info(__name__)
 
     data_dictionary = None
     if token:

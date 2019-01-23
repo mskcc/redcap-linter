@@ -33,11 +33,11 @@ class ResolvedTextErrors extends Component {
     } = this.state;
     const columns = [{
       Header: 'Original Value',
-      accessor: 'Corrected Value',
+      accessor: 'Original Value',
       Cell: this.renderCell.bind(this),
     },
     {
-      Header: 'Original Value',
+      Header: 'Corrected Value',
       accessor: 'Corrected Value',
       Cell: this.renderCell.bind(this),
     }];

@@ -13,6 +13,8 @@ import {
   NAVIGATE_TO_FAILURE,
   RESOLVE_COLUMN_SUCCESS,
   RESOLVE_COLUMN_FAILURE,
+  CORRECT_VALUE_SUCCESS,
+  CORRECT_VALUE_FAILURE,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -57,6 +59,24 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload.data);
     }
     case RESOLVE_COLUMN_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case CORRECT_VALUE_SUCCESS: {
+      const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
+      originalToCorrectedValueMap[action.payload.originalValue] = action.payload.correctedValue;
+      const fieldErrors = state.fieldErrors || {};
+      let textErrors = [];
+      if (fieldErrors.textErrors) {
+        textErrors = fieldErrors.textErrors.slice();
+      }
+      const idx = textErrors.indexOf(action.payload.originalValue);
+      if (idx !== -1) textErrors.splice(idx, 1);
+      fieldErrors.textErrors = textErrors;
+      return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
+    }
+    case CORRECT_VALUE_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

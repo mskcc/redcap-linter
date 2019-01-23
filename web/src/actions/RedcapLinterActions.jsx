@@ -22,6 +22,12 @@ export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 export const RESOLVE_COLUMN_SUCCESS = 'RESOLVE_COLUMN_SUCCESS';
 export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
 
+export const REMOVE_VALUE_SUCCESS = 'REMOVE_VALUE_SUCCESS';
+export const REMOVE_VALUE_FAILURE = 'REMOVE_VALUE_FAILURE';
+
+export const CORRECT_VALUE_SUCCESS = 'CORRECT_VALUE_SUCCESS';
+export const CORRECT_VALUE_FAILURE = 'CORRECT_VALUE_FAILURE';
+
 
 export function postFormSuccess(results) {
   return {
@@ -147,7 +153,8 @@ export function saveChoices(payload) {
   return function action(dispatch) {
     const data = new FormData();
     data.append('jsonData', JSON.stringify(payload.jsonData));
-    data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap));
+    data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap || {}));
+    data.append('originalToCorrectedValueMap', JSON.stringify(payload.originalToCorrectedValueMap || {}));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('workingColumn', JSON.stringify(payload.workingColumn));
     data.append('workingSheetName', JSON.stringify(payload.workingSheetName));
@@ -202,6 +209,60 @@ export function matchChoices(dataField, permissibleValue) {
   };
 }
 
+// export function removeValueSuccess(payload) {
+//   return {
+//     type: REMOVE_VALUE_SUCCESS,
+//     payload,
+//   };
+// }
+//
+// export function removeValueFailure(payload) {
+//   return {
+//     type: REMOVE_VALUE_FAILURE,
+//     payload,
+//   };
+// }
+//
+// export function removeValue(originalValue, correctedValue) {
+//   return function action(dispatch) {
+//     const payload = {
+//       originalValue,
+//       correctedValue,
+//     };
+//     if (!originalValue) {
+//       return dispatch(removeValueFailure(payload));
+//     }
+//     return dispatch(removeValueSuccess(payload));
+//   };
+// }
+
+export function correctValueSuccess(payload) {
+  return {
+    type: CORRECT_VALUE_SUCCESS,
+    payload,
+  };
+}
+
+export function correctValueFailure(payload) {
+  return {
+    type: CORRECT_VALUE_FAILURE,
+    payload,
+  };
+}
+
+export function correctValue(originalValue, correctedValue) {
+  return function action(dispatch) {
+    const payload = {
+      originalValue,
+      correctedValue,
+    };
+    if (!originalValue) {
+      return dispatch(correctValueFailure(payload));
+    }
+    return dispatch(correctValueSuccess(payload));
+  };
+}
+
 export function navigateToError(payload) {
   return {
     type: NAVIGATE_TO_FAILURE,
@@ -243,8 +304,9 @@ export function resolveColumn(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap || {}));
-    data.append('nextColumn', payload.nextColumn ? JSON.stringify(payload.nextColumn) : '')
-    data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '')
+    data.append('originalToCorrectedValueMap', JSON.stringify(payload.originalToCorrectedValueMap || {}));
+    data.append('nextColumn', payload.nextColumn ? JSON.stringify(payload.nextColumn) : '');
+    data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
     data.append('workingColumn', payload.workingColumn ? JSON.stringify(payload.workingColumn) : '');
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('columnsInError', JSON.stringify(payload.columnsInError));

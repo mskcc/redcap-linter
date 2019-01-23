@@ -74,12 +74,9 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
         #     print(current_list)
         if redcap_field.field_type in ['text', 'notes']:
             validations = validate_text_type(current_list, redcap_field)
-            formatted_values = []
-            for formatted_value, original_value in zip(validations, current_list):
-                if not formatted_value:
-                    formatted_values.append(original_value)
-                else:
-                    formatted_values.append(formatted_value)
+            formatted_values = current_list
+            if redcap_field.text_validation in ['date_mdy', 'date_dmy', 'date_ymd']:
+                formatted_values = utils.format_dates(current_list, redcap_field.text_validation)
             records[redcap_field.field_name] = formatted_values
             instrument_errors[redcap_field.field_name] = [d is False for d in validations]
         elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:

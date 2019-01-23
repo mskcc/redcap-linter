@@ -4,7 +4,7 @@ import re
 import pandas as pd
 from dateutil import parser
 
-from flask import current_app
+import flask
 
 def write_errors_to_excel(original_records, errors, error_cols):
     writer = pd.ExcelWriter('datafile_errors.xlsx', engine='xlsxwriter')
@@ -64,7 +64,7 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
                 formatted_numbers.append(None)
         elif ((number_min and d < number_min) or
               (number_max and d > number_max)):
-            logging.error("{0} is outside the acceptable range. min: {0}, max: {1}".format(number_min, number_max))
+            logging.error("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, number_min, number_max))
             formatted_numbers.append(False)
         else:
             d = float(d)
@@ -83,6 +83,16 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
 def validate_dates(date_list, date_format, date_min, date_max, required):
     # current_app.logger.info(date_list)
     formatted_dates = []
+
+    if date_min and (isinstance(date_min, str) or isinstance(date_min, unicode)):
+        date_min = parser.parse(date_min)
+    if date_max and (isinstance(date_max, str) or isinstance(date_max, unicode)):
+        date_max = parser.parse(date_max)
+
+    if date_min:
+        date_min = date_min.replace(tzinfo=None)
+    if date_max:
+        date_max = date_max.replace(tzinfo=None)
     for d in date_list:
         if not d or pd.isnull(d):
             if required:
@@ -90,22 +100,34 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
                 formatted_dates.append(False)
             else:
                 formatted_dates.append(None)
-        elif ((date_min and d < parser.parse(date_min)) or
-              (date_max and d > parser.parse(date_max))):
-            logging.warning("{0} is outside the acceptable range. min: {0}, max: {1}".format(date_min, date_max))
+            continue
+        if isinstance(d, str) or isinstance(d, unicode):
+            d = parser.parse(d)
+        d = d.replace(tzinfo=None)
+        if ((date_min and d < date_min) or (date_max and d > date_max)):
+            logging.warning("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, date_min, date_max))
             formatted_dates.append(False)
         else:
-            if isinstance(d, str) or isinstance(d, unicode):
-                d = parser.parse(d)
-            if date_format == 'date_mdy':
-                formatted_dates.append(d.strftime("%m/%d/%Y"))
-            elif date_format == 'date_dmy':
-                formatted_dates.append(d.strftime("%d/%m/%Y"))
-            elif date_format == 'date_ymd':
-                formatted_dates.append(d.strftime("%Y/%m/%d"))
+            formatted_dates.append(True)
 
     return formatted_dates
 
+
+def format_dates(date_list, date_format):
+    formatted_dates = []
+    for d in date_list:
+        if not d or pd.isnull(d):
+            formatted_dates.append(None)
+            continue
+        if isinstance(d, str) or isinstance(d, unicode):
+            d = parser.parse(d)
+        if date_format == 'date_mdy':
+            formatted_dates.append(d.strftime("%m/%d/%Y"))
+        elif date_format == 'date_dmy':
+            formatted_dates.append(d.strftime("%d/%m/%Y"))
+        elif date_format == 'date_ymd':
+            formatted_dates.append(d.strftime("%Y/%m/%d"))
+    return formatted_dates
 
 def parameterize(str):
     # \W = [^a-zA-Z0-9_]

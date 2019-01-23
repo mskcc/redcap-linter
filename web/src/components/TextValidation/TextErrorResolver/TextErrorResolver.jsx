@@ -7,14 +7,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { matchChoices, resolveColumn } from '../../../actions/RedcapLinterActions';
+import { correctValue, resolveColumn } from '../../../actions/RedcapLinterActions';
 
 class TextErrorResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dataFieldToChoiceMap: {},
-      noMatch: '',
+      originalToCorrectedValueMap: {},
+      removedValue: '',
       search: '',
     };
   }
@@ -40,33 +40,33 @@ class TextErrorResolver extends Component {
     resolveColumn(payload);
   }
 
-  handleMatch(fieldToMatch) {
+  handleCorrect(originalValue) {
     const {
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
     } = this.state;
     const {
-      matchChoices,
+      correctValue,
     } = this.props;
-    const match = dataFieldToChoiceMap[fieldToMatch] || '';
-    matchChoices(fieldToMatch, match);
+    const correctedValue = originalToCorrectedValueMap[originalValue] || '';
+    correctValue(originalValue, correctedValue);
   }
 
-  handleNoMatch(fieldToMatch) {
+  handleRemove(originalValue) {
     const {
-      noMatch,
+      removedValue,
     } = this.state;
     const {
-      matchChoices,
+      correctValue,
     } = this.props;
-    matchChoices(fieldToMatch, noMatch);
+    correctValue(originalValue, removedValue);
   }
 
-  handleChange(fieldToMatch, e) {
+  handleChange(originalValue, e) {
     const {
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
     } = this.state;
-    dataFieldToChoiceMap[fieldToMatch] = e.value;
-    this.setState({ dataFieldToChoiceMap });
+    originalToCorrectedValueMap[originalValue] = e.target.value;
+    this.setState({ originalToCorrectedValueMap });
   }
 
   renderCell(cellInfo) {
@@ -78,61 +78,41 @@ class TextErrorResolver extends Component {
     );
   }
 
-  renderCandidates(cellInfo) {
+  renderInput(cellInfo) {
     const {
-      fieldErrors,
-    } = this.props;
-    const choiceCandidates = fieldErrors.choiceCandidates || {};
-    const {
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
     } = this.state;
-    const dataField = cellInfo.original['Data Field'];
-    const value = dataFieldToChoiceMap[dataField];
-    let selectedValue = '';
-    if (value) {
-      selectedValue = {
-        value: value,
-        label: value,
-      };
-    }
-    const fieldToMatch = cellInfo.value;
-    let scores = choiceCandidates[fieldToMatch];
-    scores = scores.sort((a, b) => b.score - a.score);
-    const options = scores.map(score => ({
-      value: score.candidate,
-      label: score.candidate,
-    }));
+    const originalValue = cellInfo.original['Original Value'];
+    const value = originalToCorrectedValueMap[originalValue] || '';
     return (
-      <Select
-        options={options}
-        isSearchable
-        value={selectedValue}
-        onChange={e => this.handleChange(fieldToMatch, e)}
-        placeholder="Select..."
+      <input
+        className="TextErrorResolver-input"
+        type="text"
+        value={value}
+        onChange={e => this.handleChange(originalValue, e)}
       />
     );
   }
 
   renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo.original['Data Field'];
+    const originalValue = cellInfo.original['Original Value'];
     const {
-      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
     } = this.state;
     let disabled = true;
-    if (dataFieldToChoiceMap[fieldToMatch]) {
+    if (originalToCorrectedValueMap[originalValue]) {
       disabled = false;
     }
     return (
       <div className="TextErrorResolver-buttons">
-        <button type="button" disabled={disabled} onClick={e => this.handleMatch(fieldToMatch, e)} className="App-submitButton">Match</button>
-        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="TextErrorResolver-noMatchButton">No Match</button>
+        <button type="button" disabled={disabled} onClick={e => this.handleCorrect(originalValue, e)} className="App-submitButton">Correct</button>
+        <button type="button" onClick={e => this.handleRemove(originalValue, e)} className="TextErrorResolver-noMatchButton">Remove</button>
       </div>
     );
   }
 
   render() {
     const {
-      fieldsToMatch,
       workingSheetName,
       workingColumn,
       columnsInError,
@@ -150,7 +130,7 @@ class TextErrorResolver extends Component {
       Header: 'Corrected Value',
       accessor: 'Corrected Value',
       style: { overflow: 'visible' },
-      Cell: this.renderCandidates.bind(this),
+      Cell: this.renderInput.bind(this),
       // getProps: this.renderErrors.bind(this),
     },
     {
@@ -160,9 +140,9 @@ class TextErrorResolver extends Component {
       Cell: this.renderMatchButton.bind(this),
       // getProps: this.renderErrors.bind(this),
     }];
-    const tableData = fieldsToMatch.map(f => ({
-      'Original Value': f,
-      'Corrected Value': f,
+    const tableData = fieldErrors.textErrors.map(e => ({
+      'Original Value': e,
+      'Corrected Value': e,
       'Action': '',
     }));
 
@@ -215,10 +195,8 @@ class TextErrorResolver extends Component {
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Data Field'].includes(search));
+      data = data.filter(row => row['Original Value'].includes(search));
     }
-
-    // {`${workingSheetName}: ${workingColumn}`}
 
     return (
       <div className="TextErrorResolver-table">
@@ -264,7 +242,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ matchChoices, resolveColumn }, dispatch);
+  return bindActionCreators({ correctValue, resolveColumn }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextErrorResolver);
