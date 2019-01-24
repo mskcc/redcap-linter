@@ -26,7 +26,7 @@ def save_fields():
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     # data field -> REDCap field
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items()}
+    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v}
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
@@ -255,7 +255,7 @@ def download_progress():
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     # data field -> REDCap field
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items()}
+    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'

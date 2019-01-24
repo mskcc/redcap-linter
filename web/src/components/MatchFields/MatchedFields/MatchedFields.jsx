@@ -3,6 +3,7 @@ import './MatchedFields.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
+import CancelIcon from '../../CancelIcon/CancelIcon';
 
 class MatchedFields extends Component {
   constructor(props) {
@@ -12,14 +13,31 @@ class MatchedFields extends Component {
     };
   }
 
+  removeFieldMatch(cellInfo) {
+    console.log(cellInfo);
+  }
+
   renderCell(cellInfo) {
-    let className = '';
+    let className = 'MatchedFields-cell';
     if (!cellInfo.original['Data Field']) {
-      className = 'MatchedFields-cellError';
+      className += ' MatchedFields-cellError';
+    }
+    let cancelButton = '';
+    if (cellInfo.column.Header === 'Data Field' && cellInfo.original['Data Field'] !== cellInfo.original['REDCap Field']) {
+      cancelButton = (
+        <div className="MatchedFields-cancel">
+          <a onClick={e => this.removeFieldMatch(cellInfo, e)}>
+            <CancelIcon />
+          </a>
+        </div>
+      );
     }
     return (
-      <div className={className}>
-        { cellInfo.value }
+      <div className="MatchedFields-cellContainer">
+        <div className={className}>
+          { cellInfo.value }
+        </div>
+        { cancelButton }
       </div>
     );
   }
@@ -34,11 +52,13 @@ class MatchedFields extends Component {
     const columns = [{
       Header: 'REDCap Field',
       accessor: 'REDCap Field',
+      style: { whiteSpace: 'unset' },
       Cell: this.renderCell.bind(this),
     },
     {
       Header: 'Data Field',
       accessor: 'Data Field',
+      style: { whiteSpace: 'unset' },
       Cell: this.renderCell.bind(this),
     }];
     let data = tableData;

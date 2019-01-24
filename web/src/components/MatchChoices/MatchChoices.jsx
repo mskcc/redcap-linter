@@ -67,20 +67,29 @@ class MatchChoices extends Component {
       fieldErrors,
       dataFieldToChoiceMap,
     } = this.props;
-    const noMatchChoices = fieldErrors.noMatchChoices || [];
     let matchedChoices = fieldErrors.matchedChoices || [];
     matchedChoices = matchedChoices.map(header => ({
       'Data Field': header,
       'Permissible Value': header,
     }));
-    matchedChoices = matchedChoices.concat(Object.keys(dataFieldToChoiceMap).map(dataField => ({
-      'Data Field': dataField,
-      'Permissible Value': dataFieldToChoiceMap[dataField],
-    })));
-    matchedChoices = matchedChoices.concat(noMatchChoices.map(dataField => ({
-      'Data Field': dataField,
-      'Permissible Value': '',
-    })));
+    matchedChoices = matchedChoices.concat(Object.keys(dataFieldToChoiceMap).reduce((filtered, dataField) => {
+      if (dataFieldToChoiceMap[dataField]) {
+        filtered.push({
+          'Data Field': dataField,
+          'Permissible Value': dataFieldToChoiceMap[dataField],
+        });
+      }
+      return filtered;
+    }, []));
+    matchedChoices = matchedChoices.concat(Object.keys(dataFieldToChoiceMap).reduce((filtered, dataField) => {
+      if (!dataFieldToChoiceMap[dataField]) {
+        filtered.push({
+          'Data Field': dataField,
+          'Permissible Value': dataFieldToChoiceMap[dataField],
+        });
+      }
+      return filtered;
+    }, []));
 
     return (
       <div className="MatchChoices-container">
@@ -109,13 +118,11 @@ class MatchChoices extends Component {
 MatchChoices.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
-  noMatchChoices: PropTypes.array,
 };
 
 MatchChoices.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
-  noMatchChoices: [],
 };
 
 function mapStateToProps(state) {

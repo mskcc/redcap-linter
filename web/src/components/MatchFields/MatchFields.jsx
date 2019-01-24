@@ -37,7 +37,6 @@ class MatchFields extends Component {
     const {
       matchingHeaders,
       redcapFieldToDataFieldMap,
-      noMatchFields,
       unmatchedRedcapFields,
       fieldCandidates,
     } = this.props;
@@ -45,14 +44,24 @@ class MatchFields extends Component {
       'REDCap Field': header,
       'Data Field': header,
     }));
-    matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).map(redcapField => ({
-      'REDCap Field': redcapField,
-      'Data Field': redcapFieldToDataFieldMap[redcapField],
-    })));
-    matchedFields = matchedFields.concat(noMatchFields.map(redcapField => ({
-      'REDCap Field': redcapField,
-      'Data Field': '',
-    })));
+    matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
+      if (redcapFieldToDataFieldMap[redcapField]) {
+        filtered.push({
+          'REDCap Field': redcapField,
+          'Data Field': redcapFieldToDataFieldMap[redcapField],
+        });
+      }
+      return filtered;
+    }, []));
+    matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
+      if (!redcapFieldToDataFieldMap[redcapField]) {
+        filtered.push({
+          'REDCap Field': redcapField,
+          'Data Field': redcapFieldToDataFieldMap[redcapField],
+        });
+      }
+      return filtered;
+    }, []));
     return (
       <div className="MatchFields-container">
         <div className="MatchFields-matchedFields">
@@ -81,7 +90,6 @@ MatchFields.propTypes = {
   unmatchedRedcapFields: PropTypes.array,
   fieldCandidates: PropTypes.object,
   redcapFieldToDataFieldMap: PropTypes.object,
-  noMatchFields: PropTypes.array,
 };
 
 MatchFields.defaultProps = {
@@ -89,7 +97,6 @@ MatchFields.defaultProps = {
   unmatchedRedcapFields: [],
   fieldCandidates: {},
   redcapFieldToDataFieldMap: {},
-  noMatchFields: [],
 };
 
 function mapStateToProps(state) {

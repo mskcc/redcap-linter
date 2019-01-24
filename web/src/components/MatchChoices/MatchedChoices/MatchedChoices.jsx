@@ -3,6 +3,7 @@ import './MatchedChoices.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
+import CancelIcon from '../../CancelIcon/CancelIcon';
 
 class MatchedChoices extends Component {
   constructor(props) {
@@ -12,14 +13,31 @@ class MatchedChoices extends Component {
     };
   }
 
+  removeChoiceMatch(cellInfo) {
+    console.log(cellInfo);
+  }
+
   renderCell(cellInfo) {
-    let className = '';
+    let className = 'MatchedChoices-cell';
     if (!cellInfo.original['Permissible Value']) {
-      className = 'MatchedChoices-cellError';
+      className += ' MatchedChoices-cellError';
+    }
+    let cancelButton = '';
+    if (cellInfo.column.Header === 'Permissible Value' && cellInfo.original['Permissible Value'] !== cellInfo.original['Data Field']) {
+      cancelButton = (
+        <div className="MatchedChoices-cancel">
+          <a onClick={e => this.removeChoiceMatch(cellInfo, e)}>
+            <CancelIcon />
+          </a>
+        </div>
+      );
     }
     return (
-      <div className={className}>
-        { cellInfo.value }
+      <div className="MatchedChoices-cellContainer">
+        <div className={className}>
+          { cellInfo.value }
+        </div>
+        { cancelButton }
       </div>
     );
   }
@@ -34,11 +52,13 @@ class MatchedChoices extends Component {
     const columns = [{
       Header: 'Data Field',
       accessor: 'Data Field',
+      style: { whiteSpace: 'unset' },
       Cell: this.renderCell.bind(this),
     },
     {
       Header: 'Permissible Value',
       accessor: 'Permissible Value',
+      style: { whiteSpace: 'unset' },
       Cell: this.renderCell.bind(this),
     }];
     let data = tableData;

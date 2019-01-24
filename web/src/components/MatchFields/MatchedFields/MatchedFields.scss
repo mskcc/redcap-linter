@@ -7,3 +7,22 @@
 .MatchedFields-cellError {
 	color: color(red500);
 }
+
+.MatchedFields-cellContainer {
+	display: flex;
+}
+
+.MatchedFields-cell {
+	width: 80%;
+	display: inline-block;
+	overflow-wrap: break-word;
+}
+
+.MatchedFields-cancel {
+	width: 15%;
+	opacity: 0.6;
+	text-align: right;
+	align-self: center;
+	display: inline-block;
+	margin-left: 5px;
+}

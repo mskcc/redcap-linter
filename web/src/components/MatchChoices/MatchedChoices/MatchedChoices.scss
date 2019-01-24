@@ -15,3 +15,22 @@
 .MatchedChoices-searchBar {
   float: left;
 }
+
+.MatchedChoices-cellContainer {
+	display: flex;
+}
+
+.MatchedChoices-cell {
+	width: 80%;
+	display: inline-block;
+	overflow-wrap: break-word;
+}
+
+.MatchedChoices-cancel {
+	width: 15%;
+	opacity: 0.6;
+	text-align: right;
+	align-self: center;
+	display: inline-block;
+	margin-left: 5px;
+}

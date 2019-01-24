@@ -107,11 +107,13 @@ export default function (state = {}, action) {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
       const fieldCandidates = state.fieldCandidates || {};
       delete fieldCandidates[action.payload.redcapField];
-      Object.keys(fieldCandidates).forEach((field) => {
-        const dataFieldCandidate = fieldCandidates[field].find(candidate => candidate.candidate === action.payload.dataField);
-        const idx = fieldCandidates[field].indexOf(dataFieldCandidate);
-        fieldCandidates[field].splice(idx, 1);
-      });
+      if (action.payload.dataField) {
+        Object.keys(fieldCandidates).forEach((field) => {
+          const dataFieldCandidate = fieldCandidates[field].find(candidate => candidate.candidate === action.payload.dataField);
+          const idx = fieldCandidates[field].indexOf(dataFieldCandidate);
+          fieldCandidates[field].splice(idx, 1);
+        });
+      }
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();

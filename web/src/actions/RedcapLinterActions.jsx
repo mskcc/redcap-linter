@@ -96,9 +96,6 @@ export function matchFields(redcapField, dataField) {
       redcapField,
       dataField,
     };
-    if (!dataField) {
-      return dispatch(matchFieldsFailure(payload));
-    }
     return dispatch(matchFieldsSuccess(payload));
   };
 }
@@ -209,9 +206,6 @@ export function matchChoices(dataField, permissibleValue) {
       dataField,
       permissibleValue,
     };
-    if (!dataField) {
-      return dispatch(matchChoicesFailure(payload));
-    }
     return dispatch(matchChoicesSuccess(payload));
   };
 }
