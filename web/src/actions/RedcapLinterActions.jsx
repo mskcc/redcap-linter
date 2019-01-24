@@ -43,6 +43,12 @@ export function postFormError(error) {
   };
 }
 
+export function postFormStart() {
+  return {
+    type: POST_FORM,
+  };
+}
+
 export function postForm(form) {
   return function action(dispatch) {
     const data = new FormData();
@@ -53,6 +59,8 @@ export function postForm(form) {
     data.append('dataDictionary', form.dataDictionary);
     data.append('dataDictionaryName', form.dataDictionaryName);
     data.append('repeatableInstruments', form.repeatableInstruments);
+
+    dispatch(postFormStart());
 
     const request = axios({
       method: 'POST',
@@ -108,7 +116,6 @@ export function saveFieldsError(payload) {
     payload,
   };
 }
-
 
 export function saveFields(payload) {
   return function action(dispatch) {

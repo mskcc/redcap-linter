@@ -1,4 +1,5 @@
 import {
+  POST_FORM,
   POST_FORM_SUCCESS,
   POST_FORM_FAILURE,
   MATCH_FIELDS_SUCCESS,
@@ -19,6 +20,9 @@ import {
 
 export default function (state = {}, action) {
   switch (action.type) {
+    case POST_FORM: {
+      return Object.assign({}, { loading: true });
+    }
     case POST_FORM_SUCCESS: {
       const error = { error: '' };
       if (action.payload.data && action.payload.data.error) {

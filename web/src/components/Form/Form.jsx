@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import '../../App.scss';
 import './Form.scss';
+import 'semantic-ui-css/semantic.min.css';
+import { Loader } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
@@ -11,6 +13,7 @@ class Form extends Component {
     super(props);
     this.state = {
       errorText: '',
+      loading: false,
       form: {
         token: '',
         repeatableInstruments: '',
@@ -21,6 +24,13 @@ class Form extends Component {
         environment: 'test',
       },
     };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if ('loading' in nextProps) {
+      return { loading: nextProps.loading };
+    }
+    return null;
   }
 
   onSubmit() {
@@ -40,7 +50,7 @@ class Form extends Component {
       this.setState({ errorText });
       return;
     }
-    this.setState({ errorText });
+    this.setState({ errorText, loading: true });
     submitForm(form);
   }
 
@@ -64,9 +74,13 @@ class Form extends Component {
   }
 
   render() {
-    const { form } = this.state;
+    const { form, loading } = this.state;
     let { errorText } = this.state;
     const { error, projectInfo } = this.props;
+    let loader = '';
+    if (loading) {
+      loader = <Loader active content="Loading" />;
+    }
     let project = '';
     if (error) {
       errorText = `<ul><li>${error}</li></ul>`;
@@ -102,7 +116,7 @@ class Form extends Component {
               checked={form.environment === 'development'}
               onChange={this.handleOnChangeForm.bind(this, 'environment')}
             />
-              Development
+            Development
           </label>
           <label className="App-fieldsetRadioLabel" htmlFor="test">
             <input
@@ -113,7 +127,7 @@ class Form extends Component {
               checked={form.environment === 'test'}
               onChange={this.handleOnChangeForm.bind(this, 'environment')}
             />
-             Test
+            Test
           </label>
           <label className="App-fieldsetRadioLabel" htmlFor="production">
             <input
@@ -189,6 +203,7 @@ class Form extends Component {
         <div className="Form-submitButtonDiv">
           <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">Submit</button>
         </div>
+        { loader }
         <div
           className="Form-errorText"
           dangerouslySetInnerHTML={{ __html: errorText }}

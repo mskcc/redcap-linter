@@ -19,6 +19,9 @@ class Breadcrumbs extends Component {
     if (nextProps.new) {
       return { currentPage: 'matchFields' };
     }
+    if (nextProps.loading) {
+      return { currentPage: 'intro' };
+    }
     const { page } = nextProps;
     const { currentPage } = prevState;
     if (pages.indexOf(page) > pages.indexOf(currentPage)) {
@@ -49,10 +52,10 @@ class Breadcrumbs extends Component {
     const downloadButton = (
       <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
         <form id="downloadForm" action="http://localhost:5000/download_progress" className="Breadcrumbs-hidden" method="POST">
-          <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />
+          <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
           <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
-          <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders)} />
-          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
+          <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
+          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
         <button type="submit" form="downloadForm" className="Breadcrumbs-download" value="Submit">
           <div className="Breadcrumbs-downloadIcon">

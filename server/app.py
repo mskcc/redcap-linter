@@ -202,12 +202,13 @@ def resolve_column():
             field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
             choice_candidates = {}
             for f1 in field_errors['unmatchedChoices']:
-                for f2 in dd_field.choices_dict.keys():
+                for f2 in dd_field.choices_dict:
                     if not choice_candidates.get(f1):
                         choice_candidates[f1] = []
                     # TODO include form name in this if column name repeats?
                     choice_candidates[f1].append({
                         'candidate': f2,
+                        'choiceValue': dd_field.choices_dict[f2],
                         'score': fuzz.ratio(f1, f2)
                     })
             field_errors['choiceCandidates'] = choice_candidates
@@ -383,9 +384,8 @@ def post_form():
     fields_not_in_redcap = {}
 
     for sheet_name, sheet in records.items():
-        csv_headers[sheet_name] = list(sheet.columns)
-        normalized_list = utils.parameterize_list(list(sheet.columns))
-        normalized_list = [item for item in normalized_list if 'unnamed' not in item]
+        csv_headers[sheet_name] = utils.parameterize_list(list(sheet.columns))
+        normalized_list = [item for item in csv_headers[sheet_name] if 'unnamed' not in item]
         fields_not_in_redcap[sheet_name] = [item for item in normalized_list if item not in all_field_names]
 
     all_csv_headers = list(set(all_csv_headers))
@@ -464,9 +464,9 @@ def post_form():
 
     json_data   = {}
 
-    for sheetName, sheet in records.items():
-        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
-        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+    for sheet_name, sheet in records.items():
+        json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
     results = {
         'csvHeaders':              csv_headers,
@@ -484,7 +484,8 @@ def post_form():
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'dataFileName':            datafile_name,
         'page':                    'matchFields',
-        'new':                     True
+        'new':                     True,
+        'loading':                 False,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

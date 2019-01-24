@@ -100,7 +100,7 @@ class ChoiceMatcher extends Component {
     scores = scores.sort((a, b) => b.score - a.score);
     const options = scores.map(score => ({
       value: score.candidate,
-      label: score.candidate,
+      label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.choiceValue}</span></span>,
     }));
     return (
       <Select
