@@ -174,7 +174,7 @@ def resolve_column():
                 next_sheet = True
             elif sheet == working_sheet_name:
                 next_sheet_name = sheet
-                if working_column not in cols_in_error == -1:
+                if working_column not in cols_in_error:
                     next_column = cols_in_error[0]
                 else:
                     next_column = cols_in_error[cols_in_error.index(working_column)+1]
