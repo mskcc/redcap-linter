@@ -87,19 +87,19 @@ class Form extends Component {
     } else {
       project += '<ul>';
       if (projectInfo.project_id) {
-        project += `<li>Project ID: ${projectInfo.project_id}</li>`;
+        project += `<li><b>Project ID</b>: ${projectInfo.project_id}</li>`;
       }
       if (projectInfo.project_title) {
-        project += `<li>Project Title: ${projectInfo.project_title}</li>`;
+        project += `<li><b>Project Title</b>: ${projectInfo.project_title}</li>`;
       }
       if (projectInfo.repeatable_instruments && projectInfo.repeatable_instruments.length > 0) {
-        project += `<li>Repeatable Instruments: ${projectInfo.repeatable_instruments.join(', ')}</li>`;
+        project += `<li><b>Repeatable Instruments</b>: ${projectInfo.repeatable_instruments.join(', ')}</li>`;
       }
       if (projectInfo.custom_record_label) {
-        project += `<li>Custom Record Label: ${projectInfo.custom_record_label}</li>`;
+        project += `<li><b>Custom Record Label</b>: ${projectInfo.custom_record_label}</li>`;
       }
       if (projectInfo.secondary_unique_field) {
-        project += `<li>Secondary Unique Field: ${projectInfo.secondary_unique_field}</li>`;
+        project += `<li><b>Secondary Unique Field</b>: ${projectInfo.secondary_unique_field}</li>`;
       }
       project += '</ul>';
     }
