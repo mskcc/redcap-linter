@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './ChoiceMatcher.scss';
+import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -223,7 +224,7 @@ class ChoiceMatcher extends Component {
       <div className="ChoiceMatcher-table">
         <div className="ChoiceMatcher-tableTitle">
           <span className="ChoiceMatcher-searchBar">
-            Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
           <span className="ChoiceMatcher-tableLabel">{ fieldInErrorSelector }</span>
         </div>

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './MatchedChoices.scss';
+import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -75,7 +76,7 @@ class MatchedChoices extends Component {
       <div className="MatchedChoices-table">
         <div className="MatchedChoices-tableTitle">
             <span className="MatchedChoices-searchBar">
-          Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
         </div>
         <ReactTable

@@ -2,19 +2,18 @@
   width: 75%;
 	display: inline-block;
 	float: right;
-	margin-right: 15px;
 }
 
 .MatchFields-matchedFields {
   display: inline-block;
-  width: 32%;
+  width: 35%;
   padding-left: 10px;
 }
 
 .MatchFields-unmatchedFields {
   display: inline-block;
-  width: 63%;
-  padding-left: 10px;
+  width: 60%;
+  padding-left: 1%;
 }
 
 .MatchFields-title {
@@ -25,6 +24,6 @@
 
 .MatchFields-saveAndContinue {
   padding-top: 15px;
-  padding-right: 25px;
+  padding-right: 5%;
   float: right;
 }

@@ -29,7 +29,16 @@
   padding: 7px 10px;
   width: 95%;
   border: 1px solid #dbd7d3;
-  border-radius: 10px;
+  border-radius: 5px;
+}
+
+.App-tableSearchBar {
+  font-size: 12px;
+  line-height: 12px;
+  margin: 2px;
+  padding: 5px 5px;
+  border: 1px solid #dbd7d3;
+  border-radius: 5px;
 }
 
 .App-fieldsetLabel {

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './MatchedFields.scss';
+import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -73,7 +74,7 @@ class MatchedFields extends Component {
     }
     return (
       <div className="MatchedFields-table">
-        Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+        Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
         <ReactTable
           data={data}
           className="-striped -highlight"

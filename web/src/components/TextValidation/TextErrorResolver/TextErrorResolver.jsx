@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './TextErrorResolver.scss';
+import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -202,7 +203,7 @@ class TextErrorResolver extends Component {
       <div className="TextErrorResolver-table">
         <div className="TextErrorResolver-tableTitle">
           <div className="TextErrorResolver-searchBar">
-            Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
           <div className="TextErrorResolver-textValidation">
             <b>Validation</b>: { fieldErrors.textValidation }

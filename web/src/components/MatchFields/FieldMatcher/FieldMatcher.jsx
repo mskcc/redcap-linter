@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './FieldMatcher.scss';
+import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -168,7 +169,7 @@ class FieldMatcher extends Component {
 
     return (
       <div className="FieldMatcher-table">
-        Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+        Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
         <ReactTable
           data={data}
           className="-striped -highlight"
