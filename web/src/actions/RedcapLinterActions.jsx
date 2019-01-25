@@ -25,6 +25,9 @@ export const SAVE_CHOICES_FAILURE = 'SAVE_CHOICES_FAILURE';
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
 export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
+export const FILTER_TABLE_SUCCESS = 'FILTER_TABLE_SUCCESS';
+export const FILTER_TABLE_FAILURE = 'FILTER_TABLE_FAILURE';
+
 export const RESOLVE_COLUMN_SUCCESS = 'RESOLVE_COLUMN_SUCCESS';
 export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
 
@@ -209,13 +212,6 @@ export function saveChoices(payload) {
   };
 }
 
-export function navigateToSuccess(payload) {
-  return {
-    type: NAVIGATE_TO_SUCCESS,
-    payload,
-  };
-}
-
 export function matchChoicesSuccess(payload) {
   return {
     type: MATCH_CHOICES_SUCCESS,
@@ -318,6 +314,13 @@ export function correctValue(originalValue, correctedValue) {
   };
 }
 
+export function navigateToSuccess(payload) {
+  return {
+    type: NAVIGATE_TO_SUCCESS,
+    payload,
+  };
+}
+
 export function navigateToError(payload) {
   return {
     type: NAVIGATE_TO_FAILURE,
@@ -334,6 +337,29 @@ export function navigateTo(page) {
       return dispatch(navigateToError(payload));
     }
     return dispatch(navigateToSuccess(payload));
+  };
+}
+
+export function filterTableSuccess(payload) {
+  return {
+    type: FILTER_TABLE_SUCCESS,
+    payload,
+  };
+}
+
+export function filterTableError(payload) {
+  return {
+    type: FILTER_TABLE_FAILURE,
+    payload,
+  };
+}
+
+export function filterTable(filter) {
+  return function action(dispatch) {
+    const payload = {
+      filter,
+    };
+    return dispatch(filterTableSuccess(payload));
   };
 }
 

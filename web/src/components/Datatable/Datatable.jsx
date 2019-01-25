@@ -82,6 +82,8 @@ class Datatable extends Component {
       headers,
       tableData,
       tableErrors,
+      filterColumn,
+      tableFilter,
       tableFieldsNotInRedcap,
       sheetInError,
     } = this.props;
@@ -131,6 +133,24 @@ class Datatable extends Component {
 
     let data = tableData;
     let filterErrors = tableErrors;
+
+    if (tableFilter && filterColumn) {
+      console.log(tableFilter);
+      console.log(filterColumn);
+      data = data.filter((row) => {
+        if (row[filterColumn] && row[filterColumn].toString() === tableFilter.toString()) {
+          return true;
+        }
+        return false;
+      });
+      filterErrors = filterErrors.filter((row) => {
+        if (row[filterColumn] && row[filterColumn].toString() === tableFilter.toString()) {
+          return true;
+        }
+        return false;
+      });
+    }
+
     if (search) {
       data = data.filter((row) => {
         for (let i = 0; i < headers.length; i++) {

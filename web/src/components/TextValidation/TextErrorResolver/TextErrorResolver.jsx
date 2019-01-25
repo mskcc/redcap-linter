@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { correctValue, resolveColumn } from '../../../actions/RedcapLinterActions';
+import { correctValue, resolveColumn, filterTable } from '../../../actions/RedcapLinterActions';
 
 class TextErrorResolver extends Component {
   constructor(props) {
@@ -62,6 +62,20 @@ class TextErrorResolver extends Component {
     correctValue(originalValue, removedValue);
   }
 
+  onBlur(e) {
+    const {
+      filterTable,
+    } = this.props;
+    filterTable('');
+  }
+
+  onFocus(originalValue, e) {
+    const {
+      filterTable,
+    } = this.props;
+    filterTable(originalValue);
+  }
+
   handleChange(originalValue, e) {
     const {
       originalToCorrectedValueMap,
@@ -90,6 +104,8 @@ class TextErrorResolver extends Component {
         className="TextErrorResolver-input"
         type="text"
         value={value}
+        onBlur={e => this.onBlur(e)}
+        onFocus={e => this.onFocus(originalValue, e)}
         onChange={e => this.handleChange(originalValue, e)}
       />
     );
@@ -243,7 +259,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ correctValue, resolveColumn }, dispatch);
+  return bindActionCreators({ correctValue, resolveColumn, filterTable }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextErrorResolver);

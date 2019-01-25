@@ -24,12 +24,26 @@ class TabbedDatatable extends Component {
       recordFieldsNotInRedcap,
       allErrors,
       sheetsNotInRedcap,
+      workingSheetName,
+      workingColumn,
+      filter,
       formNames,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const panes = [];
+    let activeIdx = 0;
+    if (sheets.indexOf(workingSheetName) > 0) {
+      activeIdx = sheets.indexOf(workingSheetName);
+    }
     if (sheets && sheets.length > 0) {
-      sheets.forEach((sheetName) => {
+      for (let i = 0; i < sheets.length; i++) {
+        const sheetName = sheets[i];
+        let tableFilter = '';
+        let filterColumn = '';
+        if (i === activeIdx && filter) {
+          tableFilter = filter;
+          filterColumn = workingColumn;
+        }
         let tab = sheetName;
         let tData = [];
         const tHeaders = csvHeaders[sheetName];
@@ -98,13 +112,15 @@ class TabbedDatatable extends Component {
               sheetName={`${sheetName}`}
               headers={tHeaders}
               tableData={tData}
+              tableFilter={tableFilter}
+              filterColumn={filterColumn}
               tableErrors={tableErrors}
               tableFieldsNotInRedcap={tableFieldsNotInRedcap}
               sheetInError={sheetInError}
             />
           ),
         });
-      });
+      }
       panes.push({
         menuItem: 'Data-Dictionary',
         render: () => (
@@ -138,7 +154,7 @@ class TabbedDatatable extends Component {
         ),
       });
     }
-    return <Tab className="TabbedDatatable-tabs" menu={{ secondary: true, pointing: true }} panes={panes} />;
+    return <Tab className="TabbedDatatable-tabs" activeIndex={activeIdx} menu={{ secondary: true, pointing: true }} panes={panes} />;
   }
 }
 

@@ -16,6 +16,8 @@ import {
   SAVE_CHOICES_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
+  FILTER_TABLE_SUCCESS,
+  FILTER_TABLE_FAILURE,
   RESOLVE_COLUMN_SUCCESS,
   RESOLVE_COLUMN_FAILURE,
   CORRECT_VALUE_SUCCESS,
@@ -51,6 +53,14 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload.data);
     }
     case SAVE_CHOICES_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case FILTER_TABLE_SUCCESS: {
+      return Object.assign({}, state, action.payload);
+    }
+    case FILTER_TABLE_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });
