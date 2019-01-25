@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './Datatable.scss';
+import '../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
@@ -151,7 +152,7 @@ class Datatable extends Component {
     return (
       <div className="Datatable-table">
         <div className="Datatable-searchBar">
-          Search: <input value={this.state.search} onChange={e => this.setState({search: e.target.value, filterErrors})} />
+          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value, filterErrors})} />
         </div>
         <ReactTable
           data={data}
