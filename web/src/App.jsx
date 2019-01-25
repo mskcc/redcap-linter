@@ -16,11 +16,14 @@ const { store } = configureStore(initialState);
 function App() {
   return (
     <div className="App">
-      <Provider store={store}>
-        <Header />
-        <Form />
-        <Linter />
-      </Provider>
+      <div className="App-content">
+        <Provider store={store}>
+          <Header />
+          <Form />
+          <Linter />
+        </Provider>
+      </div>
+      <div className="App-footer"></div>
     </div>
   );
 }

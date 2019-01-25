@@ -5,6 +5,9 @@
 .App {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 10pt;
+  min-height: 100vh;
+  padding-bottom: 30px;
+  position: relative;
 }
 
 .App-fieldsetColumn {
@@ -72,4 +75,20 @@
 .App-submitButton:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.App-content {
+  width: 100%;
+  min-height: 100%;
+  padding-bottom: 30px;
+  overflow: auto;
+}
+
+.App-footer {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  background-color: #efefef;
+  height: 30px;
 }
