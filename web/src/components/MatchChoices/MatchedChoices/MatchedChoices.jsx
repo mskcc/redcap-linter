@@ -3,7 +3,10 @@ import './MatchedChoices.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import CancelIcon from '../../CancelIcon/CancelIcon';
+import { removeChoiceMatch } from '../../../actions/RedcapLinterActions';
 
 class MatchedChoices extends Component {
   constructor(props) {
@@ -14,7 +17,10 @@ class MatchedChoices extends Component {
   }
 
   removeChoiceMatch(cellInfo) {
-    console.log(cellInfo);
+    const {
+      removeChoiceMatch,
+    } = this.props;
+    removeChoiceMatch(cellInfo.original['Data Field'], cellInfo.original['Permissible Value']);
   }
 
   renderCell(cellInfo) {
@@ -92,4 +98,13 @@ MatchedChoices.defaultProps = {
   tableData: [],
 };
 
-export default MatchedChoices;
+
+function mapStateToProps(state) {
+  return state;
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ removeChoiceMatch }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(MatchedChoices);

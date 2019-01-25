@@ -7,11 +7,17 @@ export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 export const MATCH_FIELDS_SUCCESS = 'MATCH_FIELDS_SUCCESS';
 export const MATCH_FIELDS_FAILURE = 'MATCH_FIELDS_FAILURE';
 
+export const REMOVE_FIELD_MATCH_SUCCESS = 'REMOVE_FIELD_MATCH_SUCCESS';
+export const REMOVE_FIELD_MATCH_FAILURE = 'REMOVE_FIELD_MATCH_FAILURE';
+
 export const SAVE_FIELDS_SUCCESS = 'SAVE_FIELDS_SUCCESS';
 export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
 export const MATCH_CHOICES_SUCCESS = 'MATCH_CHOICES_SUCCESS';
 export const MATCH_CHOICES_FAILURE = 'MATCH_CHOICES_FAILURE';
+
+export const REMOVE_CHOICE_MATCH_SUCCESS = 'REMOVE_CHOICE_MATCH_SUCCESS';
+export const REMOVE_CHOICE_MATCH_FAILURE = 'REMOVE_CHOICE_MATCH_FAILURE';
 
 export const SAVE_CHOICES_SUCCESS = 'SAVE_CHOICES_SUCCESS';
 export const SAVE_CHOICES_FAILURE = 'SAVE_CHOICES_FAILURE';
@@ -97,6 +103,30 @@ export function matchFields(redcapField, dataField) {
       dataField,
     };
     return dispatch(matchFieldsSuccess(payload));
+  };
+}
+
+export function removeFieldMatchSuccess(payload) {
+  return {
+    type: REMOVE_FIELD_MATCH_SUCCESS,
+    payload,
+  };
+}
+
+export function removeFieldMatchFailure(payload) {
+  return {
+    type: REMOVE_FIELD_MATCH_FAILURE,
+    payload,
+  };
+}
+
+export function removeFieldMatch(redcapField, dataField) {
+  return function action(dispatch) {
+    const payload = {
+      redcapField,
+      dataField,
+    };
+    return dispatch(removeFieldMatchSuccess(payload));
   };
 }
 
@@ -207,6 +237,30 @@ export function matchChoices(dataField, permissibleValue) {
       permissibleValue,
     };
     return dispatch(matchChoicesSuccess(payload));
+  };
+}
+
+export function removeChoiceMatchSuccess(payload) {
+  return {
+    type: REMOVE_CHOICE_MATCH_SUCCESS,
+    payload,
+  };
+}
+
+export function removeChoiceMatchFailure(payload) {
+  return {
+    type: REMOVE_CHOICE_MATCH_FAILURE,
+    payload,
+  };
+}
+
+export function removeChoiceMatch(dataField, permissibleValue) {
+  return function action(dispatch) {
+    const payload = {
+      dataField,
+      permissibleValue,
+    };
+    return dispatch(removeChoiceMatchSuccess(payload));
   };
 }
 

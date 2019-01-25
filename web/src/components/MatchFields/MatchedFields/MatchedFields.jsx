@@ -3,7 +3,10 @@ import './MatchedFields.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import CancelIcon from '../../CancelIcon/CancelIcon';
+import { removeFieldMatch } from '../../../actions/RedcapLinterActions';
 
 class MatchedFields extends Component {
   constructor(props) {
@@ -14,7 +17,10 @@ class MatchedFields extends Component {
   }
 
   removeFieldMatch(cellInfo) {
-    console.log(cellInfo);
+    const {
+      removeFieldMatch,
+    } = this.props;
+    removeFieldMatch(cellInfo.original['REDCap Field'], cellInfo.original['Data Field']);
   }
 
   renderCell(cellInfo) {
@@ -88,4 +94,12 @@ MatchedFields.defaultProps = {
   tableData: [],
 };
 
-export default MatchedFields;
+function mapStateToProps(state) {
+  return state;
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ removeFieldMatch }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(MatchedFields);

@@ -76,10 +76,16 @@ class FieldMatcher extends Component {
     const fieldToMatch = cellInfo.value;
     let scores = fieldCandidates[fieldToMatch];
     scores = scores.sort((a, b) => b.score - a.score);
-    const options = scores.map(score => ({
-      value: score.candidate,
-      label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.sheets.toString()}</span></span>,
-    }));
+    const mappedDataFieldValues = Object.values(redcapFieldToDataFieldMap);
+    const options = scores.reduce((filtered, score) => {
+      if (!mappedDataFieldValues.includes(score.candidate)) {
+        filtered.push({
+          value: score.candidate,
+          label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.sheets.toString()}</span></span>,
+        });
+      }
+      return filtered;
+    }, []);
 
     const longestOption = scores.map(score => score.candidate).sort((a, b) => b.length - a.length)[0];
     const selectWidth = 8 * longestOption.length + 60;

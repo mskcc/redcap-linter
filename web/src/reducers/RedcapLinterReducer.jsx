@@ -4,8 +4,12 @@ import {
   POST_FORM_FAILURE,
   MATCH_FIELDS_SUCCESS,
   MATCH_FIELDS_FAILURE,
+  REMOVE_FIELD_MATCH_SUCCESS,
+  REMOVE_FIELD_MATCH_FAILURE,
   MATCH_CHOICES_SUCCESS,
   MATCH_CHOICES_FAILURE,
+  REMOVE_CHOICE_MATCH_SUCCESS,
+  REMOVE_CHOICE_MATCH_FAILURE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
   SAVE_CHOICES_SUCCESS,
@@ -103,17 +107,25 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
+    case REMOVE_CHOICE_MATCH_SUCCESS: {
+      const dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
+      delete dataFieldToChoiceMap[action.payload.dataField];
+      const fieldErrors = state.fieldErrors || {};
+      let unmatchedChoices = [];
+      if (fieldErrors.unmatchedChoices) {
+        unmatchedChoices = fieldErrors.unmatchedChoices.slice();
+      }
+      unmatchedChoices.unshift(action.payload.dataField);
+      fieldErrors.unmatchedChoices = unmatchedChoices;
+      return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
+    }
+    case REMOVE_CHOICE_MATCH_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
     case MATCH_FIELDS_SUCCESS: {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
-      const fieldCandidates = state.fieldCandidates || {};
-      delete fieldCandidates[action.payload.redcapField];
-      if (action.payload.dataField) {
-        Object.keys(fieldCandidates).forEach((field) => {
-          const dataFieldCandidate = fieldCandidates[field].find(candidate => candidate.candidate === action.payload.dataField);
-          const idx = fieldCandidates[field].indexOf(dataFieldCandidate);
-          fieldCandidates[field].splice(idx, 1);
-        });
-      }
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
@@ -121,7 +133,7 @@ export default function (state = {}, action) {
       const idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
       if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
       redcapFieldToDataFieldMap[action.payload.redcapField] = action.payload.dataField;
-      return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields, fieldCandidates });
+      return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields });
     }
     case MATCH_FIELDS_FAILURE: {
       let noMatchFields = [];
@@ -136,6 +148,21 @@ export default function (state = {}, action) {
       const idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
       if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
       return Object.assign({}, state, { noMatchFields, unmatchedRedcapFields });
+    }
+    case REMOVE_FIELD_MATCH_SUCCESS: {
+      const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
+      let unmatchedRedcapFields = [];
+      if (state.unmatchedRedcapFields) {
+        unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
+      }
+      unmatchedRedcapFields.unshift(action.payload.redcapField);
+      delete redcapFieldToDataFieldMap[action.payload.redcapField];
+      return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields });
+    }
+    case REMOVE_FIELD_MATCH_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
     }
     default: {
       return state;
