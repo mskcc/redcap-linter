@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {
-  Tab,
-  Tabs,
-  TabList,
-  TabPanel,
-} from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
+import { Tab } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
 import Datatable from '../Datatable/Datatable';
@@ -33,23 +27,21 @@ class TabbedDatatable extends Component {
       formNames,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
-    const tabs = [];
-    const tabPanels = [];
-    let tableData = [];
-    let tableErrors = [];
-    let tableFieldsNotInRedcap = [];
-    let headers = [];
+    const panes = [];
     if (sheets && sheets.length > 0) {
       sheets.forEach((sheetName) => {
         let tab = sheetName;
-        headers = csvHeaders[sheetName];
+        let tData = [];
+        const tHeaders = csvHeaders[sheetName];
         if (jsonData && jsonData[sheetName]) {
           // TODO Find a better way to do this!!!
-          tableData = jsonData[sheetName];
+          tData = jsonData[sheetName];
         }
+        let tableErrors = [];
         if (cellsWithErrors && cellsWithErrors[sheetName]) {
           tableErrors = cellsWithErrors[sheetName];
         }
+        let tableFieldsNotInRedcap = [];
         if (recordFieldsNotInRedcap && recordFieldsNotInRedcap[sheetName]) {
           tableFieldsNotInRedcap = recordFieldsNotInRedcap[sheetName];
         }
@@ -99,35 +91,35 @@ class TabbedDatatable extends Component {
           tabStyle.color = '#E5153E';
           tabStyle.minWidth = `${tabWidth}px`;
         }
-        tabs.push(<Tab style={tabStyle} key={`${sheetName}`}>{tab}</Tab>);
-        tabPanels.push(
-          <TabPanel key={`${sheetName}`}>
+        panes.push({
+          menuItem: sheetName,
+          render: () => (
             <Datatable
               sheetName={`${sheetName}`}
-              headers={headers}
-              tableData={tableData}
+              headers={tHeaders}
+              tableData={tData}
               tableErrors={tableErrors}
               tableFieldsNotInRedcap={tableFieldsNotInRedcap}
               sheetInError={sheetInError}
             />
-          </TabPanel>,
-        );
+          ),
+        });
       });
-      tabs.push(<Tab key="Data-Dictionary">Data-Dictionary</Tab>);
-      tabPanels.push(
-        <TabPanel key="Data-Dictionary">
+      panes.push({
+        menuItem: 'Data-Dictionary',
+        render: () => (
           <Datatable
             sheetName="Data-Dictionary"
             headers={ddHeaders}
             tableData={ddData}
             editable={false}
           />
-        </TabPanel>,
-      );
+        ),
+      });
       if (allErrors.length > 0) {
-        tabs.push(<Tab key="All-Errors">Errors</Tab>);
-        tabPanels.push(
-          <TabPanel key="All-Errors">
+        panes.push({
+          menuItem: 'Errors',
+          render: () => (
             <Datatable
               sheetName="All-Errors"
               headers={['Error']}
@@ -135,26 +127,18 @@ class TabbedDatatable extends Component {
               sheetInError
               editable={false}
             />
-          </TabPanel>,
-        );
+          ),
+        });
       }
     } else {
-      tabs.push(<Tab key="sheet1">Sheet1</Tab>);
-      tabPanels.push(
-        <TabPanel key="sheet1">
-          <Datatable headers={headers} tableData={tableData} />
-        </TabPanel>,
-      );
+      panes.push({
+        menuItem: 'Sheet1',
+        render: () => (
+          <Datatable headers={[]} tableData={[]} />
+        ),
+      });
     }
-    return (
-      <Tabs className="TabbedDatatable-tabs">
-        <TabList className="TabbedDatatable-tabList">
-          {tabs}
-        </TabList>
-
-        {tabPanels}
-      </Tabs>
-    );
+    return <Tab className="TabbedDatatable-tabs" menu={{ secondary: true, pointing: true }} panes={panes} />;
   }
 }
 
