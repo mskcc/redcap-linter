@@ -113,30 +113,10 @@ class Datatable extends Component {
       });
     }
 
-    // columns = [{
-    //   Header: 'Name',
-    //   accessor: 'name',
-    //   Cell: this.renderEditable.bind(this)
-    // }, {
-    //   Header: 'Age',
-    //   accessor: 'age',
-    //   Cell: this.renderEditable.bind(this)
-    // }, {
-    //   Header: 'Friend Name',
-    //   accessor: 'friend.name',
-    //   Cell: this.renderEditable.bind(this)
-    // }, {
-    //   Header: props => <span>Friend Age</span>,
-    //   accessor: 'friend.age',
-    //   Cell: this.renderEditable.bind(this)
-    // }]
-
     let data = tableData;
     let filterErrors = tableErrors;
 
     if (tableFilter && filterColumn) {
-      console.log(tableFilter);
-      console.log(filterColumn);
       data = data.filter((row) => {
         if (row[filterColumn] && row[filterColumn].toString() === tableFilter.toString()) {
           return true;

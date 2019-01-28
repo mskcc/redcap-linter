@@ -11,7 +11,28 @@ import { postForm } from '../../actions/RedcapLinterActions';
 class TabbedDatatable extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {
+      activeIndex: 0,
+    };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const prevSheetName = prevState.workingSheetName;
+    const prevColumn = prevState.workingColumn;
+    const {
+      csvHeaders,
+      workingSheetName,
+      workingColumn,
+    } = nextProps;
+    const sheets = Object.keys(csvHeaders);
+    if (!prevSheetName || (prevSheetName !== workingSheetName || prevColumn !== workingColumn)) {
+      return { activeIndex: sheets.indexOf(workingSheetName), workingSheetName, workingColumn };
+    }
+    return { activeIndex: prevState.activeIndex };
+  }
+
+  handleTabChange(e, { activeIndex }) {
+    this.setState({ activeIndex });
   }
 
   render() {
@@ -31,16 +52,16 @@ class TabbedDatatable extends Component {
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const panes = [];
-    let activeIdx = 0;
-    if (sheets.indexOf(workingSheetName) > 0) {
-      activeIdx = sheets.indexOf(workingSheetName);
-    }
+    const {
+      activeIndex,
+    } = this.state;
+    const workingIndex = sheets.indexOf(workingSheetName);
     if (sheets && sheets.length > 0) {
       for (let i = 0; i < sheets.length; i++) {
         const sheetName = sheets[i];
         let tableFilter = '';
         let filterColumn = '';
-        if (i === activeIdx && filter) {
+        if (i === workingIndex && filter) {
           tableFilter = filter;
           filterColumn = workingColumn;
         }
@@ -154,7 +175,14 @@ class TabbedDatatable extends Component {
         ),
       });
     }
-    return <Tab className="TabbedDatatable-tabs" activeIndex={activeIdx} menu={{ secondary: true, pointing: true }} panes={panes} />;
+    const tabProps = {
+      className: "TabbedDatatable-tabs",
+      activeIndex: activeIndex,
+      menu: { secondary: true, pointing: true },
+      panes: panes,
+      onTabChange: this.handleTabChange.bind(this)
+    };
+    return <Tab { ...tabProps }  />;
   }
 }
 
