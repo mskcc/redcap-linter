@@ -42,7 +42,10 @@ def save_fields():
 
     project_info = json.loads(form.get('projectInfo'))
 
-    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    records_missing_required_data = datafile_errors['records_missing_required_data']
+    linting_errors = datafile_errors['linting_errors']
     columns_in_error = {}
     for inst in cells_with_errors:
         instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
@@ -62,6 +65,7 @@ def save_fields():
     results = {
         'csvHeaders':              csv_headers,
         'jsonData':                json_data,
+        'recordsMissingRequiredData': records_missing_required_data,
         'cellsWithErrors':         cells_with_errors,
         'allErrors':               all_errors,
         'columnsInError':          columns_in_error,
@@ -100,7 +104,9 @@ def save_choices():
     project_info = json.loads(form.get('projectInfo'))
 
     # TODO Lint specific column
-    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    linting_errors = datafile_errors['linting_errors']
     columns_in_error = {}
     for inst in cells_with_errors:
         instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
@@ -123,6 +129,56 @@ def save_choices():
         'cellsWithErrors':         cells_with_errors,
         'allErrors':               all_errors,
         'columnsInError':          columns_in_error,
+    }
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/save_row', methods=['GET', 'POST', 'OPTIONS'])
+def save_row():
+    form  = request.form.to_dict()
+    field_to_value_map = json.loads(form.get('fieldToValueMap'))
+    csv_headers = json.loads(form.get('csvHeaders'))
+    working_row = json.loads(form.get('workingRow'))
+    working_sheet_name = json.loads(form.get('workingSheetName'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df = df[csv_headers[sheet]]
+        df.fillna('',inplace=True)
+        if sheet == working_sheet_name:
+            for field in field_to_value_map:
+                df.iloc[working_row, df.columns.get_loc(field)] = field_to_value_map[field]
+        records[sheet] = df
+
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    project_info = json.loads(form.get('projectInfo'))
+
+    # TODO Lint specific column
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    records_missing_required_data = datafile_errors['records_missing_required_data']
+    linting_errors = datafile_errors['linting_errors']
+
+    # Note this will override the previous all errors
+    all_errors = linting_errors
+    all_errors = [{"Error": error} for error in all_errors]
+
+    json_data   = {}
+
+    for sheetName, sheet in records.items():
+        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+
+    results = {
+        'csvHeaders':              csv_headers,
+        'jsonData':                json_data,
+        'cellsWithErrors':         cells_with_errors,
+        'allErrors':               all_errors,
+        'recordsMissingRequiredData': records_missing_required_data,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -221,7 +277,9 @@ def resolve_column():
             field_errors['textValidationMin'] = dd_field.text_min
             field_errors['textValidationMax'] = dd_field.text_max
 
-    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    linting_errors = datafile_errors['linting_errors']
 
     columns_in_error = {}
     for inst in cells_with_errors:
@@ -243,6 +301,87 @@ def resolve_column():
         'cellsWithErrors':  cells_with_errors,
         'columnsInError':   columns_in_error,
         'fieldErrors':      field_errors,
+    }
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route('/resolve_row', methods=['GET', 'POST', 'OPTIONS'])
+def resolve_row():
+    form  = request.form.to_dict()
+    # TODO Take in form param to navigate to any unresolved columns
+    csv_headers = json.loads(form.get('csvHeaders'))
+    # Working column is the column being saved
+    next_row = json.loads(form.get('nextRow') or '0')
+    logging.warning(next_row)
+    logging.warning(form.get('nextRow'))
+    next_sheet_name = json.loads(form.get('nextSheetName') or '""')
+    working_row = json.loads(form.get('workingRow') or '""')
+    working_sheet_name = json.loads(form.get('workingSheetName') or '""')
+    field_to_value_map = json.loads(form.get('fieldToValueMap'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df = df[csv_headers[sheet]]
+        df.fillna('',inplace=True)
+        if sheet == working_sheet_name:
+            for field in field_to_value_map:
+                df.iloc[working_row, df.columns.get_loc(field)] = field_to_value_map[field]
+        records[sheet] = df
+
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    records_missing_required_data = json.loads(form.get('recordsMissingRequiredData'))
+    project_info = json.loads(form.get('projectInfo'))
+
+    # TODO work on case of no more errors
+
+    # TODO Suggest column changes and simplify this
+    next_sheet = False
+    for sheet in records_missing_required_data:
+        if next_sheet:
+            next_sheet_name = sheet
+            next_row = records_missing_required_data[sheet][0]
+        if sheet == working_sheet_name:
+            sheet_rows_in_error = records_missing_required_data[sheet]
+            if sheet == working_sheet_name and working_row == sheet_rows_in_error[-1]:
+                next_sheet = True
+            elif sheet == working_sheet_name:
+                next_sheet_name = sheet
+                if working_row not in sheet_rows_in_error:
+                    next_row = sheet_rows_in_error[0]
+                else:
+                    next_row = sheet_rows_in_error[sheet_rows_in_error.index(working_row)+1]
+
+    logging.warning(next_row)
+    # TODO only remove if errors are resolved
+    # if working_sheet_name:
+    #     error_cols = columns_in_error[working_sheet_name]
+    #     if working_column in error_cols:
+    #         error_cols.remove(working_column)
+    #         if not error_cols:
+    #             del columns_in_error[working_sheet_name]
+
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    records_missing_required_data = datafile_errors['records_missing_required_data']
+    linting_errors = datafile_errors['linting_errors']
+
+    json_data   = {}
+
+    for sheetName, sheet in records.items():
+        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+
+    results = {
+        'workingRow':       next_row,
+        'workingSheetName': next_sheet_name,
+        'jsonData':         json_data,
+        'fieldToValueMap':  {},
+        'cellsWithErrors':  cells_with_errors,
+        'recordsMissingRequiredData': records_missing_required_data,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -305,6 +444,7 @@ def download_output():
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
     records = pd.read_excel(request.files['dataFile'], sheet_name=None)
+    # TODO replace nan here
     records_with_format = load_workbook(request.files['dataFile'])
     for sheet in records_with_format.sheetnames:
         for row in records_with_format[sheet].iter_rows():
@@ -369,9 +509,11 @@ def post_form():
     if data_dictionary is not None:
         dd_headers = data_dictionary[0].keys()
         dd_data = data_dictionary
+        dd_data[0]['required'] = True
     else:
         dd_headers = list(dd_df.columns)
-        dd_data = json.loads(dd_df.to_json(orient='records'))
+        dd_data = [field.__dict__ for field in dd]
+        dd_data[0]['required'] = True
 
     for sheetName, sheet in records.items():
         all_csv_headers += utils.parameterize_list(list(sheet.columns))
@@ -456,7 +598,10 @@ def post_form():
                      "REDCap or the Data Dictionary.").format(recordid_instrument)
         all_errors.append(error_msg)
 
-    cells_with_errors, linting_errors = linter.lint_datafile(dd, records, project_info)
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    records_missing_required_data = datafile_errors['records_missing_required_data']
+    linting_errors = datafile_errors['linting_errors']
     all_errors += linting_errors
     all_errors = [{"Error": error} for error in all_errors]
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
@@ -475,6 +620,7 @@ def post_form():
         'ddData':                  dd_data,
         'cellsWithErrors':         cells_with_errors,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
+        'recordsMissingRequiredData': records_missing_required_data,
         'allErrors':               all_errors,
         # 'sheetsNotInRedcap':       sheets_not_in_redcap,
         'formNames':               form_names,

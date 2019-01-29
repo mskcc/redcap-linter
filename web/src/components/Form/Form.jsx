@@ -76,7 +76,11 @@ class Form extends Component {
   render() {
     const { form, loading } = this.state;
     let { errorText } = this.state;
-    const { error, projectInfo } = this.props;
+    const {
+      error,
+      projectInfo,
+      ddData,
+    } = this.props;
     let loader = '';
     if (loading) {
       loader = <Loader active content="Loading" />;
@@ -91,6 +95,9 @@ class Form extends Component {
       }
       if (projectInfo.project_title) {
         project += `<li><b>Project Title</b>: ${projectInfo.project_title}</li>`;
+      }
+      if (ddData && ddData[0]) {
+        project += `<li><b>RecordID Field</b>: ${ddData[0].field_name}</li>`;
       }
       if (projectInfo.repeatable_instruments && projectInfo.repeatable_instruments.length > 0) {
         project += `<li><b>Repeatable Instruments</b>: ${projectInfo.repeatable_instruments.join(', ')}</li>`;

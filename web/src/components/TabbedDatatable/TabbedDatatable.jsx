@@ -56,6 +56,9 @@ class TabbedDatatable extends Component {
       activeIndex,
     } = this.state;
     const workingIndex = sheets.indexOf(workingSheetName);
+
+    const { filterSheet, filterRowNum } = this.props;
+
     if (sheets && sheets.length > 0) {
       for (let i = 0; i < sheets.length; i++) {
         const sheetName = sheets[i];
@@ -65,7 +68,12 @@ class TabbedDatatable extends Component {
           tableFilter = filter;
           filterColumn = workingColumn;
         }
-        let tab = sheetName;
+
+        let selectedRowNum = '';
+        if (sheetName === filterSheet) {
+          selectedRowNum = filterRowNum;
+        }
+
         let tData = [];
         const tHeaders = csvHeaders[sheetName];
         if (jsonData && jsonData[sheetName]) {
@@ -80,52 +88,7 @@ class TabbedDatatable extends Component {
         if (recordFieldsNotInRedcap && recordFieldsNotInRedcap[sheetName]) {
           tableFieldsNotInRedcap = recordFieldsNotInRedcap[sheetName];
         }
-        // TODO make this a CSS class that works with react-tabs
-        const tabStyle = { };
-        let sheetInError = false;
-        if (sheetsNotInRedcap.includes(sheetName)) {
-          sheetInError = true;
 
-          const defaultOption = {
-            value: sheetName,
-            label: sheetName,
-          };
-
-          const options = formNames.map(sheet => ({
-            value: sheet,
-            label: sheet,
-          }));
-          options.unshift(defaultOption);
-
-          const tabWidth = 8 * sheetName.length + 60;
-          const longestOption = formNames.sort((a, b) => b.length - a.length)[0];
-          const menuWidth = 8 * longestOption + 60;
-
-          const customStyles = {
-            control: provided => ({
-              ...provided,
-              border: 'none',
-              boxShadow: 'none',
-            }),
-            menu: provided => ({
-              // none of react-select's styles are passed to <Control />
-              ...provided,
-              width: `${menuWidth}px`,
-            }),
-          };
-
-          tab = [
-            <Select
-              key={`${sheetName}`}
-              options={options}
-              styles={customStyles}
-              defaultValue={defaultOption}
-            />,
-          ];
-
-          tabStyle.color = '#E5153E';
-          tabStyle.minWidth = `${tabWidth}px`;
-        }
         panes.push({
           menuItem: sheetName,
           render: () => (
@@ -134,10 +97,10 @@ class TabbedDatatable extends Component {
               headers={tHeaders}
               tableData={tData}
               tableFilter={tableFilter}
+              selectedRowNum={selectedRowNum}
               filterColumn={filterColumn}
               tableErrors={tableErrors}
               tableFieldsNotInRedcap={tableFieldsNotInRedcap}
-              sheetInError={sheetInError}
             />
           ),
         });
@@ -155,7 +118,7 @@ class TabbedDatatable extends Component {
       });
       if (allErrors.length > 0) {
         panes.push({
-          menuItem: 'Errors',
+          menuItem: `Errors (${allErrors.length})`,
           render: () => (
             <Datatable
               sheetName="All-Errors"

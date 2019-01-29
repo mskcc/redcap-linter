@@ -1,0 +1,46 @@
+@import '../../Utilities/color';
+
+.ResolvedRequiredErrors-headerError {
+	color: color(red500);
+}
+
+.ResolvedRequiredErrors-cellError {
+	color: color(red500);
+}
+
+.ResolvedRequiredErrors-tableTitle {
+  height: 40px;
+}
+
+.ResolvedRequiredErrors-searchBar {
+  float: left;
+}
+
+.ResolvedRequiredErrors-cell {
+  width: 80%;
+	display: inline-block;
+	overflow-wrap: break-word;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.ResolvedRequiredErrors-resolvedCell {
+  color: color(green500);
+}
+
+.ResolvedRequiredErrors-cellContainer {
+  display: flex;
+}
+
+.ResolvedRequiredErrors-sheetInfo {
+    float: right;
+}
+
+.ResolvedRequiredErrors-cancel {
+	width: 25px;
+	opacity: 0.6;
+	text-align: right;
+	align-self: center;
+	display: inline-block;
+	margin-left: 5px;
+}

@@ -1,4 +1,5 @@
 from utils import utils
+import logging
 import json
 
 
@@ -26,7 +27,7 @@ class RedcapField(object):
             'text_max': utils.get_from_data_dictionary(data_dictionary, field_name, 'text_validation_max'),
             'choices': utils.get_from_data_dictionary(data_dictionary, field_name, 'choices_calculations_or_slider_labels'),
             'form_name': utils.get_from_data_dictionary(data_dictionary, field_name, 'form_name'),
-            'required': utils.get_from_data_dictionary(data_dictionary, field_name, 'required_field') == 'y'
+            'required': utils.get_from_data_dictionary(data_dictionary, field_name, 'required_field') in ['y', 'Y']
         }
 
         if field['field_type'] in ['yesno', 'truefalse']:
@@ -43,18 +44,19 @@ class RedcapField(object):
         field = {
             'field_name': field_json.get('field_name') or field_json.get('variable_field_name'),
             'field_type': field_json.get('field_type'),
-            'text_validation': field_json.get('text_validation_type_or_show_slider_number'),
-            'text_min': field_json.get('text_validation_min'),
-            'text_max': field_json.get('text_validation_max'),
-            'choices': field_json.get('select_choices_or_calculations') or field_json.get('choices_calculations_or_slider_labels'),
+            'text_validation': field_json.get('text_validation') or field_json.get('text_validation_type_or_show_slider_number'),
+            'text_min': field_json.get('text_min') or field_json.get('text_validation_min'),
+            'text_max': field_json.get('text_max') or field_json.get('text_validation_max'),
+            'choices': field_json.get('choices') or field_json.get('select_choices_or_calculations') or field_json.get('choices_calculations_or_slider_labels'),
             'form_name': field_json.get('form_name'),
-            'required': field_json.get('required_field') == 'y'
+            'required': field_json.get('required') or field_json.get('required_field') in ['y', 'Y'],
+            'choices_dict': field_json.get('choices_dict')
         }
 
-        if field['field_type'] in ['yesno', 'truefalse']:
+        if field_json['field_type'] in ['yesno', 'truefalse']:
             field['choices_dict'] = cls.yesno_dict
-        elif field['field_type'] in ['radio', 'dropdown', 'checkbox']:
-            c = [choice.split(',') for choice in field['choices'].split('|')]
+        elif field_json['field_type'] in ['radio', 'dropdown', 'checkbox']:
+            c = [choice.split(',') for choice in field.get('choices').split('|')]
             field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c}
 
         return cls(**field)

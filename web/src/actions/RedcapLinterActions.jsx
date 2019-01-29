@@ -22,20 +22,32 @@ export const REMOVE_CHOICE_MATCH_FAILURE = 'REMOVE_CHOICE_MATCH_FAILURE';
 export const SAVE_CHOICES_SUCCESS = 'SAVE_CHOICES_SUCCESS';
 export const SAVE_CHOICES_FAILURE = 'SAVE_CHOICES_FAILURE';
 
+export const SAVE_ROW_SUCCESS = 'SAVE_ROW_SUCCESS';
+export const SAVE_ROW_FAILURE = 'SAVE_ROW_FAILURE';
+
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
 export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
 export const FILTER_TABLE_SUCCESS = 'FILTER_TABLE_SUCCESS';
 export const FILTER_TABLE_FAILURE = 'FILTER_TABLE_FAILURE';
 
+export const FILTER_ROW_SUCCESS = 'FILTER_ROW_SUCCESS';
+export const FILTER_ROW_FAILURE = 'FILTER_ROW_FAILURE';
+
 export const RESOLVE_COLUMN_SUCCESS = 'RESOLVE_COLUMN_SUCCESS';
 export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
+
+export const RESOLVE_ROW_SUCCESS = 'RESOLVE_ROW_SUCCESS';
+export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 
 export const REMOVE_VALUE_SUCCESS = 'REMOVE_VALUE_SUCCESS';
 export const REMOVE_VALUE_FAILURE = 'REMOVE_VALUE_FAILURE';
 
 export const CORRECT_VALUE_SUCCESS = 'CORRECT_VALUE_SUCCESS';
 export const CORRECT_VALUE_FAILURE = 'CORRECT_VALUE_FAILURE';
+
+export const UPDATE_VALUE_SUCCESS = 'UPDATE_VALUE_SUCCESS';
+export const UPDATE_VALUE_FAILURE = 'UPDATE_VALUE_FAILURE';
 
 
 export function postFormSuccess(results) {
@@ -212,6 +224,46 @@ export function saveChoices(payload) {
   };
 }
 
+export function saveRowSuccess(payload) {
+  return {
+    type: SAVE_ROW_SUCCESS,
+    payload,
+  };
+}
+
+export function saveRowError(payload) {
+  return {
+    type: SAVE_ROW_FAILURE,
+    payload,
+  };
+}
+
+
+export function saveRow(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('workingRow', JSON.stringify(payload.workingRow));
+    data.append('workingSheetName', JSON.stringify(payload.workingSheetName));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
+
+    const request = axios({
+      method: 'POST',
+      url: 'http://localhost:5000/save_row',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(saveRowSuccess(response)),
+      err => dispatch(saveRowError(err)),
+    );
+  };
+}
+
 export function matchChoicesSuccess(payload) {
   return {
     type: MATCH_CHOICES_SUCCESS,
@@ -314,6 +366,30 @@ export function correctValue(originalValue, correctedValue) {
   };
 }
 
+export function updateValueSuccess(payload) {
+  return {
+    type: UPDATE_VALUE_SUCCESS,
+    payload,
+  };
+}
+
+export function updateValueFailure(payload) {
+  return {
+    type: UPDATE_VALUE_FAILURE,
+    payload,
+  };
+}
+
+export function updateValue(field, value) {
+  return function action(dispatch) {
+    const payload = {
+      field,
+      value,
+    };
+    return dispatch(updateValueSuccess(payload));
+  };
+}
+
 export function navigateToSuccess(payload) {
   return {
     type: NAVIGATE_TO_SUCCESS,
@@ -363,6 +439,30 @@ export function filterTable(filter) {
   };
 }
 
+export function filterRowSuccess(payload) {
+  return {
+    type: FILTER_ROW_SUCCESS,
+    payload,
+  };
+}
+
+export function filterRowError(payload) {
+  return {
+    type: FILTER_ROW_FAILURE,
+    payload,
+  };
+}
+
+export function filterRow(sheet, rowNum) {
+  return function action(dispatch) {
+    const payload = {
+      filterSheet: sheet,
+      filterRowNum: rowNum,
+    };
+    return dispatch(filterRowSuccess(payload));
+  };
+}
+
 export function resolveColumnSuccess(payload) {
   return {
     type: RESOLVE_COLUMN_SUCCESS,
@@ -391,7 +491,7 @@ export function resolveColumn(payload) {
     data.append('workingColumn', payload.workingColumn ? JSON.stringify(payload.workingColumn) : '');
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
-    data.append('sheetName', JSON.stringify(payload.sheetName));
+    // data.append('sheetName', JSON.stringify(payload.sheetName));
 
     const request = axios({
       method: 'POST',
@@ -403,6 +503,49 @@ export function resolveColumn(payload) {
     return request.then(
       response => dispatch(resolveColumnSuccess(response)),
       err => dispatch(resolveColumnError(err)),
+    );
+  };
+}
+
+export function resolveRowSuccess(payload) {
+  return {
+    type: RESOLVE_ROW_SUCCESS,
+    payload,
+  };
+}
+
+export function resolveRowError(payload) {
+  return {
+    type: RESOLVE_ROW_FAILURE,
+    payload,
+  };
+}
+
+export function resolveRow(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
+    data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
+    data.append('nextRow', JSON.stringify(payload.nextRow || 0));
+    data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
+    data.append('workingRow', payload.workingRow ? JSON.stringify(payload.workingRow) : 0);
+    data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
+    data.append('recordsMissingRequiredData', JSON.stringify(payload.recordsMissingRequiredData));
+    // data.append('sheetName', JSON.stringify(payload.sheetName));
+
+    const request = axios({
+      method: 'POST',
+      url: 'http://localhost:5000/resolve_row',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(resolveRowSuccess(response)),
+      err => dispatch(resolveRowError(err)),
     );
   };
 }

@@ -65,7 +65,6 @@ class TextValidation extends Component {
     const {
       originalToCorrectedValueMap,
     } = this.props;
-    // const noTextValidation = fieldErrors.noTextValidation || [];
     let correctedValues = [];
     if (originalToCorrectedValueMap) {
       correctedValues = Object.keys(originalToCorrectedValueMap).map(originalValue => ({
@@ -73,10 +72,6 @@ class TextValidation extends Component {
         'Corrected Value': originalToCorrectedValueMap[originalValue],
       }));
     }
-    // correctedValues = correctedValues.concat(noTextValidation.map(dataField => ({
-    //   'Original Value': dataField,
-    //   'Corrected Value': '',
-    // })));
 
     return (
       <div className="TextValidation-container">
@@ -102,13 +97,11 @@ class TextValidation extends Component {
 TextValidation.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
-  noTextValidation: PropTypes.array,
 };
 
 TextValidation.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
-  noTextValidation: [],
 };
 
 function mapStateToProps(state) {

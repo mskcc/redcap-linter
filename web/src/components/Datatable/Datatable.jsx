@@ -84,6 +84,8 @@ class Datatable extends Component {
       tableErrors,
       filterColumn,
       tableFilter,
+      selectedRowNum,
+      filterRowNum,
       tableFieldsNotInRedcap,
       sheetInError,
     } = this.props;
@@ -149,6 +151,11 @@ class Datatable extends Component {
         return false;
       });
     }
+
+    if (selectedRowNum || selectedRowNum === 0) {
+      data = [data[selectedRowNum]];
+    }
+
     return (
       <div className="Datatable-table">
         <div className="Datatable-searchBar">
@@ -182,6 +189,7 @@ Datatable.defaultProps = {
   tableFieldsNotInRedcap: [],
   sheetName: '',
   editable: true,
+  sheetInError: false,
 };
 
 export default Datatable;

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import './MatchChoices.scss';
-import { saveChoices, resolveColumn } from '../../actions/RedcapLinterActions';
+import { saveChoices, resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
 
 class MatchChoices extends Component {
   constructor(props) {
@@ -65,6 +65,7 @@ class MatchChoices extends Component {
     const {
       fieldErrors,
       dataFieldToChoiceMap,
+      removeChoiceMatch,
     } = this.props;
     let matchedChoices = fieldErrors.matchedChoices || [];
     matchedChoices = matchedChoices.map(header => ({
@@ -95,6 +96,7 @@ class MatchChoices extends Component {
         <div className="MatchChoices-matchedChoices">
           <div className="MatchChoices-title">Matched Choices</div>
           <MatchedChoices
+            removeChoiceMatch={removeChoiceMatch}
             tableData={matchedChoices}
           />
         </div>
@@ -129,7 +131,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveChoices, resolveColumn }, dispatch);
+  return bindActionCreators({ saveChoices, resolveColumn, removeChoiceMatch }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MatchChoices);

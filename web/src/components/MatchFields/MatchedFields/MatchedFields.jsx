@@ -4,10 +4,7 @@ import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import CancelIcon from '../../CancelIcon/CancelIcon';
-import { removeFieldMatch } from '../../../actions/RedcapLinterActions';
 
 class MatchedFields extends Component {
   constructor(props) {
@@ -95,12 +92,4 @@ MatchedFields.defaultProps = {
   tableData: [],
 };
 
-function mapStateToProps(state) {
-  return state;
-}
-
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ removeFieldMatch }, dispatch);
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(MatchedFields);
+export default MatchedFields;

@@ -1,8 +1,10 @@
 .Cell-default {
-  width: 100%;
-  height: 100%;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .Cell-error {
+  width: 100%;
+  height: 100%;
   color: #E5153E;
 }

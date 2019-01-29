@@ -14,14 +14,22 @@ import {
   SAVE_FIELDS_FAILURE,
   SAVE_CHOICES_SUCCESS,
   SAVE_CHOICES_FAILURE,
+  SAVE_ROW_SUCCESS,
+  SAVE_ROW_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
   FILTER_TABLE_SUCCESS,
   FILTER_TABLE_FAILURE,
+  FILTER_ROW_SUCCESS,
+  FILTER_ROW_FAILURE,
   RESOLVE_COLUMN_SUCCESS,
   RESOLVE_COLUMN_FAILURE,
+  RESOLVE_ROW_SUCCESS,
+  RESOLVE_ROW_FAILURE,
   CORRECT_VALUE_SUCCESS,
   CORRECT_VALUE_FAILURE,
+  UPDATE_VALUE_SUCCESS,
+  UPDATE_VALUE_FAILURE,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -57,10 +65,26 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
+    case SAVE_ROW_SUCCESS: {
+      return Object.assign({}, state, action.payload.data);
+    }
+    case SAVE_ROW_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
     case FILTER_TABLE_SUCCESS: {
       return Object.assign({}, state, action.payload);
     }
     case FILTER_TABLE_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case FILTER_ROW_SUCCESS: {
+      return Object.assign({}, state, action.payload);
+    }
+    case FILTER_ROW_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });
@@ -77,6 +101,28 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload.data);
     }
     case RESOLVE_COLUMN_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case RESOLVE_ROW_SUCCESS: {
+      return Object.assign({}, state, action.payload.data);
+    }
+    case RESOLVE_ROW_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case UPDATE_VALUE_SUCCESS: {
+      const fieldToValueMap = Object.assign({}, state.fieldToValueMap) || {};
+      if (!action.payload.value && fieldToValueMap.hasOwnProperty(action.payload.field)) {
+        delete fieldToValueMap[action.payload.field];
+      } else {
+        fieldToValueMap[action.payload.field] = action.payload.value;
+      }
+      return Object.assign({}, state, { fieldToValueMap });
+    }
+    case UPDATE_VALUE_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });
