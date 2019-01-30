@@ -57,7 +57,7 @@ class ResolveErrors extends Component {
       content = <MatchChoices />;
     } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
       content = <TextValidation />;
-    } else if (recordsMissingRequiredData) {
+    } else if (Object.keys(recordsMissingRequiredData) > 0) {
       content = <MissingRequired />;
     } else {
       content = <ErrorsResolved />;
