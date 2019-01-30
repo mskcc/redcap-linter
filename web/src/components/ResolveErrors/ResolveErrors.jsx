@@ -50,20 +50,18 @@ class ResolveErrors extends Component {
       recordsMissingRequiredData,
     } = this.props;
     let content = '';
-    if (recordsMissingRequiredData) {
+    // TODO rework the logic here
+    if (Object.keys(columnsInError).length === 0) {
+      content = <ErrorsResolved />;
+    } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
+      content = <MatchChoices />;
+    } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
+      content = <TextValidation />;
+    } else if (recordsMissingRequiredData) {
       content = <MissingRequired />;
+    } else {
+      content = <ErrorsResolved />;
     }
-    // if (Object.keys(columnsInError).length === 0) {
-    //   content = <ErrorsResolved />;
-    // } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
-    //   content = <MatchChoices />;
-    // } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
-    //   content = <TextValidation />;
-    // } else if (recordsMissingRequiredData) {
-    //   content = <MissingRequired />;
-    // } else {
-    //   content = <ErrorsResolved />;
-    // }
     return (
       <div className="ResolveErrors-container">
         <div className="ResolveErrors-resolveError">

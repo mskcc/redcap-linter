@@ -156,6 +156,7 @@ class RequiredResolver extends Component {
     const {
       workingSheetName,
       recordsMissingRequiredData,
+      columnsInError,
       row,
       rowNum,
       fieldToValueMap,
@@ -185,7 +186,22 @@ class RequiredResolver extends Component {
     }];
 
     const options = [];
-    let allRowErrors = [];
+    let allErrors = [];
+    Object.keys(columnsInError).forEach((sheet) => {
+      const subOptions = [];
+      columnsInError[sheet].forEach((columnInError) => {
+        subOptions.push({
+          value: { sheet: sheet, column: columnInError },
+          label: columnInError,
+        });
+      });
+      options.push({
+        label: `${sheet} | Column Errors`,
+        options: subOptions,
+      });
+      allErrors = allErrors.concat(columnsInError[sheet]);
+    });
+
     Object.keys(recordsMissingRequiredData).forEach((sheet) => {
       const subOptions = [];
       recordsMissingRequiredData[sheet].forEach((rowNumber) => {
@@ -198,7 +214,7 @@ class RequiredResolver extends Component {
         label: sheet,
         options: subOptions,
       });
-      allRowErrors = allRowErrors.concat(recordsMissingRequiredData[sheet]);
+      allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
     });
 
     const selectedValue = {
@@ -206,7 +222,7 @@ class RequiredResolver extends Component {
       label: rowNum+1,
     };
 
-    const longestOption = allRowErrors.sort((a, b) => b.length - a.length)[0];
+    const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
     const selectWidth = 8 * longestOption + 60;
 
     const selectStyles = {

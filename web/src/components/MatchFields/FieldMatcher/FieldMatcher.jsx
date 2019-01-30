@@ -50,9 +50,14 @@ class FieldMatcher extends Component {
   }
 
   renderCell(cellInfo) {
+    const {
+      ddData,
+    } = this.props;
+    const ddField = ddData.find(field => field.field_name === cellInfo.value);
+    const cellData = <span><b>{cellInfo.value}</b> | {ddField.form_name}</span>;
     return (
       <Cell
-        cellData={cellInfo.value}
+        cellData={cellData}
         editable={false}
       />
     );

@@ -33,8 +33,8 @@ class RedcapField(object):
         if field['field_type'] in ['yesno', 'truefalse']:
             field['choices_dict'] = cls.yesno_dict
         elif field['field_type'] in ['radio', 'dropdown', 'checkbox']:
-            c = [choice.split(',') for choice in field['choices'].split('|')]
-            field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c}
+            c = [choice.split(',', 1) for choice in field['choices'].split('|')]
+            field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c if len(choice) == 2}
 
         return cls(**field)
 
@@ -56,8 +56,8 @@ class RedcapField(object):
         if field_json['field_type'] in ['yesno', 'truefalse']:
             field['choices_dict'] = cls.yesno_dict
         elif field_json['field_type'] in ['radio', 'dropdown', 'checkbox']:
-            c = [choice.split(',') for choice in field.get('choices').split('|')]
-            field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c}
+            c = [choice.split(',', 1) for choice in field.get('choices').split('|')]
+            field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c if len(choice) == 2}
 
         return cls(**field)
 

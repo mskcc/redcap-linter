@@ -380,6 +380,7 @@ def resolve_row():
         'workingSheetName': next_sheet_name,
         'jsonData':         json_data,
         'fieldToValueMap':  {},
+        'fieldErrors':      {},
         'cellsWithErrors':  cells_with_errors,
         'recordsMissingRequiredData': records_missing_required_data,
     }
@@ -459,8 +460,8 @@ def post_form():
                     current_list = [i.strftime('%m/%d/%Y') if isinstance(i, datetime) and not pd.isnull(i) else i for i in current_list]
                     records[sheet][cell.value] = current_list
             break
-    for key in records:
-        records.get(key).replace('nan', '', inplace=True)
+    # for key in records:
+    #     records.get(key).replace('nan', '', inplace=True)
     form  = request.form.to_dict()
     token = form.get('token')
     env   = form.get('environment')

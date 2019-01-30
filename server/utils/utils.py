@@ -1,5 +1,6 @@
 import logging
 import re
+import numbers
 
 import pandas as pd
 from dateutil import parser
@@ -65,6 +66,9 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
                 formatted_numbers.append(False)
             else:
                 formatted_numbers.append(None)
+            continue
+        if not isinstance(d, numbers.Number):
+            formatted_numbers.append(False)
             continue
         d = float(d)
         if ((number_min and d < number_min) or
