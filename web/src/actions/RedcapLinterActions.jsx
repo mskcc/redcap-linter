@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-export const POST_FORM = 'POST_FORM';
+export const LOADING_START = 'LOADING_START';
+
 export const POST_FORM_SUCCESS = 'POST_FORM_SUCCESS';
 export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 
@@ -50,6 +51,12 @@ export const UPDATE_VALUE_SUCCESS = 'UPDATE_VALUE_SUCCESS';
 export const UPDATE_VALUE_FAILURE = 'UPDATE_VALUE_FAILURE';
 
 
+export function loadingStart() {
+  return {
+    type: LOADING_START,
+  };
+}
+
 export function postFormSuccess(results) {
   return {
     type: POST_FORM_SUCCESS,
@@ -64,12 +71,6 @@ export function postFormError(error) {
   };
 }
 
-export function postFormStart() {
-  return {
-    type: POST_FORM,
-  };
-}
-
 export function postForm(form) {
   return function action(dispatch) {
     const data = new FormData();
@@ -81,7 +82,7 @@ export function postForm(form) {
     data.append('dataDictionaryName', form.dataDictionaryName);
     data.append('repeatableInstruments', form.repeatableInstruments);
 
-    dispatch(postFormStart());
+    dispatch(loadingStart());
 
     const request = axios({
       method: 'POST',
@@ -174,6 +175,8 @@ export function saveFields(payload) {
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
+
+    dispatch(loadingStart());
 
     return request.then(
       response => dispatch(saveFieldsSuccess(response)),

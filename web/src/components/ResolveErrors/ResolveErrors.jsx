@@ -4,17 +4,28 @@ import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import { Loader } from 'semantic-ui-react';
 import MatchChoices from '../MatchChoices/MatchChoices';
 import TextValidation from '../TextValidation/TextValidation';
 import MissingRequired from '../MissingRequired/MissingRequired';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
+// Remove this depencency
 import { resolveColumn } from '../../actions/RedcapLinterActions';
 
 class ResolveErrors extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {
+      loading: false,
+    };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if ('loading' in nextProps) {
+      return { loading: nextProps.loading };
+    }
+    return null;
   }
 
   componentDidMount() {
@@ -49,9 +60,14 @@ class ResolveErrors extends Component {
       fieldErrors,
       recordsMissingRequiredData,
     } = this.props;
+    const {
+      loading,
+    } = this.state;
     let content = '';
     // TODO rework the logic here
-    if (Object.keys(columnsInError).length === 0) {
+    if (loading) {
+      content = <Loader active content="Loading" />;
+    } else if (Object.keys(columnsInError).length === 0) {
       content = <ErrorsResolved />;
     } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
       content = <MatchChoices />;

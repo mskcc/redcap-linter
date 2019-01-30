@@ -63,14 +63,11 @@ def save_fields():
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     results = {
-        'csvHeaders':              csv_headers,
         'jsonData':                json_data,
         'recordsMissingRequiredData': records_missing_required_data,
         'cellsWithErrors':         cells_with_errors,
         'allErrors':               all_errors,
         'columnsInError':          columns_in_error,
-        'page':                    'lint',
-        'new':                     False,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -617,40 +614,24 @@ def post_form():
                      "REDCap or the Data Dictionary.").format(recordid_instrument)
         all_errors.append(error_msg)
 
-    datafile_errors = linter.lint_datafile(dd, records, project_info)
-    cells_with_errors = datafile_errors['cells_with_errors']
-    records_missing_required_data = datafile_errors['records_missing_required_data']
-    linting_errors = datafile_errors['linting_errors']
-    all_errors += linting_errors
-    all_errors = [{"Error": error} for error in all_errors]
-    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    #     app.logger.info(cells_with_errors['Sheet1'].iloc[:,0:8])
-
     json_data   = {}
 
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
-        cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
     results = {
         'csvHeaders':              csv_headers,
         'jsonData':                json_data,
         'ddHeaders':               dd_headers,
         'ddData':                  dd_data,
-        'cellsWithErrors':         cells_with_errors,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
-        'recordsMissingRequiredData': records_missing_required_data,
-        'allErrors':               all_errors,
         # 'sheetsNotInRedcap':       sheets_not_in_redcap,
         'formNames':               form_names,
         'projectInfo':             project_info,
         'matchingHeaders':         matching_headers,
         'fieldCandidates':         field_candidates,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
-        'dataFileName':            datafile_name,
-        'page':                    'matchFields',
-        'new':                     True,
-        'loading':                 False,
+        'dataFileName':            datafile_name
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

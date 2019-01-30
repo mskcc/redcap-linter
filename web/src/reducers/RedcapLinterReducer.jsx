@@ -1,5 +1,5 @@
 import {
-  POST_FORM,
+  LOADING_START,
   POST_FORM_SUCCESS,
   POST_FORM_FAILURE,
   MATCH_FIELDS_SUCCESS,
@@ -34,15 +34,15 @@ import {
 
 export default function (state = {}, action) {
   switch (action.type) {
-    case POST_FORM: {
-      return Object.assign({}, { loading: true });
+    case LOADING_START: {
+      return Object.assign({}, state, { loading: true });
     }
     case POST_FORM_SUCCESS: {
       const error = { error: '' };
       if (action.payload.data && action.payload.data.error) {
         error.error = action.payload.data.error;
       }
-      return Object.assign({}, action.payload.data, error);
+      return Object.assign({ loading: false, new: true, page: 'matchFields' }, action.payload.data, error);
     }
     case POST_FORM_FAILURE: {
       return Object.assign({}, state, {
@@ -50,7 +50,7 @@ export default function (state = {}, action) {
       });
     }
     case SAVE_FIELDS_SUCCESS: {
-      return Object.assign({}, state, action.payload.data);
+      return Object.assign({}, state, { loading: false, new: false, page: 'lint' }, action.payload.data);
     }
     case SAVE_FIELDS_FAILURE: {
       return Object.assign({}, state, {
