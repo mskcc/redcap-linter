@@ -6,6 +6,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import MatchChoices from '../MatchChoices/MatchChoices';
 import TextValidation from '../TextValidation/TextValidation';
+import MissingRequired from '../MissingRequired/MissingRequired';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import { resolveColumn } from '../../actions/RedcapLinterActions';
@@ -46,14 +47,18 @@ class ResolveErrors extends Component {
     const {
       columnsInError,
       fieldErrors,
+      recordsMissingRequiredData,
     } = this.props;
     let content = '';
+    // TODO rework the logic here
     if (Object.keys(columnsInError).length === 0) {
       content = <ErrorsResolved />;
     } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
       content = <MatchChoices />;
     } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
       content = <TextValidation />;
+    } else if (recordsMissingRequiredData) {
+      content = <MissingRequired />;
     } else {
       content = <ErrorsResolved />;
     }

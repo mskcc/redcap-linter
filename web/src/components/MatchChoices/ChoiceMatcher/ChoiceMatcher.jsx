@@ -134,6 +134,7 @@ class ChoiceMatcher extends Component {
   render() {
     const {
       fieldsToMatch,
+      recordsMissingRequiredData,
       workingSheetName,
       workingColumn,
       columnsInError,
@@ -167,7 +168,7 @@ class ChoiceMatcher extends Component {
     }));
 
     const options = [];
-    let allColumnErrors = [];
+    let allErrors = [];
     Object.keys(columnsInError).forEach((sheet) => {
       const subOptions = [];
       columnsInError[sheet].forEach((columnInError) => {
@@ -177,10 +178,25 @@ class ChoiceMatcher extends Component {
         });
       });
       options.push({
-        label: sheet,
+        label: `${sheet} | Column Errors`,
         options: subOptions,
       });
-      allColumnErrors = allColumnErrors.concat(columnsInError[sheet]);
+      allErrors = allErrors.concat(columnsInError[sheet]);
+    });
+
+    Object.keys(recordsMissingRequiredData).forEach((sheet) => {
+      const subOptions = [];
+      recordsMissingRequiredData[sheet].forEach((rowNumber) => {
+        subOptions.push({
+          value: { sheet: sheet, rowNum: rowNumber },
+          label: rowNumber+1,
+        });
+      });
+      options.push({
+        label: `${sheet} | Row Errors`,
+        options: subOptions,
+      });
+      allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
     });
 
     const selectedValue = {
@@ -188,7 +204,7 @@ class ChoiceMatcher extends Component {
       label: workingColumn,
     };
 
-    const longestOption = allColumnErrors.sort((a, b) => b.length - a.length)[0];
+    const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
     const selectWidth = 8 * longestOption + 60;
 
     const selectStyles = {

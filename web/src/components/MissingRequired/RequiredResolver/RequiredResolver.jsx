@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './TextErrorResolver.scss';
+import './RequiredResolver.scss';
 import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
@@ -8,80 +8,80 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { correctValue, resolveColumn, filterTable } from '../../../actions/RedcapLinterActions';
+import { updateValue, resolveRow, filterRow } from '../../../actions/RedcapLinterActions';
 
-class TextErrorResolver extends Component {
+class RequiredResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      originalToCorrectedValueMap: {},
-      removedValue: '',
+      localFieldToValueMap: {},
       search: '',
     };
   }
 
-  changeResolveColumn(e) {
+  changeResolveRow(e) {
     const {
       jsonData,
       projectInfo,
       ddData,
       csvHeaders,
-      columnsInError,
-      resolveColumn,
+      recordsMissingRequiredData,
+      resolveRow,
     } = this.props;
     const payload = {
       jsonData,
       projectInfo,
-      nextColumn: e.value.column,
+      nextRow: e.value.rowNum,
       nextSheetName: e.value.sheet,
-      columnsInError,
+      recordsMissingRequiredData,
       ddData,
       csvHeaders,
     };
-    resolveColumn(payload);
+    resolveRow(payload);
   }
 
-  handleCorrect(originalValue) {
+  onFocus(e) {
     const {
-      originalToCorrectedValueMap,
-    } = this.state;
-    const {
-      correctValue,
+      sheet,
+      rowNum,
+      filterRow,
     } = this.props;
-    const correctedValue = originalToCorrectedValueMap[originalValue] || '';
-    correctValue(originalValue, correctedValue);
-  }
-
-  handleRemove(originalValue) {
-    const {
-      removedValue,
-    } = this.state;
-    const {
-      correctValue,
-    } = this.props;
-    correctValue(originalValue, removedValue);
+    console.log(this.props);
+    filterRow(sheet, rowNum);
   }
 
   onBlur(e) {
     const {
-      filterTable,
+      sheet,
+      filterRow,
     } = this.props;
-    filterTable('');
+    filterRow(sheet, '');
   }
 
-  onFocus(originalValue, e) {
+  handleUpdate(field, e) {
     const {
-      filterTable,
-    } = this.props;
-    filterTable(originalValue);
-  }
-
-  handleChange(originalValue, e) {
-    const {
-      originalToCorrectedValueMap,
+      localFieldToValueMap,
     } = this.state;
-    originalToCorrectedValueMap[originalValue] = e.target.value;
-    this.setState({ originalToCorrectedValueMap });
+    const {
+      updateValue,
+    } = this.props;
+    updateValue(field, localFieldToValueMap[field]);
+  }
+
+  handleSelectChange(field, e) {
+    const {
+      localFieldToValueMap,
+    } = this.state;
+    localFieldToValueMap[field] = e.value;
+    this.setState({ localFieldToValueMap });
+  }
+
+  handleChange(field, e) {
+    const {
+      localFieldToValueMap,
+    } = this.state;
+    localFieldToValueMap[field] = e.target.value;
+    this.setState({ localFieldToValueMap });
   }
 
   renderCell(cellInfo) {
@@ -95,35 +95,59 @@ class TextErrorResolver extends Component {
 
   renderInput(cellInfo) {
     const {
-      originalToCorrectedValueMap,
+      localFieldToValueMap,
     } = this.state;
-    const originalValue = cellInfo.original['Original Value'];
-    const value = originalToCorrectedValueMap[originalValue] || '';
+    const {
+      ddData,
+    } = this.props;
+    const fieldName = cellInfo.original['Field'];
+    const ddField = ddData.find((field) => {
+      return field.field_name === fieldName;
+    });
+    const value = localFieldToValueMap[fieldName] || '';
+    if (ddField.choices_dict) {
+      const options = [];
+      Object.keys(ddField.choices_dict).forEach((choice) => {
+        options.push({
+          value: choice,
+          label: <span><b>{choice}</b> | <span style={{ fontWeight: 'lighter' }}>{ddField.choices_dict[choice]}</span></span>,
+        })
+      });
+      return (
+        <Select
+          options={options}
+          isSearchable
+          onFocus={e => this.onFocus(e)}
+          onBlur={e => this.onBlur(e)}
+          onChange={e => this.handleSelectChange(fieldName, e)}
+          placeholder="Select..."
+        />
+      );
+    }
     return (
       <input
-        className="TextErrorResolver-input"
+        className="RequiredResolver-input"
         type="text"
-        value={value}
+        onFocus={e => this.onFocus(e)}
         onBlur={e => this.onBlur(e)}
-        onFocus={e => this.onFocus(originalValue, e)}
-        onChange={e => this.handleChange(originalValue, e)}
+        value={value}
+        onChange={e => this.handleChange(fieldName, e)}
       />
     );
   }
 
   renderMatchButton(cellInfo) {
-    const originalValue = cellInfo.original['Original Value'];
+    const field = cellInfo.original['Field'];
     const {
-      originalToCorrectedValueMap,
+      localFieldToValueMap,
     } = this.state;
     let disabled = true;
-    if (originalToCorrectedValueMap[originalValue]) {
+    if (localFieldToValueMap[field]) {
       disabled = false;
     }
     return (
-      <div className="TextErrorResolver-buttons">
-        <button type="button" disabled={disabled} onClick={e => this.handleCorrect(originalValue, e)} className="App-submitButton">Correct</button>
-        <button type="button" onClick={e => this.handleRemove(originalValue, e)} className="TextErrorResolver-noMatchButton">Remove</button>
+      <div className="RequiredResolver-buttons">
+        <button type="button" disabled={disabled} onClick={e => this.handleUpdate(field, e)} className="App-submitButton">Update</button>
       </div>
     );
   }
@@ -131,22 +155,24 @@ class TextErrorResolver extends Component {
   render() {
     const {
       workingSheetName,
-      workingColumn,
-      columnsInError,
       recordsMissingRequiredData,
-      fieldErrors,
+      columnsInError,
+      row,
+      rowNum,
+      fieldToValueMap,
+      requiredDdFields,
     } = this.props;
     const {
       search,
     } = this.state;
     const columns = [{
-      Header: 'Original Value',
-      accessor: 'Original Value',
+      Header: 'Field',
+      accessor: 'Field',
       Cell: this.renderCell.bind(this),
     },
     {
-      Header: 'Corrected Value',
-      accessor: 'Corrected Value',
+      Header: 'Value',
+      accessor: 'Value',
       style: { overflow: 'visible' },
       Cell: this.renderInput.bind(this),
       // getProps: this.renderErrors.bind(this),
@@ -158,11 +184,6 @@ class TextErrorResolver extends Component {
       Cell: this.renderMatchButton.bind(this),
       // getProps: this.renderErrors.bind(this),
     }];
-    const tableData = fieldErrors.textErrors.map(e => ({
-      'Original Value': e,
-      'Corrected Value': e,
-      'Action': '',
-    }));
 
     const options = [];
     let allErrors = [];
@@ -175,7 +196,7 @@ class TextErrorResolver extends Component {
         });
       });
       options.push({
-        label: sheet,
+        label: `${sheet} | Column Errors`,
         options: subOptions,
       });
       allErrors = allErrors.concat(columnsInError[sheet]);
@@ -190,15 +211,15 @@ class TextErrorResolver extends Component {
         });
       });
       options.push({
-        label: `${sheet} | Row Errors`,
+        label: sheet,
         options: subOptions,
       });
       allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
     });
 
     const selectedValue = {
-      value: { sheet: workingSheetName, column: workingColumn },
-      label: workingColumn,
+      value: { sheet: workingSheetName, rowNum: rowNum },
+      label: rowNum+1,
     };
 
     const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
@@ -216,37 +237,39 @@ class TextErrorResolver extends Component {
       }),
     };
 
-    const fieldInErrorSelector = (
+    const rowInErrorSelector = (
       <Select
         options={options}
         isSearchable
         value={selectedValue}
         styles={selectStyles}
-        onChange={this.changeResolveColumn.bind(this)}
+        onChange={this.changeResolveRow.bind(this)}
       />
     );
 
+    const tableData = Object.keys(row).reduce((filtered, field) => {
+      if (requiredDdFields.indexOf(field) >= 0 && !fieldToValueMap.hasOwnProperty(field) && !row[field]) {
+        filtered.push({
+          'Field': field,
+          'Value': field,
+          'Action': '',
+        })
+      }
+      return filtered;
+    }, []);
+
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Original Value'].includes(search));
+      data = data.filter(row => row['Field'].includes(search));
     }
 
     return (
-      <div className="TextErrorResolver-table">
-        <div className="TextErrorResolver-tableTitle">
-          <div className="TextErrorResolver-searchBar">
+      <div className="RequiredResolver-table">
+        <div className="RequiredResolver-tableTitle">
+          <div className="RequiredResolver-searchBar">
             Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
-          <div className="TextErrorResolver-textValidation">
-            <b>Validation</b>: { fieldErrors.textValidation }
-            <br />
-            <span className="TextErrorResolver-textValidationRange"><b>Min</b>: { fieldErrors.textValidationMin || 'None' }</span>
-            |
-            <span className="TextErrorResolver-textValidationRange"><b>Max</b>: { fieldErrors.textValidationMax || 'None' }</span>
-            |
-            <span className="TextErrorResolver-textValidationRange"><b>Required</b>: { fieldErrors.required ? 'True' : 'False' }</span>
-          </div>
-          <div className="TextErrorResolver-tableLabel">{ fieldInErrorSelector }</div>
+          <div className="RequiredResolver-tableLabel">{ rowInErrorSelector }</div>
         </div>
         <ReactTable
           data={data}
@@ -260,14 +283,14 @@ class TextErrorResolver extends Component {
   }
 }
 
-TextErrorResolver.propTypes = {
+RequiredResolver.propTypes = {
   fieldsToMatch: PropTypes.array,
-  fieldErrors: PropTypes.object,
+  fieldToValueMap: PropTypes.object,
 };
 
-TextErrorResolver.defaultProps = {
+RequiredResolver.defaultProps = {
   fieldsToMatch: [],
-  fieldErrors: {},
+  fieldToValueMap: {},
 };
 
 function mapStateToProps(state) {
@@ -275,7 +298,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ correctValue, resolveColumn, filterTable }, dispatch);
+  return bindActionCreators({ updateValue, resolveRow, filterRow }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TextErrorResolver);
+export default connect(mapStateToProps, mapDispatchToProps)(RequiredResolver);

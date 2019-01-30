@@ -4,10 +4,7 @@ import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import CancelIcon from '../../CancelIcon/CancelIcon';
-import { removeChoiceMatch } from '../../../actions/RedcapLinterActions';
 
 class MatchedChoices extends Component {
   constructor(props) {
@@ -99,13 +96,4 @@ MatchedChoices.defaultProps = {
   tableData: [],
 };
 
-
-function mapStateToProps(state) {
-  return state;
-}
-
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ removeChoiceMatch }, dispatch);
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(MatchedChoices);
+export default MatchedChoices;

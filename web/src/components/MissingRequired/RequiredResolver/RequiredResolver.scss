@@ -1,0 +1,71 @@
+@import '../../Utilities/variables';
+@import '../../Utilities/color';
+@import '../../Utilities/mixins';
+
+.RequiredResolver-headerError {
+	color: color(red500);
+}
+
+.RequiredResolver-cellError {
+	color: color(red500);
+}
+
+.RequiredResolver-dropdown {
+  overflow: visible;
+}
+
+.RequiredResolver-noMatchButton {
+	background: transparent;
+  border-color: color(blue500);
+  border-style: solid;
+  border-width: 1px;
+  color: color(blue500);
+  transition: border-color 0.25s ease-in-out, color 0.25s ease-in-out;
+	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  font-size: 13px;
+  min-width: 82px;
+  margin-left: 7px;
+  height: 34px;
+  border-radius: 2px;
+}
+
+.RequiredResolver-noMatchButton:hover:enabled {
+  border-color: darken(color(blue500), 10%);
+  color: darken(color(blue500), 10%);
+}
+
+.RequiredResolver-buttons {
+	text-align: center;
+}
+
+.RequiredResolver-tableTitle {
+  text-align: center;
+  position: relative;
+  height: 40px;
+}
+
+.RequiredResolver-searchBar {
+  position: absolute;
+}
+
+.RequiredResolver-textValidation {
+  display: inline-block;
+}
+
+.RequiredResolver-tableLabel {
+  position: absolute;
+  left: calc(100% - 200px);
+  min-width: 200px;
+}
+
+.RequiredResolver-textValidationRange {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.RequiredResolver-input {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #dbd7d3;
+  border-radius: 10px;
+}

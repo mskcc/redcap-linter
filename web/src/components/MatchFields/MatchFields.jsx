@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
 import './MatchFields.scss';
-import { saveFields } from '../../actions/RedcapLinterActions';
+import { saveFields, removeFieldMatch } from '../../actions/RedcapLinterActions';
 
 class MatchFields extends Component {
   constructor(props) {
@@ -38,6 +38,7 @@ class MatchFields extends Component {
       redcapFieldToDataFieldMap,
       unmatchedRedcapFields,
       fieldCandidates,
+      removeFieldMatch,
     } = this.props;
     let matchedFields = matchingHeaders.map(header => ({
       'REDCap Field': header,
@@ -66,6 +67,7 @@ class MatchFields extends Component {
         <div className="MatchFields-matchedFields">
           <div className="MatchFields-title">Matched Fields</div>
           <MatchedFields
+            removeFieldMatch={removeFieldMatch}
             tableData={matchedFields}
           />
         </div>
@@ -103,7 +105,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveFields }, dispatch);
+  return bindActionCreators({ saveFields, removeFieldMatch }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MatchFields);
