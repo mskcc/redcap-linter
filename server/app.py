@@ -87,6 +87,8 @@ def save_choices():
     working_sheet_name = json.loads(form.get('workingSheetName'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
+
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
     transform_map = data_field_to_choice_map
     if not transform_map:
         transform_map = original_to_correct_value_map
@@ -95,11 +97,14 @@ def save_choices():
         df.replace('nan', '', inplace=True)
         df = df[csv_headers[sheet]]
         if sheet == working_sheet_name:
+            dd_field = [f for f in dd if f.field_name == working_column][0]
             new_list = [transform_map.get(str(f)) or f for f in list(df[working_column])]
+            if dd_field.text_validation == 'integer':
+                new_list = [int(i) if i else i for i in new_list]
+            elif dd_field.text_validation == 'number_2dp':
+                new_list = [float(i) if i else i for i in new_list]
             df[working_column] = new_list
         records[sheet] = df
-
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
     project_info = json.loads(form.get('projectInfo'))
 
@@ -143,6 +148,8 @@ def save_row():
     working_sheet_name = json.loads(form.get('workingSheetName'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
@@ -150,10 +157,13 @@ def save_row():
         df.fillna('',inplace=True)
         if sheet == working_sheet_name:
             for field in field_to_value_map:
-                df.iloc[working_row, df.columns.get_loc(field)] = field_to_value_map[field]
+                dd_field = [f for f in dd if f.field_name == field][0]
+                value = field_to_value_map[field]
+                if dd_field.text_validation == 'integer':
+                    value = int(value) if value else value
+                elif dd_field.text_validation == 'number_2dp':
+                    value = float(value) if value else value
         records[sheet] = df
-
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
     project_info = json.loads(form.get('projectInfo'))
 
@@ -198,6 +208,8 @@ def resolve_column():
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
     transform_map = data_field_to_choice_map
     if not transform_map:
         transform_map = original_to_correct_value_map
@@ -207,11 +219,14 @@ def resolve_column():
         df = df[csv_headers[sheet]]
         df.fillna('',inplace=True)
         if sheet == working_sheet_name:
+            dd_field = [f for f in dd if f.field_name == working_column][0]
             new_list = [transform_map.get(str(f)) or f for f in list(df[working_column])]
+            if dd_field.text_validation == 'integer':
+                new_list = [int(i) if i else i for i in new_list]
+            elif dd_field.text_validation == 'number_2dp':
+                new_list = [float(i) if i else i for i in new_list]
             df[working_column] = new_list
         records[sheet] = df
-
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
     columns_in_error = json.loads(form.get('columnsInError'))
     project_info = json.loads(form.get('projectInfo'))
@@ -271,7 +286,7 @@ def resolve_column():
         if dd_field.field_type in ['text', 'notes']:
             current_list = list(records[next_sheet_name][next_column])
             validations = linter.validate_text_type(current_list, dd_field)
-            textErrors = [val for val, valid in zip(current_list, validations) if valid is False]
+            textErrors = [val for val, valid in zip(current_list, validations) if val and valid is False]
             field_errors['textErrors']        = textErrors
             field_errors['textValidation']    = dd_field.text_validation
             field_errors['textValidationMin'] = dd_field.text_min
@@ -313,13 +328,13 @@ def resolve_row():
     csv_headers = json.loads(form.get('csvHeaders'))
     # Working column is the column being saved
     next_row = json.loads(form.get('nextRow') or '0')
-    logging.warning(next_row)
-    logging.warning(form.get('nextRow'))
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_row = json.loads(form.get('workingRow') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
     field_to_value_map = json.loads(form.get('fieldToValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
     records = {}
     for sheet in json_data:
@@ -328,10 +343,14 @@ def resolve_row():
         df.fillna('',inplace=True)
         if sheet == working_sheet_name:
             for field in field_to_value_map:
-                df.iloc[working_row, df.columns.get_loc(field)] = field_to_value_map[field]
+                dd_field = [f for f in dd if f.field_name == field][0]
+                value = field_to_value_map[field]
+                if dd_field.text_validation == 'integer':
+                    value = int(value) if value else value
+                elif dd_field.text_validation == 'number_2dp':
+                    value = float(value) if value else value
+                df.iloc[working_row, df.columns.get_loc(field)] = value
         records[sheet] = df
-
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
     records_missing_required_data = json.loads(form.get('recordsMissingRequiredData'))
     project_info = json.loads(form.get('projectInfo'))
@@ -355,7 +374,6 @@ def resolve_row():
                 else:
                     next_row = sheet_rows_in_error[sheet_rows_in_error.index(working_row)+1]
 
-    logging.warning(next_row)
     # TODO only remove if errors are resolved
     # if working_sheet_name:
     #     error_cols = columns_in_error[working_sheet_name]

@@ -8,7 +8,12 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { correctValue, resolveColumn, filterTable } from '../../../actions/RedcapLinterActions';
+import {
+  correctValue,
+  resolveColumn,
+  resolveRow,
+  filterTable,
+} from '../../../actions/RedcapLinterActions';
 
 class TextErrorResolver extends Component {
   constructor(props) {
@@ -20,25 +25,33 @@ class TextErrorResolver extends Component {
     };
   }
 
-  changeResolveColumn(e) {
+  changeResolve(e) {
     const {
       jsonData,
       projectInfo,
       ddData,
       csvHeaders,
+      recordsMissingRequiredData,
       columnsInError,
+      resolveRow,
       resolveColumn,
     } = this.props;
     const payload = {
       jsonData,
       projectInfo,
-      nextColumn: e.value.column,
-      nextSheetName: e.value.sheet,
       columnsInError,
+      nextColumn: e.value.column,
+      nextRow: e.value.rowNum,
+      nextSheetName: e.value.sheet,
+      recordsMissingRequiredData,
       ddData,
       csvHeaders,
     };
-    resolveColumn(payload);
+    if (e.value.rowNum) {
+      resolveRow(payload);
+    } else {
+      resolveColumn(payload);
+    }
   }
 
   handleCorrect(originalValue) {
@@ -222,7 +235,7 @@ class TextErrorResolver extends Component {
         isSearchable
         value={selectedValue}
         styles={selectStyles}
-        onChange={this.changeResolveColumn.bind(this)}
+        onChange={this.changeResolve.bind(this)}
       />
     );
 
@@ -275,7 +288,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ correctValue, resolveColumn, filterTable }, dispatch);
+  return bindActionCreators({ correctValue, resolveColumn, resolveRow, filterTable }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextErrorResolver);

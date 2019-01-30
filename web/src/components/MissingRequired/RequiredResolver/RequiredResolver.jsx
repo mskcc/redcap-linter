@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { updateValue, resolveRow, filterRow } from '../../../actions/RedcapLinterActions';
+import { updateValue, resolveRow, resolveColumn, filterRow } from '../../../actions/RedcapLinterActions';
 
 class RequiredResolver extends Component {
   constructor(props) {
@@ -19,25 +19,33 @@ class RequiredResolver extends Component {
     };
   }
 
-  changeResolveRow(e) {
+  changeResolve(e) {
     const {
       jsonData,
       projectInfo,
       ddData,
       csvHeaders,
       recordsMissingRequiredData,
+      columnsInError,
       resolveRow,
+      resolveColumn,
     } = this.props;
     const payload = {
       jsonData,
       projectInfo,
+      columnsInError,
+      nextColumn: e.value.column,
       nextRow: e.value.rowNum,
       nextSheetName: e.value.sheet,
       recordsMissingRequiredData,
       ddData,
       csvHeaders,
     };
-    resolveRow(payload);
+    if (e.value.rowNum) {
+      resolveRow(payload);
+    } else {
+      resolveColumn(payload);
+    }
   }
 
   onFocus(e) {
@@ -46,7 +54,6 @@ class RequiredResolver extends Component {
       rowNum,
       filterRow,
     } = this.props;
-    console.log(this.props);
     filterRow(sheet, rowNum);
   }
 
@@ -243,7 +250,7 @@ class RequiredResolver extends Component {
         isSearchable
         value={selectedValue}
         styles={selectStyles}
-        onChange={this.changeResolveRow.bind(this)}
+        onChange={this.changeResolve.bind(this)}
       />
     );
 
@@ -298,7 +305,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ updateValue, resolveRow, filterRow }, dispatch);
+  return bindActionCreators({ updateValue, resolveRow, resolveColumn, filterRow }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RequiredResolver);

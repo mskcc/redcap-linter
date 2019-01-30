@@ -85,7 +85,6 @@ class Datatable extends Component {
       filterColumn,
       tableFilter,
       selectedRowNum,
-      filterRowNum,
       tableFieldsNotInRedcap,
       sheetInError,
     } = this.props;
