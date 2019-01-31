@@ -20,12 +20,6 @@ export const MATCH_CHOICES_FAILURE = 'MATCH_CHOICES_FAILURE';
 export const REMOVE_CHOICE_MATCH_SUCCESS = 'REMOVE_CHOICE_MATCH_SUCCESS';
 export const REMOVE_CHOICE_MATCH_FAILURE = 'REMOVE_CHOICE_MATCH_FAILURE';
 
-export const SAVE_CHOICES_SUCCESS = 'SAVE_CHOICES_SUCCESS';
-export const SAVE_CHOICES_FAILURE = 'SAVE_CHOICES_FAILURE';
-
-export const SAVE_ROW_SUCCESS = 'SAVE_ROW_SUCCESS';
-export const SAVE_ROW_FAILURE = 'SAVE_ROW_FAILURE';
-
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
 export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
@@ -86,7 +80,7 @@ export function postForm(form) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/',
+      url: 'http://localhost:5000/',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -171,7 +165,7 @@ export function saveFields(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/save_fields',
+      url: 'http://localhost:5000/save_fields',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -181,88 +175,6 @@ export function saveFields(payload) {
     return request.then(
       response => dispatch(saveFieldsSuccess(response)),
       err => dispatch(saveFieldsError(err)),
-    );
-  };
-}
-
-
-export function saveChoicesSuccess(payload) {
-  return {
-    type: SAVE_CHOICES_SUCCESS,
-    payload,
-  };
-}
-
-export function saveChoicesError(payload) {
-  return {
-    type: SAVE_CHOICES_FAILURE,
-    payload,
-  };
-}
-
-
-export function saveChoices(payload) {
-  return function action(dispatch) {
-    const data = new FormData();
-    data.append('jsonData', JSON.stringify(payload.jsonData));
-    data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap || {}));
-    data.append('originalToCorrectedValueMap', JSON.stringify(payload.originalToCorrectedValueMap || {}));
-    data.append('projectInfo', JSON.stringify(payload.projectInfo));
-    data.append('workingColumn', JSON.stringify(payload.workingColumn));
-    data.append('workingSheetName', JSON.stringify(payload.workingSheetName));
-    data.append('ddData', JSON.stringify(payload.ddData));
-    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-
-    const request = axios({
-      method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/save_choices',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data,
-    });
-
-    return request.then(
-      response => dispatch(saveChoicesSuccess(response)),
-      err => dispatch(saveChoicesError(err)),
-    );
-  };
-}
-
-export function saveRowSuccess(payload) {
-  return {
-    type: SAVE_ROW_SUCCESS,
-    payload,
-  };
-}
-
-export function saveRowError(payload) {
-  return {
-    type: SAVE_ROW_FAILURE,
-    payload,
-  };
-}
-
-
-export function saveRow(payload) {
-  return function action(dispatch) {
-    const data = new FormData();
-    data.append('jsonData', JSON.stringify(payload.jsonData));
-    data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
-    data.append('projectInfo', JSON.stringify(payload.projectInfo));
-    data.append('workingRow', JSON.stringify(payload.workingRow));
-    data.append('workingSheetName', JSON.stringify(payload.workingSheetName));
-    data.append('ddData', JSON.stringify(payload.ddData));
-    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-
-    const request = axios({
-      method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/save_row',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data,
-    });
-
-    return request.then(
-      response => dispatch(saveRowSuccess(response)),
-      err => dispatch(saveRowError(err)),
     );
   };
 }
@@ -494,11 +406,12 @@ export function resolveColumn(payload) {
     data.append('workingColumn', payload.workingColumn ? JSON.stringify(payload.workingColumn) : '');
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
+    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
     // data.append('sheetName', JSON.stringify(payload.sheetName));
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/resolve_column',
+      url: 'http://localhost:5000/resolve_column',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -537,11 +450,11 @@ export function resolveRow(payload) {
     data.append('workingRow', payload.workingRow ? JSON.stringify(payload.workingRow) : 0);
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('recordsMissingRequiredData', JSON.stringify(payload.recordsMissingRequiredData));
-    // data.append('sheetName', JSON.stringify(payload.sheetName));
+    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/resolve_row',
+      url: 'http://localhost:5000/resolve_row',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });

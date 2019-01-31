@@ -49,6 +49,7 @@ class ResolveErrors extends Component {
         columnsInError,
         nextSheetName,
         nextColumn,
+        action: 'continue',
       };
       resolveColumn(payload);
     }
@@ -63,19 +64,18 @@ class ResolveErrors extends Component {
     const {
       loading,
     } = this.state;
+    console.log(this.props);
     let content = '';
     // TODO rework the logic here
     if (loading) {
       content = <Loader active content="Loading" />;
-    } else if (Object.keys(columnsInError).length === 0) {
-      content = <ErrorsResolved />;
     } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
       content = <MatchChoices />;
     } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
       content = <TextValidation />;
-    } else if (Object.keys(recordsMissingRequiredData) > 0) {
+    } else if (Object.keys(recordsMissingRequiredData).length > 0) {
       content = <MissingRequired />;
-    } else {
+    } else if (Object.keys(columnsInError).length === 0 && Object.keys(recordsMissingRequiredData).length === 0) {
       content = <ErrorsResolved />;
     }
     return (

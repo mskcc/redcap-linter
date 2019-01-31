@@ -41,6 +41,7 @@ class ChoiceMatcher extends Component {
       recordsMissingRequiredData,
       ddData,
       csvHeaders,
+      action: 'continue',
     };
     if (e.value.rowNum) {
       resolveRow(payload);

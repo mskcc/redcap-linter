@@ -46,6 +46,7 @@ class TextErrorResolver extends Component {
       recordsMissingRequiredData,
       ddData,
       csvHeaders,
+      action: 'continue',
     };
     if (e.value.rowNum) {
       resolveRow(payload);
@@ -188,7 +189,7 @@ class TextErrorResolver extends Component {
         });
       });
       options.push({
-        label: sheet,
+        label: `${sheet} | Column Errors`,
         options: subOptions,
       });
       allErrors = allErrors.concat(columnsInError[sheet]);

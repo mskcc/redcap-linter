@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import ResolvedRequiredErrors from './ResolvedRequiredErrors/ResolvedRequiredErrors';
 import RequiredResolver from './RequiredResolver/RequiredResolver';
 import './MissingRequired.scss';
-import { saveRow, resolveRow, filterRow, updateValue } from '../../actions/RedcapLinterActions';
+import { resolveRow, filterRow, updateValue } from '../../actions/RedcapLinterActions';
 
 class MissingRequired extends Component {
   constructor(props) {
@@ -21,8 +21,9 @@ class MissingRequired extends Component {
       ddData,
       workingRow,
       workingSheetName,
+      recordsMissingRequiredData,
       csvHeaders,
-      saveRow,
+      resolveRow,
     } = this.props;
     const payload = {
       jsonData,
@@ -30,10 +31,12 @@ class MissingRequired extends Component {
       projectInfo,
       workingRow,
       workingSheetName,
+      recordsMissingRequiredData,
       ddData,
       csvHeaders,
+      action: 'save',
     };
-    saveRow(payload);
+    resolveRow(payload);
   }
 
   saveAndContinue(e) {
@@ -57,6 +60,7 @@ class MissingRequired extends Component {
       recordsMissingRequiredData,
       ddData,
       csvHeaders,
+      action: 'continue',
     };
     resolveRow(payload);
   }
@@ -152,7 +156,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveRow, resolveRow, filterRow, updateValue }, dispatch);
+  return bindActionCreators({ resolveRow, filterRow, updateValue }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MissingRequired);

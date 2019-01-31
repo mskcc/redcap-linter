@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
 import './TextValidation.scss';
-import { saveChoices, resolveColumn } from '../../actions/RedcapLinterActions';
+import { resolveColumn } from '../../actions/RedcapLinterActions';
 
 class TextValidation extends Component {
   constructor(props) {
@@ -22,7 +22,8 @@ class TextValidation extends Component {
       workingColumn,
       workingSheetName,
       csvHeaders,
-      saveChoices,
+      columnsInError,
+      resolveColumn,
     } = this.props;
     const payload = {
       jsonData,
@@ -31,9 +32,11 @@ class TextValidation extends Component {
       workingColumn,
       workingSheetName,
       ddData,
+      columnsInError,
       csvHeaders,
+      action: 'save',
     };
-    saveChoices(payload);
+    resolveColumn(payload);
   }
 
   saveAndContinue(e) {
@@ -57,6 +60,7 @@ class TextValidation extends Component {
       columnsInError,
       ddData,
       csvHeaders,
+      action: 'continue',
     };
     resolveColumn(payload);
   }
@@ -109,7 +113,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveChoices, resolveColumn }, dispatch);
+  return bindActionCreators({ resolveColumn }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextValidation);

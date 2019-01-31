@@ -34,6 +34,7 @@ class MatchFields extends Component {
 
   render() {
     const {
+      ddData,
       matchingHeaders,
       redcapFieldToDataFieldMap,
       unmatchedRedcapFields,
@@ -76,6 +77,7 @@ class MatchFields extends Component {
           <FieldMatcher
             fieldsToMatch={unmatchedRedcapFields}
             fieldCandidates={fieldCandidates}
+            dd={ddData}
           />
         </div>
         <div className="MatchFields-saveAndContinue">

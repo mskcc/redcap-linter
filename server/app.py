@@ -63,129 +63,12 @@ def save_fields():
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     results = {
-        'jsonData':                json_data,
+        'jsonData':                   json_data,
         'recordsMissingRequiredData': records_missing_required_data,
-        'cellsWithErrors':         cells_with_errors,
-        'allErrors':               all_errors,
-        'columnsInError':          columns_in_error,
-    }
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
-
-
-@app.route('/save_choices', methods=['GET', 'POST', 'OPTIONS'])
-def save_choices():
-    form  = request.form.to_dict()
-    data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
-    original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
-    csv_headers = json.loads(form.get('csvHeaders'))
-    working_column = json.loads(form.get('workingColumn'))
-    working_sheet_name = json.loads(form.get('workingSheetName'))
-    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
-    records = {}
-
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
-    transform_map = data_field_to_choice_map
-    if not transform_map:
-        transform_map = original_to_correct_value_map
-    for sheet in json_data:
-        df = pd.DataFrame(json_data[sheet])
-        df.replace('nan', '', inplace=True)
-        df = df[csv_headers[sheet]]
-        if sheet == working_sheet_name:
-            dd_field = [f for f in dd if f.field_name == working_column][0]
-            new_list = [transform_map.get(str(f)) or f for f in list(df[working_column])]
-            if dd_field.text_validation == 'integer':
-                new_list = [int(i) if i else i for i in new_list]
-            elif dd_field.text_validation == 'number_2dp':
-                new_list = [float(i) if i else i for i in new_list]
-            df[working_column] = new_list
-        records[sheet] = df
-
-    project_info = json.loads(form.get('projectInfo'))
-
-    # TODO Lint specific column
-    datafile_errors = linter.lint_datafile(dd, records, project_info)
-    cells_with_errors = datafile_errors['cells_with_errors']
-    linting_errors = datafile_errors['linting_errors']
-    columns_in_error = {}
-    for inst in cells_with_errors:
-        instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
-        if len(instrument_columns_in_error) > 0:
-            columns_in_error[inst] = instrument_columns_in_error
-
-    # Note this will override the previous all errors
-    all_errors = linting_errors
-    all_errors = [{"Error": error} for error in all_errors]
-
-    json_data   = {}
-
-    for sheetName, sheet in records.items():
-        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
-        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
-
-    results = {
-        'csvHeaders':              csv_headers,
-        'jsonData':                json_data,
-        'cellsWithErrors':         cells_with_errors,
-        'allErrors':               all_errors,
-        'columnsInError':          columns_in_error,
-    }
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
-
-@app.route('/save_row', methods=['GET', 'POST', 'OPTIONS'])
-def save_row():
-    form  = request.form.to_dict()
-    field_to_value_map = json.loads(form.get('fieldToValueMap'))
-    csv_headers = json.loads(form.get('csvHeaders'))
-    working_row = json.loads(form.get('workingRow'))
-    working_sheet_name = json.loads(form.get('workingSheetName'))
-    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
-
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
-
-    records = {}
-    for sheet in json_data:
-        df = pd.DataFrame(json_data[sheet])
-        df = df[csv_headers[sheet]]
-        df.fillna('',inplace=True)
-        if sheet == working_sheet_name:
-            for field in field_to_value_map:
-                dd_field = [f for f in dd if f.field_name == field][0]
-                value = field_to_value_map[field]
-                if dd_field.text_validation == 'integer':
-                    value = int(value) if value else value
-                elif dd_field.text_validation == 'number_2dp':
-                    value = float(value) if value else value
-        records[sheet] = df
-
-    project_info = json.loads(form.get('projectInfo'))
-
-    # TODO Lint specific column
-    datafile_errors = linter.lint_datafile(dd, records, project_info)
-    cells_with_errors = datafile_errors['cells_with_errors']
-    records_missing_required_data = datafile_errors['records_missing_required_data']
-    linting_errors = datafile_errors['linting_errors']
-
-    # Note this will override the previous all errors
-    all_errors = linting_errors
-    all_errors = [{"Error": error} for error in all_errors]
-
-    json_data   = {}
-
-    for sheetName, sheet in records.items():
-        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
-        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
-
-    results = {
-        'csvHeaders':              csv_headers,
-        'jsonData':                json_data,
-        'cellsWithErrors':         cells_with_errors,
-        'allErrors':               all_errors,
-        'recordsMissingRequiredData': records_missing_required_data,
+        'cellsWithErrors':            cells_with_errors,
+        'allErrors':                  all_errors,
+        'csvHeaders':                 csv_headers,
+        'columnsInError':             columns_in_error,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -197,6 +80,7 @@ def resolve_column():
     # TODO Take in form param to navigate to any unresolved columns
     csv_headers = json.loads(form.get('csvHeaders'))
     # Working column is the column being saved
+    action = json.loads(form.get('action') or '""')
     next_column = json.loads(form.get('nextColumn') or '""')
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_column = json.loads(form.get('workingColumn') or '""')
@@ -295,25 +179,36 @@ def resolve_column():
 
     columns_in_error = {}
     for inst in cells_with_errors:
-        instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
+        instrument_columns_in_error = []
+        for f in list(cells_with_errors[inst].columns):
+            if True in list(cells_with_errors[inst][f]):
+                instrument_columns_in_error.append(f)
         if len(instrument_columns_in_error) > 0:
             columns_in_error[inst] = instrument_columns_in_error
 
+    logging.warning(columns_in_error)
+
     json_data   = {}
+
+    all_errors = linting_errors
+    all_errors = [{"Error": error} for error in all_errors]
 
     for sheetName, sheet in records.items():
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     results = {
-        'workingColumn':    next_column,
-        'workingSheetName': next_sheet_name,
-        'jsonData':         json_data,
-        'dataFieldToChoiceMap': {},
-        'cellsWithErrors':  cells_with_errors,
-        'columnsInError':   columns_in_error,
-        'fieldErrors':      field_errors,
+        'jsonData':        json_data,
+        'cellsWithErrors': cells_with_errors,
+        'columnsInError':  columns_in_error,
+        'allErrors':       all_errors,
     }
+    if action == 'continue':
+        results['workingColumn'] = next_column
+        results['workingSheetName'] = next_sheet_name
+        results['fieldErrors'] = field_errors
+        results['dataFieldToChoiceMap'] = {}
+
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -324,6 +219,7 @@ def resolve_row():
     # TODO Take in form param to navigate to any unresolved columns
     csv_headers = json.loads(form.get('csvHeaders'))
     # Working column is the column being saved
+    action = json.loads(form.get('action') or '""')
     next_row = json.loads(form.get('nextRow') or '0')
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_row = json.loads(form.get('workingRow') or '""')
@@ -384,6 +280,9 @@ def resolve_row():
     records_missing_required_data = datafile_errors['records_missing_required_data']
     linting_errors = datafile_errors['linting_errors']
 
+    all_errors = linting_errors
+    all_errors = [{"Error": error} for error in all_errors]
+
     json_data   = {}
 
     for sheetName, sheet in records.items():
@@ -391,14 +290,16 @@ def resolve_row():
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     results = {
-        'workingRow':       next_row,
-        'workingSheetName': next_sheet_name,
         'jsonData':         json_data,
-        'fieldToValueMap':  {},
-        'fieldErrors':      {},
+        'allErrors':        all_errors,
         'cellsWithErrors':  cells_with_errors,
         'recordsMissingRequiredData': records_missing_required_data,
     }
+    if action == 'continue':
+        results['workingRow'] = next_row
+        results['workingSheetName'] = next_sheet_name
+        results['fieldToValueMap'] = {}
+        results['fieldErrors'] = {}
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -558,7 +459,6 @@ def post_form():
             for f2 in fields_not_in_redcap[sheet]:
                 if not field_candidates.get(f1):
                     field_candidates[f1] = []
-                # TODO include form name in this if column name repeats?
                 existing_candidate = [item for item in field_candidates[f1] if item['candidate'] == f2]
                 if len(existing_candidate) > 0:
                     existing_candidate[0]['sheets'].append(sheet)

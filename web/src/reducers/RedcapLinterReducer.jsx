@@ -12,10 +12,6 @@ import {
   REMOVE_CHOICE_MATCH_FAILURE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
-  SAVE_CHOICES_SUCCESS,
-  SAVE_CHOICES_FAILURE,
-  SAVE_ROW_SUCCESS,
-  SAVE_ROW_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
   FILTER_TABLE_SUCCESS,
@@ -53,22 +49,6 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { loading: false, new: false, page: 'lint' }, action.payload.data);
     }
     case SAVE_FIELDS_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case SAVE_CHOICES_SUCCESS: {
-      return Object.assign({}, state, action.payload.data);
-    }
-    case SAVE_CHOICES_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case SAVE_ROW_SUCCESS: {
-      return Object.assign({}, state, action.payload.data);
-    }
-    case SAVE_ROW_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

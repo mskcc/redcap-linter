@@ -68,7 +68,6 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
         output_records['redcap_repeat_instance'] = redcap_repeat_instance
 
     for redcap_field in matching_fields:
-        logging.warning(redcap_field.field_name)
         current_list = list(records[redcap_field.field_name])
         current_list = [i.strip() if isinstance(i, basestring) else i for i in current_list]
 

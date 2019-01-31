@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import './MatchChoices.scss';
-import { saveChoices, resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
+import { resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
 
 class MatchChoices extends Component {
   constructor(props) {
@@ -21,8 +21,9 @@ class MatchChoices extends Component {
       ddData,
       workingColumn,
       workingSheetName,
+      columnsInError,
       csvHeaders,
-      saveChoices,
+      resolveColumn,
     } = this.props;
     const payload = {
       jsonData,
@@ -30,10 +31,12 @@ class MatchChoices extends Component {
       projectInfo,
       workingColumn,
       workingSheetName,
+      columnsInError,
       ddData,
       csvHeaders,
+      action: 'save'
     };
-    saveChoices(payload);
+    resolveColumn(payload);
   }
 
   saveAndContinue(e) {
@@ -57,6 +60,7 @@ class MatchChoices extends Component {
       columnsInError,
       ddData,
       csvHeaders,
+      action: 'continue'
     };
     resolveColumn(payload);
   }
@@ -131,7 +135,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveChoices, resolveColumn, removeChoiceMatch }, dispatch);
+  return bindActionCreators({ resolveColumn, removeChoiceMatch }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MatchChoices);
