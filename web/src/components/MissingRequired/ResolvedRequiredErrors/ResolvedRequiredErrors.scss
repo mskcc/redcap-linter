@@ -9,7 +9,7 @@
 }
 
 .ResolvedRequiredErrors-tableTitle {
-  height: 40px;
+  overflow: hidden;
 }
 
 .ResolvedRequiredErrors-searchBar {
@@ -34,6 +34,7 @@
 
 .ResolvedRequiredErrors-sheetInfo {
     float: right;
+		width: 50%;
 }
 
 .ResolvedRequiredErrors-cancel {

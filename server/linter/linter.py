@@ -98,8 +98,8 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
             errors = []
             for item in current_list:
                 if not item:
-                    has_error = True if redcap_field.required else None
-                    errors.append(has_error)
+                    # has_error = True if redcap_field.required else None
+                    errors.append(None)
                 else:
                     if is_encoded:
                         errors.append(False)

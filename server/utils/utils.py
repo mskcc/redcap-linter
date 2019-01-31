@@ -62,10 +62,11 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
         number_max = float(number_max)
     for d in numbers_list:
         if not d or pd.isnull(d):
-            if required:
-                formatted_numbers.append(False)
-            else:
-                formatted_numbers.append(None)
+            formatted_numbers.append(None)
+            # if required:
+            #     formatted_numbers.append(False)
+            # else:
+            #     formatted_numbers.append(None)
             continue
         if not isinstance(d, numbers.Number):
             formatted_numbers.append(False)
@@ -106,10 +107,11 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
         date_max = date_max.replace(tzinfo=None)
     for d in date_list:
         if not d or pd.isnull(d):
-            if required:
-                formatted_dates.append(False)
-            else:
-                formatted_dates.append(None)
+            formatted_dates.append(None)
+            # if required:
+            #     formatted_dates.append(False)
+            # else:
+            #     formatted_dates.append(None)
             continue
         if isinstance(d, str) or isinstance(d, unicode):
             d = parser.parse(d)

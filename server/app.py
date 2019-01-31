@@ -186,8 +186,6 @@ def resolve_column():
         if len(instrument_columns_in_error) > 0:
             columns_in_error[inst] = instrument_columns_in_error
 
-    logging.warning(columns_in_error)
-
     json_data   = {}
 
     all_errors = linting_errors
@@ -208,6 +206,7 @@ def resolve_column():
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = field_errors
         results['dataFieldToChoiceMap'] = {}
+        results['originalToCorrectedValueMap'] = {}
 
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
