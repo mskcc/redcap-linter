@@ -26,6 +26,12 @@ class MatchedChoices extends Component {
     if (!cellInfo.original['Permissible Value']) {
       className += ' MatchedChoices-cellError';
     }
+    let cellValue = '';
+    if (Array.isArray(cellInfo.value)) {
+      cellValue = cellInfo.value.join(', ');
+    } else {
+      cellValue = cellInfo.value;
+    }
     let cancelButton = '';
     if (cellInfo.column.Header === 'Permissible Value' && cellInfo.original['Permissible Value'] !== cellInfo.original['Data Field']) {
       cancelButton = (
@@ -39,7 +45,7 @@ class MatchedChoices extends Component {
     return (
       <div className="MatchedChoices-cellContainer">
         <div className={className}>
-          { cellInfo.value }
+          { cellValue }
         </div>
         { cancelButton }
       </div>

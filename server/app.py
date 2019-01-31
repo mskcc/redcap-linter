@@ -101,7 +101,12 @@ def resolve_column():
         df.fillna('',inplace=True)
         if sheet == working_sheet_name:
             dd_field = [f for f in dd if f.field_name == working_column][0]
-            new_list = [transform_map.get(str(f)) or f for f in list(df[working_column])]
+            new_list = []
+            for f in list(df[working_column]):
+                new_value = transform_map.get(str(f)) or f
+                if isinstance(new_value, list):
+                    new_value = ', '.join([str(i) for i in new_value])
+                new_list.append(new_value)
             if dd_field.text_validation == 'integer':
                 new_list = [int(i) if i else i for i in new_list]
             elif dd_field.text_validation == 'number_2dp':
@@ -454,6 +459,7 @@ def post_form():
 
 
     for f1 in unmatched_redcap_fields:
+        dd_field = [f for f in dd_data if f['field_name'] == f1][0]
         for sheet in fields_not_in_redcap:
             for f2 in fields_not_in_redcap[sheet]:
                 if not field_candidates.get(f1):
@@ -465,7 +471,7 @@ def post_form():
                     field_candidates[f1].append({
                         'candidate': f2,
                         'sheets': [sheet],
-                        'score': fuzz.ratio(f1, f2)
+                        'score': fuzz.ratio(f1, f2) + fuzz.ratio(dd_field['field_label'], f2)
                     })
 
     # TODO Make the code below a separate endpoint for after the headers are matched.

@@ -8,6 +8,7 @@ class RedcapField(object):
 
     def __init__(self, **kwargs):
         self.field_name = kwargs.get('field_name')
+        self.field_label = kwargs.get('field_label')
         self.field_type = kwargs.get('field_type')
         self.text_validation = kwargs.get('text_validation')
         self.text_min = kwargs.get('text_min')
@@ -21,6 +22,7 @@ class RedcapField(object):
     def from_data_dictionary(cls, data_dictionary, field_name):
         field = {
             'field_name': field_name,
+            'field_label': utils.get_from_data_dictionary(data_dictionary, field_name, 'field_label'),
             'field_type': utils.get_from_data_dictionary(data_dictionary, field_name, 'field_type'),
             'text_validation': utils.get_from_data_dictionary(data_dictionary, field_name, 'text_validation_type_or_show_slider_number'),
             'text_min': utils.get_from_data_dictionary(data_dictionary, field_name, 'text_validation_min'),
@@ -43,6 +45,7 @@ class RedcapField(object):
     def from_json(cls, field_json):
         field = {
             'field_name': field_json.get('field_name') or field_json.get('variable_field_name'),
+            'field_label': field_json.get('field_label'),
             'field_type': field_json.get('field_type'),
             'text_validation': field_json.get('text_validation') or field_json.get('text_validation_type_or_show_slider_number'),
             'text_min': field_json.get('text_min') or field_json.get('text_validation_min'),

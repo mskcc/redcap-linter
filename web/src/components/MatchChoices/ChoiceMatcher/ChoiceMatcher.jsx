@@ -73,9 +73,16 @@ class ChoiceMatcher extends Component {
 
   handleChange(fieldToMatch, e) {
     const {
+      fieldErrors,
+    } = this.props;
+    const {
       dataFieldToChoiceMap,
     } = this.state;
-    dataFieldToChoiceMap[fieldToMatch] = e.value;
+    if (fieldErrors && fieldErrors.fieldType === 'checkbox') {
+      dataFieldToChoiceMap[fieldToMatch] = e.map(choice => choice.value);
+    } else {
+      dataFieldToChoiceMap[fieldToMatch] = e.value;
+    }
     this.setState({ dataFieldToChoiceMap });
   }
 
@@ -99,7 +106,12 @@ class ChoiceMatcher extends Component {
     const dataField = cellInfo.original['Data Field'];
     const value = dataFieldToChoiceMap[dataField];
     let selectedValue = '';
-    if (value) {
+    if (Array.isArray(value)) {
+      selectedValue = value.map(choice => ({
+        value: choice,
+        label: choice,
+      }));
+    } else {
       selectedValue = {
         value: value,
         label: value,
@@ -112,11 +124,17 @@ class ChoiceMatcher extends Component {
       value: score.candidate,
       label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.choiceValue}</span></span>,
     }));
+
+    let isMulti = false;
+    if (fieldErrors.fieldType === 'checkbox') {
+      isMulti = true;
+    }
     return (
       <Select
         options={options}
         isSearchable
-        value={selectedValue}
+        isMulti={isMulti}
+        selectedValue={selectedValue}
         onChange={e => this.handleChange(fieldToMatch, e)}
         placeholder="Select..."
       />

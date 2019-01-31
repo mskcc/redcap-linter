@@ -104,7 +104,11 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
                     if is_encoded:
                         errors.append(False)
                     else:
-                        errors.append(item not in choices_dict)
+                        if redcap_field.field_type == 'checkbox':
+                            checkbox_items = [i.strip() for i in item.split(',')]
+                            errors.append(True in [i not in choices_dict for i in checkbox_items])
+                        else:
+                            errors.append(item not in choices_dict)
             instrument_errors[redcap_field.field_name] = errors
 
             if redcap_field.field_type == 'checkbox':
