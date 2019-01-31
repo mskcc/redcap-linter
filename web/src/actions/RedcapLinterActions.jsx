@@ -35,9 +35,6 @@ export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
 export const RESOLVE_ROW_SUCCESS = 'RESOLVE_ROW_SUCCESS';
 export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 
-export const REMOVE_VALUE_SUCCESS = 'REMOVE_VALUE_SUCCESS';
-export const REMOVE_VALUE_FAILURE = 'REMOVE_VALUE_FAILURE';
-
 export const CORRECT_VALUE_SUCCESS = 'CORRECT_VALUE_SUCCESS';
 export const CORRECT_VALUE_FAILURE = 'CORRECT_VALUE_FAILURE';
 
@@ -80,7 +77,7 @@ export function postForm(form) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://localhost:5000/',
+      url: 'http://dev.omop.mskcc.org:5000/',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -165,7 +162,7 @@ export function saveFields(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://localhost:5000/save_fields',
+      url: 'http://dev.omop.mskcc.org:5000/save_fields',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -226,33 +223,6 @@ export function removeChoiceMatch(dataField, permissibleValue) {
     return dispatch(removeChoiceMatchSuccess(payload));
   };
 }
-
-// export function removeValueSuccess(payload) {
-//   return {
-//     type: REMOVE_VALUE_SUCCESS,
-//     payload,
-//   };
-// }
-//
-// export function removeValueFailure(payload) {
-//   return {
-//     type: REMOVE_VALUE_FAILURE,
-//     payload,
-//   };
-// }
-//
-// export function removeValue(originalValue, correctedValue) {
-//   return function action(dispatch) {
-//     const payload = {
-//       originalValue,
-//       correctedValue,
-//     };
-//     if (!originalValue) {
-//       return dispatch(removeValueFailure(payload));
-//     }
-//     return dispatch(removeValueSuccess(payload));
-//   };
-// }
 
 export function correctValueSuccess(payload) {
   return {
@@ -411,7 +381,7 @@ export function resolveColumn(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://localhost:5000/resolve_column',
+      url: 'http://dev.omop.mskcc.org:5000/resolve_column',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -454,7 +424,7 @@ export function resolveRow(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://localhost:5000/resolve_row',
+      url: 'http://dev.omop.mskcc.org:5000/resolve_row',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
