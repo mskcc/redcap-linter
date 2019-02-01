@@ -167,7 +167,7 @@ class ChoiceMatcher extends Component {
     return (
       <div className="ChoiceMatcher-buttons">
         <button type="button" disabled={disabled} onClick={e => this.handleMatch(fieldToMatch, e)} className="App-submitButton">Match</button>
-        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="ChoiceMatcher-noMatchButton">No Match</button>
+        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="App-actionButton">No Match</button>
       </div>
     );
   }

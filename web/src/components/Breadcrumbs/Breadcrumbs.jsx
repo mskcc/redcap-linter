@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './Breadcrumbs.scss';
+import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
@@ -15,7 +16,7 @@ class Breadcrumbs extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const pages = ['intro', 'matchFields', 'lint'];
+    const pages = ['intro', 'matchFields', 'lint', 'finish'];
     if (nextProps.new) {
       return { currentPage: 'matchFields' };
     }
@@ -40,7 +41,7 @@ class Breadcrumbs extends Component {
   render() {
     const { page } = this.props;
     const { currentPage } = this.state;
-    const pages = ['intro', 'matchFields', 'lint']
+    const pages = ['intro', 'matchFields', 'lint', 'finish']
 
     const {
       jsonData,
@@ -57,11 +58,16 @@ class Breadcrumbs extends Component {
           <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
-        <button type="submit" form="downloadForm" className="Breadcrumbs-download" value="Submit">
+        <button type="submit" form="downloadForm" className="App-actionButton" value="Submit">
+          <div className="Breadcrumbs-buttonText">
+            Download Progress
+          </div>
           <div className="Breadcrumbs-downloadIcon">
             <DownloadIcon />
           </div>
-          Download Progress
+        </button>
+        <button type="submit" onClick={e => this.goTo('finish', e)} className="App-submitButton Breadcrumbs-finish" value="Submit">
+            Finish Resolving
         </button>
       </div>
     );
@@ -77,23 +83,32 @@ class Breadcrumbs extends Component {
     if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
       breadcrumbs.push(' / ');
       if (page === 'matchFields') {
-        breadcrumbs.push('Match Fields')
+        breadcrumbs.push('Match Fields');
       } else {
-        breadcrumbs.push(<a key="matchFields" href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a>)
+        breadcrumbs.push(<a key="matchFields" href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a>);
       }
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
       breadcrumbs.push(' / ');
       if (page === 'lint') {
-        breadcrumbs.push('Lint')
+        breadcrumbs.push('Lint');
       } else {
-        breadcrumbs.push(<a key="lint" href="#" onClick={e => this.goTo('lint', e)}>Lint</a>)
+        breadcrumbs.push(<a key="lint" href="#" onClick={e => this.goTo('lint', e)}>Lint</a>);
+      }
+    }
+
+    if (pages.indexOf(currentPage) >= pages.indexOf('finish')) {
+      breadcrumbs.push(' / ');
+      if (page === 'finish') {
+        breadcrumbs.push('Finish');
+      } else {
+        breadcrumbs.push(<a key="finish" href="#" onClick={e => this.goTo('finish', e)}>Finish</a>);
       }
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
-      breadcrumbs.push(downloadButton)
+      breadcrumbs.push(downloadButton);
     }
     return (
       <div className="Breadcrumbs-navigation">

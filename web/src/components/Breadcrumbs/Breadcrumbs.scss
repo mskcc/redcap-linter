@@ -1,7 +1,8 @@
+@import '../Utilities/color';
+
 .Breadcrumbs-navigation {
   float: right;
-  width: 77%;
-  margin-right: 15px;
+  width: 80%;
   font-size: 14px;
   height: 30px;
   line-height: 30px;
@@ -10,22 +11,26 @@
 .Breadcrumbs-downloadIcon {
   width: 25px;
   height: 25px;
-  display: inline-block;
   float: right;
+  fill: color(blue500);
 }
 
-.Breadcrumbs-download {
-  line-height: 25px;
+.Breadcrumbs-buttonText {
+  margin-top: 5px;
+  float: left;
 }
 
 .Breadcrumbs-downloadButton {
   display: inline-block;
   float: right;
-  height: 30px;
-  margin-right: 25px;
+  margin-right: 3%;
   margin-top: 5px;
 }
 
 .Breadcrumbs-hidden {
   display: none;
+}
+
+.Breadcrumbs-finish {
+  float: right;
 }

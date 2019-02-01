@@ -64,7 +64,6 @@ class ResolveErrors extends Component {
     const {
       loading,
     } = this.state;
-    console.log(this.props);
     let content = '';
     // TODO rework the logic here
     if (loading) {

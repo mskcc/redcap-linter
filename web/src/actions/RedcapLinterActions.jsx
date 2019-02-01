@@ -77,7 +77,7 @@ export function postForm(form) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/',
+      url: 'http://localhost:5000/',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -162,7 +162,7 @@ export function saveFields(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/save_fields',
+      url: 'http://localhost:5000/save_fields',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -381,7 +381,7 @@ export function resolveColumn(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/resolve_column',
+      url: 'http://localhost:5000/resolve_column',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -424,7 +424,7 @@ export function resolveRow(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/resolve_row',
+      url: 'http://localhost:5000/resolve_row',
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });

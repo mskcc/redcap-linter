@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './ErrorsResolved.scss';
+import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DownloadIcon from '../DownloadIcon/DownloadIcon';
@@ -21,7 +22,6 @@ class ErrorsResolved extends Component {
 
     return (
       <div className="ErrorsResolved-introduction">
-        <p>All errors are resolved!</p>
         <p>Please take the time now to ensure all column names are matched by navigating to the Match Fields screen.</p>
         <p>If all fields have been matched and all errors resolved you may now download your progress to prevent from having to resolve errors a second time.</p>
         <p>Date/Times from the original file may have been truncated to fit the upload format for REDCap.</p>
@@ -33,7 +33,7 @@ class ErrorsResolved extends Component {
           <input key="projectInfo" name="projectInfo" type="hidden" value={JSON.stringify(projectInfo)} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
         </form>
-        <button type="submit" form="downloadOutput" className="ErrorsResolved-download" value="Submit">
+        <button type="submit" form="downloadOutput" className="App-actionButton ErrorsResolved-download" value="Submit">
           <div className="ErrorsResolved-downloadIcon">
             <DownloadIcon />
           </div>

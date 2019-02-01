@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ResolveErrors from '../ResolveErrors/ResolveErrors';
+import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import MatchFields from '../MatchFields/MatchFields';
@@ -25,6 +26,8 @@ class Linter extends Component {
       currentPage = <MatchFields />;
     } else if (page === 'lint') {
       currentPage = <ResolveErrors />;
+    } else if (page === 'finish') {
+      currentPage = <ErrorsResolved />;
     }
     return (
       <div>
