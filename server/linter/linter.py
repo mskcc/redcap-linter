@@ -24,7 +24,7 @@ def validate_text_type(list_to_validate, redcap_field):
     elif text_validation in ['alpha_only']:
         validations = [str(i).isalpha() if i else None for i in list_to_validate]
     elif required:
-        validations = [d and d != '' for d in list_to_validate]
+        validations = [d != '' for d in list_to_validate]
     else:
         validations = list_to_validate
     return validations
@@ -98,8 +98,8 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
             errors = []
             for item in current_list:
                 if not item:
-                    # has_error = True if redcap_field.required else None
-                    errors.append(None)
+                    has_error = True if redcap_field.required else None
+                    errors.append(has_error)
                 else:
                     if is_encoded:
                         errors.append(False)

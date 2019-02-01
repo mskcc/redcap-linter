@@ -48,6 +48,8 @@ class Breadcrumbs extends Component {
       redcapFieldToDataFieldMap,
       csvHeaders,
       dataFileName,
+      cellsWithErrors,
+      recordFieldsNotInRedcap,
     } = this.props;
 
     const downloadButton = (
@@ -56,6 +58,8 @@ class Breadcrumbs extends Component {
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
           <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
           <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
+          <input key="cellsWithErrors" name="cellsWithErrors" type="hidden" value={JSON.stringify(cellsWithErrors || {})} />
+          <input key="recordFieldsNotInRedcap" name="recordFieldsNotInRedcap" type="hidden" value={JSON.stringify(recordFieldsNotInRedcap || {})} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
         <button type="submit" form="downloadForm" className="App-actionButton" value="Submit">
@@ -107,7 +111,7 @@ class Breadcrumbs extends Component {
       }
     }
 
-    if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
+    if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
       breadcrumbs.push(downloadButton);
     }
     return (

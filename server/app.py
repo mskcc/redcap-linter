@@ -37,6 +37,8 @@ def save_fields():
         df = df[csv_headers[sheet]]
         records[sheet] = df
 
+    # TODO remove matches from records_fields_not_in_redcap
+
     dd_data = json.loads(form.get('ddData'))
     dd = [RedcapField.from_json(field) for field in dd_data]
 
@@ -164,6 +166,8 @@ def resolve_column():
                 field_errors['unmatchedChoices'] = set()
                 permissible_values = map(str.lower, map(str, dd_field.choices_dict.keys()))
                 for item in current_list:
+                    if not item:
+                        continue
                     checkbox_items = [i.strip() for i in item.split(',')]
                     # At least 1 item not in the Permissible Values
                     if True in [str(i).lower() not in permissible_values for i in checkbox_items]:
@@ -329,21 +333,48 @@ def download_progress():
     datafile_name = form.get('dataFileName')
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
+    cells_with_errors = json.loads(form.get('cellsWithErrors'))
+    record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
+
     # data field -> REDCap field
     matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+    error_format = writer.book.add_format({'bg_color': '#CC4400'}) # Amber
+    empty_format = writer.book.add_format({'bg_color': '#FFFF00'}) # Yellow
+    missing_column_format = writer.book.add_format({'bg_color': '#FF0000'}) # Red
     for sheet in json_data:
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
+        error_df = pd.DataFrame(cells_with_errors[sheet])
         df = pd.DataFrame(json_data[sheet])
         df.replace('nan', '', inplace=True)
         df.rename(index=str, columns=matched_field_dict, inplace=True)
         df = df[csv_headers[sheet]]
+        error_df = error_df[csv_headers[sheet]]
         df.to_excel(writer, sheet_name=sheet, index=False)
+
+        instrument_fields_not_in_redcap = record_fields_not_in_redcap[sheet]
+
+        data_worksheet = writer.sheets[sheet]
+        for j, col in enumerate(error_df.columns):
+            if instrument_fields_not_in_redcap is not None and col in instrument_fields_not_in_redcap:
+                data_worksheet.write(0, j, df.columns[j], missing_column_format)
+                continue
+            for index, row in error_df.iterrows():
+                error_cell = error_df.iloc[index][col]
+                if error_cell is None:
+                    data_worksheet.write(index + 1, j, '', empty_format)
+                elif error_cell:
+                    cell = df.iloc[index][df.columns[j]]
+                    target_string = cell or ''
+                    cell_format = error_format if cell else empty_format
+                    data_worksheet.write(index + 1, j, target_string, cell_format)
     writer.close()
     output.seek(0)
     return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
