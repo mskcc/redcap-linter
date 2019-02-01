@@ -105,8 +105,9 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
                         errors.append(False)
                     else:
                         if redcap_field.field_type == 'checkbox':
+                            permissible_values = map(str.lower, map(str, redcap_field.choices_dict.keys()))
                             checkbox_items = [i.strip() for i in item.split(',')]
-                            errors.append(True in [i not in choices_dict for i in checkbox_items])
+                            errors.append(True in [str(i).lower() not in permissible_values for i in checkbox_items])
                         else:
                             errors.append(item not in choices_dict)
             instrument_errors[redcap_field.field_name] = errors

@@ -153,10 +153,25 @@ def resolve_column():
             current_list = list(records[next_sheet_name][next_column])
             if dd_field.field_type in ['yesno', 'truefalse']:
                 current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
-            elif dd_field.field_type in ['radio', 'dropdown', 'checkbox']:
+                field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+                field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+            elif dd_field.field_type in ['radio', 'dropdown']:
                 current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
-            field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
-            field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+                field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+                field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+            elif dd_field.field_type in ['checkbox']:
+                field_errors['matchedChoices'] = set()
+                field_errors['unmatchedChoices'] = set()
+                permissible_values = map(str.lower, map(str, dd_field.choices_dict.keys()))
+                for item in current_list:
+                    checkbox_items = [i.strip() for i in item.split(',')]
+                    # At least 1 item not in the Permissible Values
+                    if True in [str(i).lower() not in permissible_values for i in checkbox_items]:
+                        field_errors['unmatchedChoices'].add(item)
+                    else:
+                        field_errors['matchedChoices'].add(item)
+                field_errors['matchedChoices'] = list(field_errors['matchedChoices'])
+                field_errors['unmatchedChoices'] = list(field_errors['unmatchedChoices'])
             choice_candidates = {}
             for f1 in field_errors['unmatchedChoices']:
                 for f2 in dd_field.choices_dict:
@@ -447,6 +462,8 @@ def post_form():
     fields_not_in_redcap = {}
 
     for sheet_name, sheet in records.items():
+        # Remove empty rows
+        sheet.dropna(axis=0, how='all', inplace=True)
         csv_headers[sheet_name] = utils.parameterize_list(list(sheet.columns))
         normalized_list = [item for item in csv_headers[sheet_name] if 'unnamed' not in item]
         fields_not_in_redcap[sheet_name] = [item for item in normalized_list if item not in all_field_names]

@@ -98,24 +98,38 @@ class ChoiceMatcher extends Component {
   renderCandidates(cellInfo) {
     const {
       fieldErrors,
+      ddData,
+      workingColumn,
     } = this.props;
     const choiceCandidates = fieldErrors.choiceCandidates || {};
     const {
       dataFieldToChoiceMap,
     } = this.state;
+    const ddField = ddData.find(field => field.field_name === workingColumn);
     const dataField = cellInfo.original['Data Field'];
     const value = dataFieldToChoiceMap[dataField];
-    let selectedValue = '';
+    let selectedValue = [];
     if (Array.isArray(value)) {
       selectedValue = value.map(choice => ({
         value: choice,
         label: choice,
       }));
-    } else {
+    } else if (value) {
       selectedValue = {
         value: value,
         label: value,
       };
+    } else if (ddField.field_type === 'checkbox' && !value) {
+      const checkboxItems = dataField.split(',').map(item => item.trim());
+      const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
+      checkboxItems.forEach((item) => {
+        if (choices.indexOf(item.toLowerCase()) >= 0) {
+          selectedValue.push({
+            value: item,
+            label: item,
+          });
+        }
+      });
     }
     const fieldToMatch = cellInfo.value;
     let scores = choiceCandidates[fieldToMatch];
@@ -134,7 +148,7 @@ class ChoiceMatcher extends Component {
         options={options}
         isSearchable
         isMulti={isMulti}
-        selectedValue={selectedValue}
+        value={selectedValue}
         onChange={e => this.handleChange(fieldToMatch, e)}
         placeholder="Select..."
       />

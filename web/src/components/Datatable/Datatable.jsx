@@ -16,6 +16,28 @@ class Datatable extends Component {
     };
   }
 
+  onSearchChange(e) {
+    let filterErrors = [];
+    const {
+      headers,
+      tableData,
+      tableErrors,
+    } = this.props;
+    if (e.target.value) {
+      const indicesToFilter = [];
+      for (let i = 0; i < tableData.length; i++) {
+        for (let j = 0; j < headers.length; j++) {
+          if (tableData[i][headers[j]] && tableData[i][headers[j]].toString().includes(e.target.value)) {
+            indicesToFilter.push(i);
+            break;
+          }
+        }
+      }
+      filterErrors = indicesToFilter.map(index => tableErrors[index]);
+    }
+    this.setState({ search: e.target.value, filterErrors });
+  }
+
   getTrProps(state, rowInfo) {
     if (rowInfo && rowInfo.row) {
       const { selected } = this.state;
@@ -43,7 +65,7 @@ class Datatable extends Component {
       filterErrors,
     } = this.state;
     let tErrors = tableErrors;
-    if (!filterErrors) {
+    if (filterErrors.length > 0) {
       tErrors = filterErrors;
     }
     let hasError = false;
@@ -133,22 +155,16 @@ class Datatable extends Component {
     }
 
     if (search) {
-      data = data.filter((row) => {
-        for (let i = 0; i < headers.length; i++) {
-          if (row[headers[i]] && row[headers[i]].toString().includes(search)) {
-            return true;
+      const indicesToFilter = [];
+      for (let i = 0; i < data.length; i++) {
+        for (let j = 0; j < headers.length; j++) {
+          if (data[i][headers[j]] && data[i][headers[j]].toString().includes(search)) {
+            indicesToFilter.push(i);
+            break;
           }
         }
-        return false;
-      });
-      filterErrors = filterErrors.filter((row) => {
-        for (let i = 0; i < headers.length; i++) {
-          if (row[headers[i]] && row[headers[i]].toString().includes(search)) {
-            return true;
-          }
-        }
-        return false;
-      });
+      }
+      data = indicesToFilter.map(index => data[index]);
     }
 
     if (selectedRowNum || selectedRowNum === 0) {
@@ -158,7 +174,7 @@ class Datatable extends Component {
     return (
       <div className="Datatable-table">
         <div className="Datatable-searchBar">
-          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value, filterErrors})} />
+          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
         </div>
         <ReactTable
           data={data}
