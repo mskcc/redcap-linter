@@ -77,7 +77,7 @@ export function postForm(form) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_POST}/`,
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -162,7 +162,7 @@ export function saveFields(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/save_fields',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_POST}/save_fields`,
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -381,7 +381,7 @@ export function resolveColumn(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/resolve_column',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_POST}/resolve_column`,
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
@@ -424,7 +424,7 @@ export function resolveRow(payload) {
 
     const request = axios({
       method: 'POST',
-      url: 'http://dev.omop.mskcc.org:5000/resolve_row',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_POST}/resolve_row`,
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });
