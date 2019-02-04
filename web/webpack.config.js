@@ -51,5 +51,6 @@ module.exports = {
   devServer: {
     contentBase: './dist',
     hot: true,
+    public: 'dev.omop.mskcc.org',
   },
 };
