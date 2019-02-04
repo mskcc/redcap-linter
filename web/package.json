@@ -5,7 +5,6 @@
   "dependencies": {
     "axios": "^0.18.0",
     "eslint": "5.6.0",
-    "node-sass": "^4.11.0",
     "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
@@ -19,7 +18,7 @@
     "semantic-ui-react": "^0.84.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "webpack-dev-server --config ./webpack.config.js --mode development --host=0.0.0.0 --port 3000",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -35,10 +34,22 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.5",
     "babel-preset-airbnb": "^3.2.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
-    "eslint-plugin-react": "^7.12.3"
+    "eslint-plugin-react": "^7.12.3",
+    "node-sass": "^4.11.0",
+    "react-hot-loader": "^4.6.5",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.1",
+    "svg-inline-loader": "^0.8.0",
+    "webpack": "^4.29.0",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
   }
 }
