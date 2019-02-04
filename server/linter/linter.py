@@ -119,7 +119,7 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
                 output_records.drop(redcap_field.field_name, 1, inplace=True)
             else:
                 current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
-                replaced_choices = [choices_dict.get(item) or item for item in current_list]
+                replaced_choices = [choices_dict.get(item) or None for item in current_list]
                 output_records[redcap_field.field_name] = replaced_choices
         else:
             raise Exception('Unrecognized field_type: {0}'.format(redcap_field.field_type))
@@ -127,6 +127,10 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
         total_error_count += len([d for d in instrument_errors[redcap_field.field_name] if d is True])
 
     instrument_errors = instrument_errors if total_error_count > 0 else None
+
+    # Drop rows with missing required data
+    output_records.drop(output_records.index[records_missing_required_data], inplace=True)
+
     return {
         'encoded_records': output_records,
         'instrument_errors': instrument_errors,
@@ -189,7 +193,6 @@ def encode_datafile(data_dictionary, records, project_info):
         instrument_records = records.get(instrument)
         if instrument_records is not None:
             results = lint_instrument(data_dictionary, instrument, instrument_records, repeatable, all_errors)
-            output = results['encoded_records']
-            encoded_records[instrument] = output
+            encoded_records[instrument] = results['encoded_records']
 
     return encoded_records
