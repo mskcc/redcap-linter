@@ -55,8 +55,7 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
     output_records.insert(1, 'redcap_repeat_instrument', None)
     output_records.insert(2, 'redcap_repeat_instance', None)
 
-    if repeatable and recordid_field.field_name in records.columns:
-        output_records['redcap_repeat_instrument'] = [form_name] * len(output_records.index)
+    if recordid_field.field_name in records.columns:
         redcap_repeat_instance = []
         for recordid in list(records[recordid_field.field_name]):
             if recordid not in repeat_instance_dict:
@@ -65,7 +64,9 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
             else:
                 repeat_instance_dict[recordid] += 1
                 redcap_repeat_instance.append(repeat_instance_dict[recordid])
-        output_records['redcap_repeat_instance'] = redcap_repeat_instance
+        if repeatable:
+            output_records['redcap_repeat_instrument'] = [form_name] * len(output_records.index)
+            output_records['redcap_repeat_instance'] = redcap_repeat_instance
 
     for redcap_field in matching_fields:
         current_list = list(records[redcap_field.field_name])
@@ -128,12 +129,18 @@ def lint_instrument(data_dictionary, form_name, records, repeatable, all_errors=
 
     instrument_errors = instrument_errors if total_error_count > 0 else None
 
+    repeated_recordids = []
+    for recordid in repeat_instance_dict:
+        if repeat_instance_dict[recordid] > 1:
+            repeated_recordids.append(recordid)
+
     # Drop rows with missing required data
     output_records.drop(output_records.index[records_missing_required_data], inplace=True)
 
     return {
         'encoded_records': output_records,
         'instrument_errors': instrument_errors,
+        'repeated_recordids': repeated_recordids,
         'records_missing_required_data': records_missing_required_data
     }
 
@@ -147,6 +154,7 @@ def lint_datafile(data_dictionary, records, project_info):
     original_records = {}
     cells_with_errors = {}
     records_missing_required_data = {}
+    repeated_recordids = {}
 
     all_errors = []
 
@@ -171,6 +179,9 @@ def lint_datafile(data_dictionary, records, project_info):
             instrument_records_missing_required_data = results['records_missing_required_data']
             if len(instrument_records_missing_required_data) > 0:
                 records_missing_required_data[instrument] = instrument_records_missing_required_data
+            instrument_repeated_recordids = results['repeated_recordids']
+            if len(instrument_repeated_recordids) > 0:
+                repeated_recordids[instrument] = instrument_repeated_recordids
             errors = results['instrument_errors']
             if errors is not None:
                 instruments_with_errors.append(instrument)
@@ -181,6 +192,7 @@ def lint_datafile(data_dictionary, records, project_info):
     return {
         'cells_with_errors': cells_with_errors,
         'records_missing_required_data': records_missing_required_data,
+        'repeated_recordids': repeated_recordids,
         'linting_errors': all_errors
     }
 

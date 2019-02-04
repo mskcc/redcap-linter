@@ -47,6 +47,7 @@ def save_fields():
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
     records_missing_required_data = datafile_errors['records_missing_required_data']
+    repeated_recordids = datafile_errors['repeated_recordids']
     linting_errors = datafile_errors['linting_errors']
     columns_in_error = {}
     for inst in cells_with_errors:
@@ -70,6 +71,7 @@ def save_fields():
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
+        'repeatedRecordids':          repeated_recordids,
         'columnsInError':             columns_in_error,
     }
     response = flask.jsonify(results)

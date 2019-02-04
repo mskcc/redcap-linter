@@ -87,7 +87,7 @@ class Form extends Component {
       loader = <Loader active content="Loading" />;
     }
     let project = '';
-    let malformedSheetsText = '';
+    let warning = '';
     if (error) {
       errorText = `<ul><li>${error}</li></ul>`;
     } else {
@@ -112,7 +112,7 @@ class Form extends Component {
       }
       project += '</ul>';
       if (malformedSheets && malformedSheets.length > 0) {
-        malformedSheetsText = `<ul><li><b>Malformed Sheets</b>: ${malformedSheets.join(', ')}</li></ul>`;
+        warning = `<ul><li><b>Malformed Sheets</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</li></ul>`;
       }
     }
     return (
@@ -222,7 +222,7 @@ class Form extends Component {
         />
         <div
           className="Form-malformedSheets"
-          dangerouslySetInnerHTML={{ __html: malformedSheetsText }}
+          dangerouslySetInnerHTML={{ __html: warning }}
         />
         <div
           className="Form-errorText"
