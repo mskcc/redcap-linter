@@ -80,12 +80,14 @@ class Form extends Component {
       error,
       projectInfo,
       ddData,
+      malformedSheets,
     } = this.props;
     let loader = '';
     if (loading) {
       loader = <Loader active content="Loading" />;
     }
     let project = '';
+    let malformedSheetsText = '';
     if (error) {
       errorText = `<ul><li>${error}</li></ul>`;
     } else {
@@ -109,6 +111,9 @@ class Form extends Component {
         project += `<li><b>Secondary Unique Field</b>: ${projectInfo.secondary_unique_field}</li>`;
       }
       project += '</ul>';
+      if (malformedSheets && malformedSheets.length > 0) {
+        malformedSheetsText = `<ul><li><b>Malformed Sheets</b>: ${malformedSheets.join(', ')}</li></ul>`;
+      }
     }
     return (
       <div className="App-fieldsetColumn">
@@ -212,12 +217,16 @@ class Form extends Component {
         </div>
         { loader }
         <div
-          className="Form-errorText"
-          dangerouslySetInnerHTML={{ __html: errorText }}
-        />
-        <div
           className="Form-projectInfo"
           dangerouslySetInnerHTML={{ __html: project }}
+        />
+        <div
+          className="Form-malformedSheets"
+          dangerouslySetInnerHTML={{ __html: malformedSheetsText }}
+        />
+        <div
+          className="Form-errorText"
+          dangerouslySetInnerHTML={{ __html: errorText }}
         />
       </div>
     );

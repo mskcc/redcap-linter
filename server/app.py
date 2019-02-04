@@ -426,6 +426,17 @@ def post_form():
                     current_list = [i.strftime('%m/%d/%Y') if isinstance(i, datetime) and not pd.isnull(i) else i for i in current_list]
                     records[sheet][cell.value] = current_list
             break
+
+    malformed_sheets = []
+    for sheet_name, sheet in records.items():
+        for col in utils.parameterize_list(list(sheet.columns)):
+            if 'unnamed' in col:
+                malformed_sheets.append(sheet_name)
+                break
+
+    for sheet_name in malformed_sheets:
+        del records[sheet_name]
+
     # for key in records:
     #     records.get(key).replace('nan', '', inplace=True)
     form  = request.form.to_dict()
@@ -482,7 +493,7 @@ def post_form():
         dd_data = [field.__dict__ for field in dd]
         dd_data[0]['required'] = True
 
-    for sheetName, sheet in records.items():
+    for sheet_name, sheet in records.items():
         all_csv_headers += utils.parameterize_list(list(sheet.columns))
         all_csv_headers = [i for i in all_csv_headers if 'unnamed' not in i]
 
@@ -577,6 +588,7 @@ def post_form():
         'jsonData':                json_data,
         'ddHeaders':               dd_headers,
         'ddData':                  dd_data,
+        'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
         # 'sheetsNotInRedcap':       sheets_not_in_redcap,
         'formNames':               form_names,
