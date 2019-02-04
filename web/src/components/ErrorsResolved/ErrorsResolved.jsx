@@ -20,6 +20,8 @@ class ErrorsResolved extends Component {
       csvHeaders,
     } = this.props;
 
+    const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_output`;
+
     return (
       <div className="ErrorsResolved-introduction">
         <p>Please take the time now to ensure all column names are matched by navigating to the Match Fields screen.</p>
@@ -27,7 +29,7 @@ class ErrorsResolved extends Component {
         <p>Date/Times from the original file may have been truncated to fit the upload format for REDCap.</p>
         <p><b>WARNING</b>: Remaining cells with errors will be removed entirely. Rows with a missing/invalidated required value will be ignored completely. Please verify this is intended before continuing.</p>
         <p>Please fill out the form below to generate an output file containing the records encoded and ready to upload to REDCap.</p>
-        <form id="downloadOutput" action="http://localhost:5000/download_output" className="ErrorsResolved-hidden" method="POST">
+        <form id="downloadOutput" action={downloadLink} className="ErrorsResolved-hidden" method="POST">
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />
           <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData)} />
           <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders)} />

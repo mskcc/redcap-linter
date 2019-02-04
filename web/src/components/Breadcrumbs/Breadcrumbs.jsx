@@ -52,9 +52,11 @@ class Breadcrumbs extends Component {
       recordFieldsNotInRedcap,
     } = this.props;
 
+    const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_progress`;
+
     const downloadButton = (
       <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
-        <form id="downloadForm" action="http://localhost:5000/download_progress" className="Breadcrumbs-hidden" method="POST">
+        <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
           <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
           <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />

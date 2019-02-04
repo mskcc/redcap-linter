@@ -44,7 +44,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.env.DEBUG': JSON.stringify(process.env.DEBUG || false),
-      'process.env.REDCAP_LINTER_HOST': JSON.stringify(process.env.REDCAP_LINTER_HOST || 'http://localhost'),
+      'process.env.REDCAP_LINTER_HOST': JSON.stringify(process.env.REDCAP_LINTER_HOST || 'http://dev.omop.mskcc.org'),
       'process.env.REDCAP_LINTER_PORT': JSON.stringify(process.env.REDCAP_LINTER_PORT || 5000),
     }),
   ],
