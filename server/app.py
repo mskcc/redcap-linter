@@ -49,6 +49,7 @@ def save_fields():
     records_missing_required_data = datafile_errors['records_missing_required_data']
     repeated_recordids = datafile_errors['repeated_recordids']
     linting_errors = datafile_errors['linting_errors']
+    encoded_records = datafile_errors['encoded_records']
     columns_in_error = {}
     for inst in cells_with_errors:
         instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
@@ -60,10 +61,14 @@ def save_fields():
     all_errors = [{"Error": error} for error in all_errors]
 
     json_data   = {}
+    output_records = {}
 
-    for sheetName, sheet in records.items():
-        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
-        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+    for sheet_name, sheet in records.items():
+        json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
+
+    for sheet_name in encoded_records:
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':                   json_data,
@@ -73,6 +78,7 @@ def save_fields():
         'csvHeaders':                 csv_headers,
         'repeatedRecordids':          repeated_recordids,
         'columnsInError':             columns_in_error,
+        'encodedRecords':             output_records,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
