@@ -108,7 +108,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if redcap_field.text_validation in ['date_mdy', 'date_dmy', 'date_ymd']:
                     formatted_values = utils.format_dates(current_list, redcap_field.text_validation)
                 records[redcap_field.field_name] = formatted_values
-                output_records[redcap_field.field_name] = pd.Series(formatted_values)
+                output_records[redcap_field.field_name] = pd.Series([f if v else None for f, v in zip(formatted_values, validations)])
                 instrument_errors[redcap_field.field_name] = [d is False for d in validations]
             elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
                 choices_dict = redcap_field.choices_dict

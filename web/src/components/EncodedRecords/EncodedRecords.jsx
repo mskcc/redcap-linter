@@ -16,6 +16,7 @@ class EncodedRecords extends Component {
   render() {
     const {
       encodedRecords,
+      encodedRecordsHeaders,
     } = this.props;
     const sheets = Object.keys(encodedRecords);
     const panes = [];
@@ -24,10 +25,7 @@ class EncodedRecords extends Component {
         const sheetName = sheets[i];
 
         const tData = encodedRecords[sheetName];
-        let headers = [];
-        if (tData.length > 0) {
-          headers = Object.keys(tData[0]);
-        }
+        const headers = encodedRecordsHeaders[sheetName];
 
         panes.push({
           menuItem: sheetName,
@@ -59,10 +57,12 @@ class EncodedRecords extends Component {
 
 EncodedRecords.propTypes = {
   encodedRecords: PropTypes.object,
+  encodedRecordsHeaders: PropTypes.object,
 };
 
 EncodedRecords.defaultProps = {
   encodedRecords: {},
+  encodedRecordsHeaders: {},
 };
 
 function mapStateToProps(state) {

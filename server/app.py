@@ -62,6 +62,7 @@ def save_fields():
 
     json_data   = {}
     output_records = {}
+    encoded_records_headers = {}
 
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
@@ -69,6 +70,7 @@ def save_fields():
 
     for sheet_name in encoded_records:
         output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
+        encoded_records_headers[sheet_name] = list(encoded_records[sheet_name].columns)
 
     results = {
         'jsonData':                   json_data,
@@ -79,6 +81,7 @@ def save_fields():
         'repeatedRecordids':          repeated_recordids,
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
+        'encodedRecordsHeaders':      encoded_records_headers,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
