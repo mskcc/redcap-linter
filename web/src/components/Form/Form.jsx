@@ -112,7 +112,7 @@ class Form extends Component {
       }
       project += '</ul>';
       if (malformedSheets && malformedSheets.length > 0) {
-        warning = `<ul><li><b>Malformed Sheets</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</li></ul>`;
+        warning = `<ul><li><b>Sheets without matches to REDCap</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</li></ul>`;
       }
     }
     return (

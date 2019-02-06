@@ -442,16 +442,6 @@ def post_form():
                     records[sheet][column_header] = current_list
             break
 
-    malformed_sheets = []
-    for sheet_name, sheet in records.items():
-        for col in utils.parameterize_list(list(sheet.columns)):
-            if 'unnamed' in col:
-                malformed_sheets.append(sheet_name)
-                break
-
-    # for sheet_name in malformed_sheets:
-    #     del records[sheet_name]
-
     # for key in records:
     #     records.get(key).replace('nan', '', inplace=True)
     form  = request.form.to_dict()
@@ -548,6 +538,16 @@ def post_form():
                         'score': fuzz.ratio(f1, f2) + fuzz.ratio(dd_field['field_label'], f2)
                     })
 
+    malformed_sheets = []
+    # for sheet_name, sheet in records.items():
+    #     for col in utils.parameterize_list(list(sheet.columns)):
+    #         if 'unnamed' in col:
+    #             malformed_sheets.append(sheet_name)
+    #             break
+
+    # for sheet_name in malformed_sheets:
+    #     del records[sheet_name]
+
     # TODO Make the code below a separate endpoint for after the headers are matched.
 
     all_errors                  = []
@@ -556,34 +556,26 @@ def post_form():
     recordid_field              = dd[0]
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
-    for instrument in records.keys():
-        sheet_name = utils.parameterize(instrument)
-        instrument_records = records.get(instrument)
+    for sheet_name in records.keys():
+        sheet_name = utils.parameterize(sheet_name)
+        sheet = records.get(sheet_name)
+        sheet.columns = utils.parameterize_list(list(sheet.columns))
 
-        # Uncomment if sheet name must match instrument name
-        # if sheet_name not in form_names:
-        #     sheets_not_in_redcap.append(instrument)
-        #     all_errors.append("Sheet {0} not found in form names of data dictionary.".format(instrument))
-        #     continue
+        redcap_field_names = [f.field_name for f in dd]
 
-        instrument_records.columns = utils.parameterize_list(list(instrument_records.columns))
+        matching_fields = [f for f in sheet.columns if f in redcap_field_names]
+        if not matching_fields:
+            malformed_sheets.append(sheet_name)
 
-        # Commented out line assumes that the sheet name matches form name in data Dictionary
-        # and only compares the columns in that form.
-        # [field for field in dd if field.form_name == sheet_name or field.field_name == recordid_field.field_name]
-        form_fields = dd
+        redcap_fields_not_in_data = [f for f in redcap_field_names if f not in sheet.columns]
 
-        redcap_field_names = [field.field_name for field in form_fields]
+        sheet_fields_not_in_redcap = [f for f in sheet.columns if f not in redcap_field_names]
+        record_fields_not_in_redcap[sheet_name] = sheet_fields_not_in_redcap
 
-        redcap_fields_not_in_data = [field for field in redcap_field_names if field not in instrument_records.columns]
-
-        instrument_fields_not_in_redcap = [field for field in instrument_records.columns if field not in redcap_field_names]
-        record_fields_not_in_redcap[instrument] = instrument_fields_not_in_redcap
-
-        if len(instrument_fields_not_in_redcap) > 0:
-            all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(instrument, str(instrument_fields_not_in_redcap)))
-        if len(redcap_fields_not_in_data) > 0:
-            all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(instrument, str(redcap_fields_not_in_data)))
+        if sheet_fields_not_in_redcap:
+            all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(sheet_name, str(sheet_fields_not_in_redcap)))
+        if redcap_fields_not_in_data:
+            all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(sheet_name, str(redcap_fields_not_in_data)))
 
     recordid_instrument = recordid_field.form_name
     recordid_instrument_records = records.get(recordid_instrument) or records.get(recordid_instrument.title())
@@ -607,7 +599,6 @@ def post_form():
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
         'fieldsNotInRedcap':       fields_not_in_redcap,
-        # 'sheetsNotInRedcap':       sheets_not_in_redcap,
         'formNames':               form_names,
         'projectInfo':             project_info,
         'matchingHeaders':         matching_headers,
