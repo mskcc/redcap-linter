@@ -557,11 +557,7 @@ def post_form():
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
     for sheet_name in records.keys():
-        sheet_name = utils.parameterize(sheet_name)
-        logging.warning(sheet_name)
         sheet = records.get(sheet_name)
-        if sheet is None:
-            continue
         sheet.columns = utils.parameterize_list(list(sheet.columns))
 
         redcap_field_names = [f.field_name for f in dd]
