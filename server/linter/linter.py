@@ -68,6 +68,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     output_records.insert(2, 'redcap_repeat_instance', None)
 
     for form_name in matching_fields:
+        next_record_name = project_info['next_record_name']
         repeatable = form_name in utils.parameterize_list(project_info['repeatable_instruments'])
         unique_record_ids = []
         if recordid_field.field_name in records.columns:
@@ -89,7 +90,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             else:
                 # TODO Figure out how to handle merging logic
                 if not unique_record_ids:
-                    recordid_list = list(range(1, len(records.index)+1))
+                    recordid_list = list(range(next_record_name, next_record_name + len(records.index)+1))
                     output_records[recordid_field.field_name] = pd.Series(recordid_list)
                     # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(unique_record_ids))
                     # output_records['redcap_repeat_instance'] = pd.Series([None] * len(unique_record_ids))
@@ -98,7 +99,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(recordid_list))
                     # output_records['redcap_repeat_instance'] = pd.Series([None] * len(recordid_list))
         else:
-            output_records[recordid_field.field_name] = list(range(1, len(output_records.index)+1))
+            output_records[recordid_field.field_name] = pd.Series(list(range(next_record_name, next_record_name + len(records.index)+1)))
 
     for form_name in matching_fields:
         repeatable = form_name in utils.parameterize_list(project_info['repeatable_instruments'])

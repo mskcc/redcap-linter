@@ -454,7 +454,8 @@ def post_form():
         'custom_record_label': '',
         'secondary_unique_field': '',
         'record_autonumbering_enabled': 0,
-        'repeatable_instruments': []
+        'repeatable_instruments': [],
+        'next_record_name': 1
     }
 
     if ri:
@@ -468,6 +469,7 @@ def post_form():
             data_dictionary = redcap_api.fetch_data_dictionary(token)
             dd = [RedcapField.from_json(field) for field in data_dictionary[1:]]
             project_info = redcap_api.fetch_project_info(token)
+            project_info['next_record_name'] = redcap_api.generate_next_record_name(token)
             if project_info['has_repeating_instruments_or_events'] == 1:
                 repeatable_instruments = redcap_api.fetch_repeatable_instruments(token)
                 project_info['repeatable_instruments'] = [utils.titleize(i['form_name']) for i in repeatable_instruments]
