@@ -25,6 +25,7 @@ def save_fields():
     form  = request.form.to_dict()
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
+    date_cols = json.loads(form.get('dateColumns'))
     # data field -> REDCap field
     matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v}
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
@@ -422,33 +423,34 @@ def download_output():
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
     records = pd.read_excel(request.files['dataFile'], sheet_name=None)
-    # TODO replace nan here
+    # TODO replace nan here, change this to go through all cells and modify with number_format
+    date_cols = []
     records_with_format = load_workbook(request.files['dataFile'])
     for sheet in records_with_format.sheetnames:
-        for row in records_with_format[sheet].iter_rows():
+        for row in records_with_format[sheet].iter_rows(row_offset=1):
             for cell in row:
                 # MRN
-                if cell.value in list(records[sheet].columns) and cell.number_format == '00000000':
-                    current_list = list(records[sheet][cell.value])
+                column_header = records_with_format[sheet][cell.column + '1'].value
+                if column_header in list(records[sheet].columns) and cell.number_format == '00000000':
+                    current_list = list(records[sheet][column_header])
                     current_list = [str(i).rjust(8, '0') if isinstance(i, int) else i for i in current_list]
-                    records[sheet][cell.value] = current_list
-                if cell.value in list(records[sheet].columns) and cell.number_format == 'mm-dd-yy':
-                    current_list = list(records[sheet][cell.value])
+                    records[sheet][column_header] = current_list
+                if column_header in list(records[sheet].columns) and cell.number_format == 'mm-dd-yy':
+                    date_cols.append(column_header)
+                    current_list = list(records[sheet][column_header])
                     current_list = [i.strftime('%m/%d/%Y') if isinstance(i, datetime) and not pd.isnull(i) else i for i in current_list]
-                    records[sheet][cell.value] = current_list
+                    records[sheet][column_header] = current_list
             break
 
     malformed_sheets = []
-    # for sheet_name, sheet in records.items():
-    #     logging.warning(utils.parameterize_list(list(sheet.columns)))
-    #     for col in utils.parameterize_list(list(sheet.columns)):
-    #         if 'unnamed' in col:
-    #             logging.warning(col)
-    #             malformed_sheets.append(sheet_name)
-    #             break
+    for sheet_name, sheet in records.items():
+        for col in utils.parameterize_list(list(sheet.columns)):
+            if 'unnamed' in col:
+                malformed_sheets.append(sheet_name)
+                break
 
-    for sheet_name in malformed_sheets:
-        del records[sheet_name]
+    # for sheet_name in malformed_sheets:
+    #     del records[sheet_name]
 
     # for key in records:
     #     records.get(key).replace('nan', '', inplace=True)
@@ -601,6 +603,7 @@ def post_form():
         'jsonData':                json_data,
         'ddHeaders':               dd_headers,
         'ddData':                  dd_data,
+        'dateColumns':             date_cols,
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
         'fieldsNotInRedcap':       fields_not_in_redcap,

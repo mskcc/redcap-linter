@@ -73,6 +73,8 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         if recordid_field.field_name in records.columns:
             redcap_repeat_instance = []
             for recordid in list(records[recordid_field.field_name]):
+                if not recordid:
+                    continue
                 if recordid not in repeat_instance_dict:
                     unique_record_ids.append(recordid)
                     redcap_repeat_instance.append(1)
@@ -82,11 +84,19 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     redcap_repeat_instance.append(repeat_instance_dict[recordid])
             if repeatable:
                 output_records[recordid.field_name] = records[recordid_field.field_name]
-                output_records['redcap_repeat_instrument'] = [form_name] * len(output_records.index)
+                output_records['redcap_repeat_instrument'] = [form_name] * len(records.index)
                 output_records['redcap_repeat_instance'] = redcap_repeat_instance
             else:
                 # TODO Figure out how to handle merging logic
-                output_records[recordid_field.field_name] = pd.Series(unique_record_ids)
+                if not unique_record_ids:
+                    recordid_list = list(range(1, len(records.index)+1))
+                    output_records[recordid_field.field_name] = pd.Series(recordid_list)
+                    # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(unique_record_ids))
+                    # output_records['redcap_repeat_instance'] = pd.Series([None] * len(unique_record_ids))
+                else:
+                    output_records[recordid_field.field_name] = pd.Series(unique_record_ids)
+                    # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(recordid_list))
+                    # output_records['redcap_repeat_instance'] = pd.Series([None] * len(recordid_list))
         else:
             output_records[recordid_field.field_name] = list(range(1, len(output_records.index)+1))
 
@@ -108,7 +118,8 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if redcap_field.text_validation in ['date_mdy', 'date_dmy', 'date_ymd']:
                     formatted_values = utils.format_dates(current_list, redcap_field.text_validation)
                 records[redcap_field.field_name] = formatted_values
-                output_records[redcap_field.field_name] = pd.Series([f if v else None for f, v in zip(formatted_values, validations)])
+                if redcap_field.field_name != recordid_field.field_name:
+                    output_records[redcap_field.field_name] = pd.Series([f if v else None for f, v in zip(formatted_values, validations)])
                 instrument_errors[redcap_field.field_name] = [d is False for d in validations]
             elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
                 choices_dict = redcap_field.choices_dict

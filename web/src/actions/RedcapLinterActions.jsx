@@ -158,6 +158,7 @@ export function saveFields(payload) {
     data.append('redcapFieldToDataFieldMap', JSON.stringify(payload.redcapFieldToDataFieldMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('dateColumns', JSON.stringify(payload.dateColumns));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
 
     const request = axios({

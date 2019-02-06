@@ -19,6 +19,7 @@ class MatchFields extends Component {
       redcapFieldToDataFieldMap,
       projectInfo,
       ddData,
+      dateColumns,
       csvHeaders,
       saveFields,
     } = this.props;
@@ -27,6 +28,7 @@ class MatchFields extends Component {
       redcapFieldToDataFieldMap,
       projectInfo,
       ddData,
+      dateColumns,
       csvHeaders,
     };
     saveFields(payload);
