@@ -439,11 +439,13 @@ def post_form():
             break
 
     malformed_sheets = []
-    for sheet_name, sheet in records.items():
-        for col in utils.parameterize_list(list(sheet.columns)):
-            if 'unnamed' in col:
-                malformed_sheets.append(sheet_name)
-                break
+    # for sheet_name, sheet in records.items():
+    #     logging.warning(utils.parameterize_list(list(sheet.columns)))
+    #     for col in utils.parameterize_list(list(sheet.columns)):
+    #         if 'unnamed' in col:
+    #             logging.warning(col)
+    #             malformed_sheets.append(sheet_name)
+    #             break
 
     for sheet_name in malformed_sheets:
         del records[sheet_name]
@@ -601,6 +603,7 @@ def post_form():
         'ddData':                  dd_data,
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': record_fields_not_in_redcap,
+        'fieldsNotInRedcap':       fields_not_in_redcap,
         # 'sheetsNotInRedcap':       sheets_not_in_redcap,
         'formNames':               form_names,
         'projectInfo':             project_info,
