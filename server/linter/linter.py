@@ -160,7 +160,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             repeated_recordids.append(recordid)
 
     # Drop rows with missing required data
-    output_records.drop(output_records.index[records_missing_required_data], inplace=True)
+    # output_records.drop(output_records.index[records_missing_required_data], inplace=True)
 
     return {
         'encoded_records': output_records,
