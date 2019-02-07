@@ -60,7 +60,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     output_records = pd.DataFrame()
 
-    if recordid_field.field_name not in records.columns:
+    if recordid_field.field_name != 'recordid' and recordid_field.field_name not in records.columns:
         total_error_count += 1
         all_errors.append("Primary key {0} not present in sheet {1}.".format(recordid_field.field_name, sheet_name))
     output_records.insert(0, recordid_field.field_name, None)
