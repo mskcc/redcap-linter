@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
 import './TextValidation.scss';
-import { resolveColumn } from '../../actions/RedcapLinterActions';
+import { resolveColumn, filterTable } from '../../actions/RedcapLinterActions';
 
 class TextValidation extends Component {
   constructor(props) {
@@ -24,6 +24,7 @@ class TextValidation extends Component {
       csvHeaders,
       columnsInError,
       resolveColumn,
+      filterTable,
     } = this.props;
     const payload = {
       jsonData,
@@ -36,6 +37,7 @@ class TextValidation extends Component {
       csvHeaders,
       action: 'save',
     };
+    filterTable('');
     resolveColumn(payload);
   }
 
@@ -50,6 +52,7 @@ class TextValidation extends Component {
       csvHeaders,
       columnsInError,
       resolveColumn,
+      filterTable,
     } = this.props;
     const payload = {
       jsonData,
@@ -62,6 +65,7 @@ class TextValidation extends Component {
       csvHeaders,
       action: 'continue',
     };
+    filterTable('');
     resolveColumn(payload);
   }
 
@@ -113,7 +117,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn }, dispatch);
+  return bindActionCreators({ resolveColumn, filterTable }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextValidation);

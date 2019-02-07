@@ -16,6 +16,30 @@ class Datatable extends Component {
     };
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      filterColumn,
+      tableFilter,
+      headers,
+      tableData,
+      tableErrors,
+    } = nextProps;
+    let filterErrors = tableErrors;
+    if (tableFilter && filterColumn) {
+      const indicesToFilter = [];
+      for (let i = 0; i < tableData.length; i++) {
+        for (let j = 0; j < headers.length; j++) {
+          if (tableData[i][headers[j]] && tableData[i][headers[j]].toString() === tableFilter.toString()) {
+            indicesToFilter.push(i);
+            break;
+          }
+        }
+      }
+      filterErrors = indicesToFilter.map(index => tableErrors[index]);
+    }
+    return { filterErrors };
+  }
+
   onSearchChange(e) {
     let filterErrors = [];
     const {
@@ -137,21 +161,15 @@ class Datatable extends Component {
     }
 
     let data = tableData;
-    let filterErrors = tableErrors;
 
     if (tableFilter && filterColumn) {
-      data = data.filter((row) => {
-        if (row[filterColumn] && row[filterColumn].toString() === tableFilter.toString()) {
-          return true;
+      const indicesToFilter = [];
+      for (let i = 0; i < data.length; i++) {
+        if (data[i][filterColumn] && data[i][filterColumn].toString() === tableFilter.toString()) {
+          indicesToFilter.push(i);
         }
-        return false;
-      });
-      filterErrors = filterErrors.filter((row) => {
-        if (row[filterColumn] && row[filterColumn].toString() === tableFilter.toString()) {
-          return true;
-        }
-        return false;
-      });
+      }
+      data = indicesToFilter.map(index => data[index]);
     }
 
     if (search) {

@@ -11,6 +11,18 @@ class MatchedChoices extends Component {
     super(props);
     this.state = {
       search: '',
+      columns: [{
+        Header: 'Data Field',
+        accessor: 'Data Field',
+        style: { whiteSpace: 'unset' },
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Permissible Value',
+        accessor: 'Permissible Value',
+        style: { whiteSpace: 'unset' },
+        Cell: this.renderCell.bind(this),
+      }],
     };
   }
 
@@ -58,19 +70,8 @@ class MatchedChoices extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'Data Field',
-      accessor: 'Data Field',
-      style: { whiteSpace: 'unset' },
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Permissible Value',
-      accessor: 'Permissible Value',
-      style: { whiteSpace: 'unset' },
-      Cell: this.renderCell.bind(this),
-    }];
     let data = tableData;
     if (search) {
       data = data.filter(row => row['Data Field'].includes(search) || row['Permissible Value'].includes(search));

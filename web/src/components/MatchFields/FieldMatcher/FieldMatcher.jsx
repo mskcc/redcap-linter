@@ -17,6 +17,23 @@ class FieldMatcher extends Component {
       redcapFieldToDataFieldMap: {},
       noMatch: '',
       search: '',
+      columns: [{
+        Header: 'REDCap Field',
+        accessor: 'REDCap Field',
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Candidate',
+        accessor: 'Candidate',
+        style: { overflow: 'visible' },
+        Cell: this.renderCandidates.bind(this),
+      },
+      {
+        Header: 'Match',
+        accessor: 'Match',
+        style: { overflow: 'visible' },
+        Cell: this.renderMatchButton.bind(this),
+      }],
     };
   }
 
@@ -142,26 +159,8 @@ class FieldMatcher extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'REDCap Field',
-      accessor: 'REDCap Field',
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Candidate',
-      accessor: 'Candidate',
-      style: { overflow: 'visible' },
-      Cell: this.renderCandidates.bind(this),
-      // getProps: this.renderErrors.bind(this),
-    },
-    {
-      Header: 'Match',
-      accessor: 'Match',
-      style: { overflow: 'visible' },
-      Cell: this.renderMatchButton.bind(this),
-      // getProps: this.renderErrors.bind(this),
-    }];
     const tableData = fieldsToMatch.map(f => ({
       'REDCap Field': f,
       'Candidate': f,

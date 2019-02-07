@@ -11,6 +11,16 @@ class ResolvedRequiredErrors extends Component {
     super(props);
     this.state = {
       search: '',
+      columns: [{
+        Header: 'Field',
+        accessor: 'Field',
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Value',
+        accessor: 'Value',
+        Cell: this.renderCell.bind(this),
+      }],
     };
   }
 
@@ -58,17 +68,9 @@ class ResolvedRequiredErrors extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'Field',
-      accessor: 'Field',
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Value',
-      accessor: 'Value',
-      Cell: this.renderCell.bind(this),
-    }];
+
     let data = tableData;
     if (search) {
       data = data.filter(row => row['Field'].includes(search) || row['Value'].includes(search));

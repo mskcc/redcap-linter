@@ -10,6 +10,16 @@ class ResolvedTextErrors extends Component {
     super(props);
     this.state = {
       search: '',
+      columns: [{
+        Header: 'Original Value',
+        accessor: 'Original Value',
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Corrected Value',
+        accessor: 'Corrected Value',
+        Cell: this.renderCell.bind(this),
+      }],
     };
   }
 
@@ -31,17 +41,9 @@ class ResolvedTextErrors extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'Original Value',
-      accessor: 'Original Value',
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Corrected Value',
-      accessor: 'Corrected Value',
-      Cell: this.renderCell.bind(this),
-    }];
+
     let data = tableData;
     if (search) {
       data = data.filter(row => row['Original Value'].includes(search) || row['Corrected Value'].includes(search));

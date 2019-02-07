@@ -22,6 +22,23 @@ class TextErrorResolver extends Component {
       originalToCorrectedValueMap: {},
       removedValue: '',
       search: '',
+      columns: [{
+        Header: 'Original Value',
+        accessor: 'Original Value',
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Corrected Value',
+        accessor: 'Corrected Value',
+        style: { overflow: 'visible' },
+        Cell: this.renderInput.bind(this),
+      },
+      {
+        Header: 'Action',
+        accessor: 'Action',
+        style: { overflow: 'visible' },
+        Cell: this.renderMatchButton.bind(this),
+      }],
     };
   }
 
@@ -35,6 +52,7 @@ class TextErrorResolver extends Component {
       columnsInError,
       resolveRow,
       resolveColumn,
+      filterTable,
     } = this.props;
     const payload = {
       jsonData,
@@ -48,6 +66,7 @@ class TextErrorResolver extends Component {
       csvHeaders,
       action: 'continue',
     };
+    filterTable('');
     if (e.value.rowNum) {
       resolveRow(payload);
     } else {
@@ -61,6 +80,7 @@ class TextErrorResolver extends Component {
     } = this.state;
     const {
       correctValue,
+      filterTable,
     } = this.props;
     const correctedValue = originalToCorrectedValueMap[originalValue] || '';
     correctValue(originalValue, correctedValue);
@@ -72,6 +92,7 @@ class TextErrorResolver extends Component {
     } = this.state;
     const {
       correctValue,
+      filterTable,
     } = this.props;
     correctValue(originalValue, removedValue);
   }
@@ -116,11 +137,12 @@ class TextErrorResolver extends Component {
     return (
       <input
         className="TextErrorResolver-input"
+        key={`${cellInfo.original['Original Value']}`}
         type="text"
         value={value}
-        onBlur={e => this.onBlur(e)}
-        onFocus={e => this.onFocus(originalValue, e)}
-        onChange={e => this.handleChange(originalValue, e)}
+        onBlur={this.onBlur.bind(this)}
+        onFocus={this.onFocus.bind(this, originalValue)}
+        onChange={this.handleChange.bind(this, originalValue)}
       />
     );
   }
@@ -152,26 +174,9 @@ class TextErrorResolver extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'Original Value',
-      accessor: 'Original Value',
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Corrected Value',
-      accessor: 'Corrected Value',
-      style: { overflow: 'visible' },
-      Cell: this.renderInput.bind(this),
-      // getProps: this.renderErrors.bind(this),
-    },
-    {
-      Header: 'Action',
-      accessor: 'Action',
-      style: { overflow: 'visible' },
-      Cell: this.renderMatchButton.bind(this),
-      // getProps: this.renderErrors.bind(this),
-    }];
+
     const tableData = fieldErrors.textErrors.map(e => ({
       'Original Value': e,
       'Corrected Value': e,
@@ -242,7 +247,7 @@ class TextErrorResolver extends Component {
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Original Value'].includes(search));
+      data = data.filter(row => row['Original Value'].toString().includes(search));
     }
 
     return (

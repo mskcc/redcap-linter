@@ -11,6 +11,18 @@ class MatchedFields extends Component {
     super(props);
     this.state = {
       search: '',
+      columns: [{
+        Header: 'REDCap Field',
+        accessor: 'REDCap Field',
+        style: { whiteSpace: 'unset' },
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Data Field',
+        accessor: 'Data Field',
+        style: { whiteSpace: 'unset' },
+        Cell: this.renderCell.bind(this),
+      }],
     };
   }
 
@@ -52,19 +64,9 @@ class MatchedFields extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'REDCap Field',
-      accessor: 'REDCap Field',
-      style: { whiteSpace: 'unset' },
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Data Field',
-      accessor: 'Data Field',
-      style: { whiteSpace: 'unset' },
-      Cell: this.renderCell.bind(this),
-    }];
+
     let data = tableData;
     if (search) {
       data = data.filter(row => row['REDCap Field'].includes(search) || row['Data Field'].includes(search));

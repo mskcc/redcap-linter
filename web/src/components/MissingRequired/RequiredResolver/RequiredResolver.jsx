@@ -16,6 +16,23 @@ class RequiredResolver extends Component {
     this.state = {
       localFieldToValueMap: {},
       search: '',
+      columns: [{
+        Header: 'Field',
+        accessor: 'Field',
+        Cell: this.renderCell.bind(this),
+      },
+      {
+        Header: 'Value',
+        accessor: 'Value',
+        style: { overflow: 'visible' },
+        Cell: this.renderInput.bind(this),
+      },
+      {
+        Header: 'Action',
+        accessor: 'Action',
+        style: { overflow: 'visible' },
+        Cell: this.renderMatchButton.bind(this),
+      }],
     };
   }
 
@@ -172,26 +189,8 @@ class RequiredResolver extends Component {
     } = this.props;
     const {
       search,
+      columns,
     } = this.state;
-    const columns = [{
-      Header: 'Field',
-      accessor: 'Field',
-      Cell: this.renderCell.bind(this),
-    },
-    {
-      Header: 'Value',
-      accessor: 'Value',
-      style: { overflow: 'visible' },
-      Cell: this.renderInput.bind(this),
-      // getProps: this.renderErrors.bind(this),
-    },
-    {
-      Header: 'Action',
-      accessor: 'Action',
-      style: { overflow: 'visible' },
-      Cell: this.renderMatchButton.bind(this),
-      // getProps: this.renderErrors.bind(this),
-    }];
 
     const options = [];
     let allErrors = [];
