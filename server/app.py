@@ -537,7 +537,7 @@ def post_form():
                     field_candidates[f1].append({
                         'candidate': f2,
                         'sheets': [sheet],
-                        'score': fuzz.ratio(f1, f2) + fuzz.ratio(dd_field['field_label'], f2)
+                        'score': max(fuzz.ratio(f1, f2), fuzz.ratio(dd_field['field_label'], f2))
                     })
 
     malformed_sheets = []
