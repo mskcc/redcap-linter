@@ -51,11 +51,19 @@ def save_fields():
     repeated_recordids = datafile_errors['repeated_recordids']
     linting_errors = datafile_errors['linting_errors']
     encoded_records = datafile_errors['encoded_records']
+    # Only add to columns_in_error if there is data in the field
     columns_in_error = {}
-    for inst in cells_with_errors:
-        instrument_columns_in_error = [f for f in list(cells_with_errors[inst].columns) if True in list(cells_with_errors[inst][f])]
-        if len(instrument_columns_in_error) > 0:
-            columns_in_error[inst] = instrument_columns_in_error
+    for sheet_name in cells_with_errors:
+        sheet_columns_in_error = []
+        for f in list(cells_with_errors[sheet_name].columns):
+            has_data = any(list(records[sheet_name][f]))
+            if not has_data:
+                continue
+            has_error = True in list(cells_with_errors[sheet_name][f])
+            if has_error:
+                sheet_columns_in_error.append(f)
+        if len(sheet_columns_in_error) > 0:
+            columns_in_error[sheet_name] = sheet_columns_in_error
 
     # Note this will override the previous all errors
     all_errors = linting_errors
@@ -214,13 +222,17 @@ def resolve_column():
     linting_errors = datafile_errors['linting_errors']
 
     columns_in_error = {}
-    for inst in cells_with_errors:
-        instrument_columns_in_error = []
-        for f in list(cells_with_errors[inst].columns):
-            if True in list(cells_with_errors[inst][f]):
-                instrument_columns_in_error.append(f)
-        if len(instrument_columns_in_error) > 0:
-            columns_in_error[inst] = instrument_columns_in_error
+    for sheet_name in cells_with_errors:
+        sheet_columns_in_error = []
+        for f in list(cells_with_errors[sheet_name].columns):
+            has_data = any(list(records[sheet_name][f]))
+            if not has_data:
+                continue
+            has_error = True in list(cells_with_errors[sheet_name][f])
+            if has_error:
+                sheet_columns_in_error.append(f)
+        if len(sheet_columns_in_error) > 0:
+            columns_in_error[sheet_name] = sheet_columns_in_error
 
     json_data   = {}
 

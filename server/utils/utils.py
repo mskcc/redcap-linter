@@ -118,7 +118,11 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
             logging.warning("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, date_min, date_max))
             formatted_dates.append(False)
         else:
-            formatted_dates.append(True)
+            try:
+                formatted_date = d.strftime("%m/%d/%Y")
+                formatted_dates.append(True)
+            except:
+                formatted_dates.append(False)
 
     return formatted_dates
 
@@ -131,12 +135,15 @@ def format_dates(date_list, date_format):
             continue
         if isinstance(d, str) or isinstance(d, unicode):
             d = parser.parse(d)
-        if date_format == 'date_mdy':
-            formatted_dates.append(d.strftime("%m/%d/%Y"))
-        elif date_format == 'date_dmy':
-            formatted_dates.append(d.strftime("%d/%m/%Y"))
-        elif date_format == 'date_ymd':
-            formatted_dates.append(d.strftime("%Y/%m/%d"))
+        try:
+            if date_format == 'date_mdy':
+                formatted_dates.append(d.strftime("%m/%d/%Y"))
+            elif date_format == 'date_dmy':
+                formatted_dates.append(d.strftime("%d/%m/%Y"))
+            elif date_format == 'date_ymd':
+                formatted_dates.append(d.strftime("%Y/%m/%d"))
+        except:
+            formatted_dates.append(d)
     return formatted_dates
 
 def parameterize(str):
