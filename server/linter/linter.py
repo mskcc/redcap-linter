@@ -64,8 +64,12 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         total_error_count += 1
         all_errors.append("Primary key {0} not present in sheet {1}.".format(recordid_field.field_name, sheet_name))
     output_records.insert(0, recordid_field.field_name, None)
-    output_records.insert(1, 'redcap_repeat_instrument', None)
-    output_records.insert(2, 'redcap_repeat_instance', None)
+    if len(project_info['repeatable_instruments']) > 0:
+        output_records.insert(1, 'redcap_repeat_instrument', None)
+        output_records.insert(2, 'redcap_repeat_instance', None)
+
+    # TODO get list of row ids to exclude in final output_records
+    rows_to_remove = []
 
     for form_name in matching_fields:
         next_record_name = project_info['next_record_name']
@@ -73,8 +77,9 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         unique_record_ids = []
         if recordid_field.field_name in records.columns:
             redcap_repeat_instance = []
-            for recordid in list(records[recordid_field.field_name]):
+            for row_num, recordid in enumerate(list(records[recordid_field.field_name])):
                 if not recordid:
+                    # rows_to_remove.append(row_num)
                     continue
                 if recordid not in repeat_instance_dict:
                     unique_record_ids.append(recordid)
@@ -89,13 +94,14 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 output_records['redcap_repeat_instance'] = redcap_repeat_instance
             else:
                 # TODO Figure out how to handle merging logic
-                if not unique_record_ids:
-                    recordid_list = list(range(next_record_name, next_record_name + len(records.index)+1))
-                    output_records[recordid_field.field_name] = pd.Series(recordid_list)
+                # if not unique_record_ids:
+                recordid_list = list(range(next_record_name, next_record_name + len(records.index)+1))
+                output_records[recordid_field.field_name] = pd.Series(recordid_list)
                     # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(unique_record_ids))
                     # output_records['redcap_repeat_instance'] = pd.Series([None] * len(unique_record_ids))
-                else:
-                    output_records[recordid_field.field_name] = pd.Series(unique_record_ids)
+                # else:
+                    # TODO Only do this for non repeatable instruments
+                    # output_records[recordid_field.field_name] = pd.Series(unique_record_ids)
                     # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(recordid_list))
                     # output_records['redcap_repeat_instance'] = pd.Series([None] * len(recordid_list))
         else:
@@ -107,11 +113,12 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             current_list = list(records[redcap_field.field_name])
             current_list = [i.strip() if isinstance(i, basestring) else i for i in current_list]
 
-            for idx, item in enumerate(current_list):
-                if (pd.isnull(item) or not item) and redcap_field.required:
-                    if (idx not in records_missing_required_data):
-                        records_missing_required_data.append(idx)
-                    all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
+            if redcap_field.field_name != recordid_field.field_name:
+                for idx, item in enumerate(current_list):
+                    if (pd.isnull(item) or not item) and redcap_field.required:
+                        if (idx not in records_missing_required_data):
+                            records_missing_required_data.append(idx)
+                        all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
 
             if redcap_field.field_type in ['text', 'notes']:
                 validations = validate_text_type(current_list, redcap_field)
@@ -119,9 +126,11 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if redcap_field.text_validation in ['date_mdy', 'date_dmy', 'date_ymd']:
                     formatted_values = utils.format_dates(current_list, redcap_field.text_validation)
                 records[redcap_field.field_name] = formatted_values
+                instrument_errors[redcap_field.field_name] = [d is False for d in validations]
                 if redcap_field.field_name != recordid_field.field_name:
                     output_records[redcap_field.field_name] = pd.Series([f if v else None for f, v in zip(formatted_values, validations)])
-                instrument_errors[redcap_field.field_name] = [d is False for d in validations]
+                    # if redcap_field.required:
+                    #     rows_to_remove += [row_num for row_num, val in enumerate(current_list) if not val]
             elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
                 choices_dict = redcap_field.choices_dict
 
@@ -134,9 +143,12 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     if item and not is_encoded and item not in choices_dict:
                         all_errors.append("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
                 errors = []
-                for item in current_list:
+                for row_num, item in enumerate(current_list):
                     if not item:
-                        has_error = True if redcap_field.required else None
+                        has_error = None
+                        if redcap_field.required:
+                            has_error = True
+                            # rows_to_remove.append(row_num)
                         errors.append(has_error)
                     else:
                         if is_encoded:
@@ -166,13 +178,15 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     instrument_errors = instrument_errors if total_error_count > 0 else None
 
+    # rows_to_remove = list(set(rows_to_remove))
+
     repeated_recordids = []
     for recordid in repeat_instance_dict:
         if repeat_instance_dict[recordid] > 1:
             repeated_recordids.append(recordid)
 
     # Drop rows with missing required data
-    # output_records.drop(output_records.index[records_missing_required_data], inplace=True)
+    output_records.drop(output_records.index[records_missing_required_data], inplace=True)
 
     return {
         'encoded_records': output_records,

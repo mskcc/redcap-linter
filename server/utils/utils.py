@@ -146,6 +146,23 @@ def format_dates(date_list, date_format):
             formatted_dates.append(d)
     return formatted_dates
 
+
+def get_columns_with_errors(cells_with_errors, records):
+    columns_in_error = {}
+    for sheet_name in cells_with_errors:
+        sheet_columns_in_error = []
+        for f in list(cells_with_errors[sheet_name].columns):
+            has_data = any(list(records[sheet_name][f]))
+            if not has_data:
+                continue
+            has_error = True in list(cells_with_errors[sheet_name][f])
+            if has_error:
+                sheet_columns_in_error.append(f)
+        if len(sheet_columns_in_error) > 0:
+            columns_in_error[sheet_name] = sheet_columns_in_error
+    return columns_in_error
+
+
 def parameterize(str):
     # \W = [^a-zA-Z0-9_]
     parameterized_str = re.sub(r'([^\s\w-]|)+', '', str)

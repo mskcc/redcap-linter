@@ -38,8 +38,6 @@ def save_fields():
         df = df[csv_headers[sheet]]
         records[sheet] = df
 
-    # TODO remove matches from records_fields_not_in_redcap
-
     dd_data = json.loads(form.get('ddData'))
     dd = [RedcapField.from_json(field) for field in dd_data]
 
@@ -49,25 +47,11 @@ def save_fields():
     cells_with_errors = datafile_errors['cells_with_errors']
     records_missing_required_data = datafile_errors['records_missing_required_data']
     repeated_recordids = datafile_errors['repeated_recordids']
-    linting_errors = datafile_errors['linting_errors']
     encoded_records = datafile_errors['encoded_records']
-    # Only add to columns_in_error if there is data in the field
-    columns_in_error = {}
-    for sheet_name in cells_with_errors:
-        sheet_columns_in_error = []
-        for f in list(cells_with_errors[sheet_name].columns):
-            has_data = any(list(records[sheet_name][f]))
-            if not has_data:
-                continue
-            has_error = True in list(cells_with_errors[sheet_name][f])
-            if has_error:
-                sheet_columns_in_error.append(f)
-        if len(sheet_columns_in_error) > 0:
-            columns_in_error[sheet_name] = sheet_columns_in_error
 
-    # Note this will override the previous all errors
-    all_errors = linting_errors
-    all_errors = [{"Error": error} for error in all_errors]
+    columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
+
+    all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     json_data   = {}
     output_records = {}
@@ -219,25 +203,12 @@ def resolve_column():
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
-    linting_errors = datafile_errors['linting_errors']
 
-    columns_in_error = {}
-    for sheet_name in cells_with_errors:
-        sheet_columns_in_error = []
-        for f in list(cells_with_errors[sheet_name].columns):
-            has_data = any(list(records[sheet_name][f]))
-            if not has_data:
-                continue
-            has_error = True in list(cells_with_errors[sheet_name][f])
-            if has_error:
-                sheet_columns_in_error.append(f)
-        if len(sheet_columns_in_error) > 0:
-            columns_in_error[sheet_name] = sheet_columns_in_error
+    columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
     json_data   = {}
 
-    all_errors = linting_errors
-    all_errors = [{"Error": error} for error in all_errors]
+    all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     for sheetName, sheet in records.items():
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
@@ -324,11 +295,8 @@ def resolve_row():
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
-    records_missing_required_data = datafile_errors['records_missing_required_data']
-    linting_errors = datafile_errors['linting_errors']
 
-    all_errors = linting_errors
-    all_errors = [{"Error": error} for error in all_errors]
+    all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     json_data   = {}
 
@@ -340,7 +308,6 @@ def resolve_row():
         'jsonData':         json_data,
         'allErrors':        all_errors,
         'cellsWithErrors':  cells_with_errors,
-        'recordsMissingRequiredData': records_missing_required_data,
     }
     if action == 'continue':
         results['workingRow'] = next_row
