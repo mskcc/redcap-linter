@@ -152,7 +152,8 @@ def get_columns_with_errors(cells_with_errors, records):
     for sheet_name in cells_with_errors:
         sheet_columns_in_error = []
         for f in list(cells_with_errors[sheet_name].columns):
-            has_data = any(list(records[sheet_name][f]))
+            column_cells_with_errors = [d for idx, d in enumerate(list(records[sheet_name][f])) if list(cells_with_errors[sheet_name][f])[idx]]
+            has_data = any(column_cells_with_errors)
             if not has_data:
                 continue
             has_error = True in list(cells_with_errors[sheet_name][f])

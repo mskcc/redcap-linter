@@ -120,7 +120,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             current_list = list(records[redcap_field.field_name])
             current_list = [i.strip() if isinstance(i, basestring) else i for i in current_list]
 
-            if redcap_field.field_name != recordid_field.field_name:
+            if redcap_field.field_name != recordid_field.field_name or recordid_field.field_name != 'recordid':
                 for idx, item in enumerate(current_list):
                     if (pd.isnull(item) or not item) and redcap_field.required:
                         if (idx not in records_missing_required_data):
