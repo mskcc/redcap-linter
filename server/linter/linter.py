@@ -38,8 +38,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     total_error_count = 0
 
-    repeat_instance_dict = {}  # Dict from recordid to repeat instance number, auto-increment from 1
-
     recordid_field = data_dictionary[0]
     form_fields = data_dictionary
 
@@ -71,27 +69,36 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     # TODO get list of row ids to exclude in final output_records
     rows_to_remove = []
 
+    repeated_recordids = []
+
     for form_name in matching_fields:
+        repeat_instance_dict = {}  # Dict from recordid to repeat instance number, auto-increment from 1
+
         next_record_name = project_info['next_record_name']
         repeatable = form_name in utils.parameterize_list(project_info['repeatable_instruments'])
         unique_record_ids = []
         if recordid_field.field_name in records.columns:
             redcap_repeat_instance = []
             for row_num, recordid in enumerate(list(records[recordid_field.field_name])):
-                if not recordid:
+                if pd.isnull(recordid) or not recordid:
                     # rows_to_remove.append(row_num)
-                    continue
-                if recordid not in repeat_instance_dict:
+                    redcap_repeat_instance.append(None)
+                elif recordid not in repeat_instance_dict:
                     unique_record_ids.append(recordid)
                     redcap_repeat_instance.append(1)
                     repeat_instance_dict[recordid] = 1
                 else:
                     repeat_instance_dict[recordid] += 1
                     redcap_repeat_instance.append(repeat_instance_dict[recordid])
+
+            for recordid in repeat_instance_dict:
+                if repeat_instance_dict[recordid] > 1:
+                    repeated_recordids.append(recordid)
+
             if repeatable:
-                output_records[recordid.field_name] = records[recordid_field.field_name]
-                output_records['redcap_repeat_instrument'] = [form_name] * len(records.index)
-                output_records['redcap_repeat_instance'] = redcap_repeat_instance
+                output_records[recordid_field.field_name] = pd.Series(list(records[recordid_field.field_name]))
+                output_records['redcap_repeat_instrument'] = pd.Series([form_name] * len(list(records[recordid_field.field_name])))
+                output_records['redcap_repeat_instance'] = pd.Series(redcap_repeat_instance)
             else:
                 # TODO Figure out how to handle merging logic
                 # if not unique_record_ids:
@@ -179,11 +186,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     instrument_errors = instrument_errors if total_error_count > 0 else None
 
     # rows_to_remove = list(set(rows_to_remove))
-
-    repeated_recordids = []
-    for recordid in repeat_instance_dict:
-        if repeat_instance_dict[recordid] > 1:
-            repeated_recordids.append(recordid)
 
     # Drop rows with missing required data
     output_records.drop(output_records.index[records_missing_required_data], inplace=True)
