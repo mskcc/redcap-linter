@@ -156,19 +156,25 @@ class FieldMatcher extends Component {
   render() {
     const {
       fieldsToMatch,
+      ddData,
     } = this.props;
     const {
       search,
       columns,
     } = this.state;
-    const tableData = fieldsToMatch.map(f => ({
-      'REDCap Field': f,
-      'Candidate': f,
-      'Match': '',
-    }));
+    const tableData = fieldsToMatch.map(f => {
+      // TODO Handle multiple forms
+      const ddField = ddData.find(field => field.field_name === f);
+      return {
+        'REDCap Field': f,
+        'Candidate': f,
+        'Form Name': ddField.form_name,
+        'Match': '',
+      };
+    });
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['REDCap Field'].includes(search));
+      data = data.filter(row => row['REDCap Field'].includes(search) || row['Form Name'].includes(search));
     }
 
     return (
