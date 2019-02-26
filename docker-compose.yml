@@ -12,6 +12,8 @@ services:
       - "--host=0.0.0.0"
     ports:
       - "5000:5000"
+    networks:
+      - custom
     volumes:
       - ./server:/home/app-user/app/server
     environment:
@@ -30,8 +32,17 @@ services:
       - '/home/app-user/app/web/node_modules'
     ports:
       - "3000:3000"
+    networks:
+      - custom
     depends_on:
       - "redcap-linter-server"
     environment:
       - NODE_ENV=development
       - NODE_PATH=./src
+
+networks:
+  custom:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "10.10.10.1/24"
