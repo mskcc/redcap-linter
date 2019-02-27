@@ -324,6 +324,7 @@ def download_progress():
     datafile_name = form.get('dataFileName')
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
     cells_with_errors = json.loads(form.get('cellsWithErrors'))
     record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
 
@@ -337,9 +338,9 @@ def download_progress():
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
-    error_format = writer.book.add_format({'bg_color': '#CC4400'}) # Amber
-    empty_format = writer.book.add_format({'bg_color': '#FFFF00'}) # Yellow
-    missing_column_format = writer.book.add_format({'bg_color': '#FF0000'}) # Red
+    error_format = writer.book.add_format({'bg_color': '#ffbf00'}) # Amber
+    empty_format = writer.book.add_format({'bg_color': '#FFE300'}) # Yellow
+    missing_column_format = writer.book.add_format({'bg_color': '#E5153E'}) # Red
     for sheet in json_data:
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         error_df = pd.DataFrame(cells_with_errors[sheet])
@@ -359,12 +360,17 @@ def download_progress():
                 continue
             for index, row in error_df.iterrows():
                 error_cell = error_df.iloc[index][col]
-                if error_cell is None:
+                dd_field = [f for f in dd if f.field_name == col][0]
+                if error_cell is None and dd_field.required:
                     data_worksheet.write(index + 1, j, '', empty_format)
                 elif error_cell:
                     cell = df.iloc[index][df.columns[j]]
                     target_string = cell or ''
-                    cell_format = error_format if cell else empty_format
+                    cell_format = None
+                    if cell:
+                        cell_format = error_format
+                    elif dd_field.required:
+                        cell_format = empty_format
                     data_worksheet.write(index + 1, j, target_string, cell_format)
     writer.close()
     output.seek(0)

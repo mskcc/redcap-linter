@@ -126,15 +126,17 @@ export default function (state = {}, action) {
       });
     }
     case MATCH_CHOICES_SUCCESS: {
-      const dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
-      dataFieldToChoiceMap[action.payload.dataField] = action.payload.permissibleValue;
+      let dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
       const fieldErrors = state.fieldErrors || {};
       let unmatchedChoices = [];
       if (fieldErrors.unmatchedChoices) {
         unmatchedChoices = fieldErrors.unmatchedChoices.slice();
       }
-      const idx = unmatchedChoices.indexOf(action.payload.dataField);
-      if (idx !== -1) unmatchedChoices.splice(idx, 1);
+      for (let i = 0; i < Object.keys(action.payload).length; i++) {
+        const idx = unmatchedChoices.indexOf(Object.keys(action.payload)[i]);
+        if (idx !== -1) unmatchedChoices.splice(idx, 1);
+      }
+      dataFieldToChoiceMap = Object.assign(dataFieldToChoiceMap, action.payload)
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
@@ -161,14 +163,16 @@ export default function (state = {}, action) {
       });
     }
     case MATCH_FIELDS_SUCCESS: {
-      const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
+      let redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
       }
-      const idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
-      if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
-      redcapFieldToDataFieldMap[action.payload.redcapField] = action.payload.dataField;
+      for (let i = 0; i < Object.keys(action.payload).length; i++) {
+        const idx = unmatchedRedcapFields.indexOf(Object.keys(action.payload)[i]);
+        if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
+      }
+      redcapFieldToDataFieldMap = Object.assign(redcapFieldToDataFieldMap, action.payload)
       return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields });
     }
     case MATCH_FIELDS_FAILURE: {

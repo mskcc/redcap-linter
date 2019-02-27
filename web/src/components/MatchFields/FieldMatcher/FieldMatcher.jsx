@@ -37,6 +37,16 @@ class FieldMatcher extends Component {
     };
   }
 
+  handleMatchAll(e) {
+    const {
+      redcapFieldToDataFieldMap,
+    } = this.state;
+    const {
+      matchFields,
+    } = this.props;
+    matchFields(redcapFieldToDataFieldMap);
+  }
+
   handleMatch(fieldToMatch) {
     const {
       redcapFieldToDataFieldMap,
@@ -45,7 +55,9 @@ class FieldMatcher extends Component {
       matchFields,
     } = this.props;
     const match = redcapFieldToDataFieldMap[fieldToMatch] || '';
-    matchFields(fieldToMatch, match);
+    const payload = { };
+    payload[fieldToMatch] = match;
+    matchFields(payload);
   }
 
   handleNoMatch(fieldToMatch) {
@@ -55,7 +67,9 @@ class FieldMatcher extends Component {
     const {
       matchFields,
     } = this.props;
-    matchFields(fieldToMatch, noMatch);
+    const payload = { };
+    payload[fieldToMatch] = noMatch;
+    matchFields(payload);
   }
 
   handleChange(fieldToMatch, e) {
@@ -161,6 +175,7 @@ class FieldMatcher extends Component {
     const {
       search,
       columns,
+      redcapFieldToDataFieldMap,
     } = this.state;
     const tableData = fieldsToMatch.map(f => {
       // TODO Handle multiple forms
@@ -177,9 +192,14 @@ class FieldMatcher extends Component {
       data = data.filter(row => row['REDCap Field'].includes(search) || row['Form Name'].includes(search));
     }
 
+    const disabled = Object.keys(redcapFieldToDataFieldMap).length == 0;
+
     return (
       <div className="FieldMatcher-table">
-        Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+        <div className="App-tableActions">
+          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Match All</button>
+        </div>
         <ReactTable
           data={data}
           className="-striped -highlight"

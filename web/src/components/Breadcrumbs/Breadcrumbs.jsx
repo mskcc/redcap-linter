@@ -47,6 +47,7 @@ class Breadcrumbs extends Component {
       jsonData,
       redcapFieldToDataFieldMap,
       csvHeaders,
+      ddData,
       dataFileName,
       cellsWithErrors,
       recordFieldsNotInRedcap,
@@ -60,6 +61,7 @@ class Breadcrumbs extends Component {
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
           <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
           <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
+          <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData || {})} />
           <input key="cellsWithErrors" name="cellsWithErrors" type="hidden" value={JSON.stringify(cellsWithErrors || {})} />
           <input key="recordFieldsNotInRedcap" name="recordFieldsNotInRedcap" type="hidden" value={JSON.stringify(recordFieldsNotInRedcap || {})} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />

@@ -67,6 +67,16 @@ class ChoiceMatcher extends Component {
     }
   }
 
+  handleMatchAll(e) {
+    const {
+      dataFieldToChoiceMap,
+    } = this.state;
+    const {
+      matchChoices,
+    } = this.props;
+    matchChoices(dataFieldToChoiceMap);
+  }
+
   handleMatch(fieldToMatch) {
     const {
       dataFieldToChoiceMap,
@@ -75,7 +85,9 @@ class ChoiceMatcher extends Component {
       matchChoices,
     } = this.props;
     const match = dataFieldToChoiceMap[fieldToMatch] || '';
-    matchChoices(fieldToMatch, match);
+    const payload = {};
+    payload[fieldToMatch] = match;
+    matchChoices(payload);
   }
 
   handleNoMatch(fieldToMatch) {
@@ -85,7 +97,9 @@ class ChoiceMatcher extends Component {
     const {
       matchChoices,
     } = this.props;
-    matchChoices(fieldToMatch, noMatch);
+    const payload = {};
+    payload[fieldToMatch] = noMatch;
+    matchChoices(payload);
   }
 
   handleChange(fieldToMatch, e) {
@@ -200,6 +214,7 @@ class ChoiceMatcher extends Component {
     const {
       search,
       columns,
+      dataFieldToChoiceMap,
     } = this.state;
 
     const tableData = fieldsToMatch.map(f => ({
@@ -277,6 +292,8 @@ class ChoiceMatcher extends Component {
 
     // {`${workingSheetName}: ${workingColumn}`}
 
+    const disabled = Object.keys(dataFieldToChoiceMap).length == 0;
+
     return (
       <div className="ChoiceMatcher-table">
         <div className="ChoiceMatcher-tableTitle">
@@ -284,6 +301,7 @@ class ChoiceMatcher extends Component {
             Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
           <span className="ChoiceMatcher-tableLabel">{ fieldInErrorSelector }</span>
+          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Match All</button>
         </div>
         <ReactTable
           data={data}

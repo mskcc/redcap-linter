@@ -103,12 +103,9 @@ export function matchFieldsFailure(payload) {
   };
 }
 
-export function matchFields(redcapField, dataField) {
+export function matchFields(redcapFieldToDataFieldMap) {
   return function action(dispatch) {
-    const payload = {
-      redcapField,
-      dataField,
-    };
+    const payload = redcapFieldToDataFieldMap;
     return dispatch(matchFieldsSuccess(payload));
   };
 }
@@ -191,12 +188,9 @@ export function matchChoicesFailure(payload) {
   };
 }
 
-export function matchChoices(dataField, permissibleValue) {
+export function matchChoices(dataFieldToChoiceMap) {
   return function action(dispatch) {
-    const payload = {
-      dataField,
-      permissibleValue,
-    };
+    const payload = dataFieldToChoiceMap;
     return dispatch(matchChoicesSuccess(payload));
   };
 }
