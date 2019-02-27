@@ -3,6 +3,7 @@ import './Datatable.scss';
 import '../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
+import { Table, Divider, Tag } from 'antd';
 import PropTypes from 'prop-types';
 import Cell from '../Cell/Cell';
 
@@ -80,7 +81,7 @@ class Datatable extends Component {
     return { };
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, cellInfo, index) {
     const {
       tableErrors,
       editable,
@@ -93,12 +94,12 @@ class Datatable extends Component {
       tErrors = filterErrors;
     }
     let hasError = false;
-    if (tErrors[cellInfo.index] && tErrors[cellInfo.index][cellInfo.column.id]) {
-      hasError = tErrors[cellInfo.index][cellInfo.column.id];
+    if (tErrors[index] && tErrors[index][header]) {
+      hasError = tErrors[index][header];
     }
     return (
       <Cell
-        cellData={cellInfo.value}
+        cellData={cellInfo[header]}
         hasError={hasError}
         editable={editable}
       />
@@ -135,11 +136,9 @@ class Datatable extends Component {
       sheetInError,
     } = this.props;
     const { search } = this.state;
-    let columns = [{
-      Header: '',
-    }];
+    let columns = [];
     if (headers.length > 0) {
-      columns = headers.map((header) => {
+      columns = headers.map((header, idx) => {
         let headerClassName = '';
         let className = '';
         if (tableFieldsNotInRedcap.includes(header)) {
@@ -147,16 +146,23 @@ class Datatable extends Component {
         }
         if (sheetInError) {
           headerClassName = 'Datatable-headerError';
-          className = 'Datatable-cellError';
+          className += ' Datatable-cellError';
         }
-        return {
-          Header: header,
+        const column = {
+          title: <div className="truncated">{header}</div>,
           headerClassName,
           className,
-          accessor: header,
-          Cell: this.renderCell.bind(this),
+          key: header,
+          render: (text, record, index) => (this.renderCell(header, record, index)),
           // getProps: this.renderErrors.bind(this),
         };
+        // if (idx > 0) {
+        //   column.width = 100;
+        // }
+        if (idx === 0) {
+          column.fixed = 'left';
+        }
+        return column;
       });
     }
 
@@ -194,13 +200,7 @@ class Datatable extends Component {
         <div className="Datatable-searchBar">
           Search: <input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={18}
-          minRows={18}
-        />
+        <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: '150%' }} />
       </div>
     );
   }

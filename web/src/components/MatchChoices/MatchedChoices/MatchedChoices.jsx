@@ -3,6 +3,7 @@ import './MatchedChoices.scss';
 import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
+import { Table, Divider, Tag } from 'antd';
 import PropTypes from 'prop-types';
 import CancelIcon from '../../CancelIcon/CancelIcon';
 
@@ -11,17 +12,27 @@ class MatchedChoices extends Component {
     super(props);
     this.state = {
       search: '',
+      // columns: [{
+      //   Header: 'Data Field',
+      //   accessor: 'Data Field',
+      //   style: { whiteSpace: 'unset' },
+      //   Cell: this.renderCell.bind(this),
+      // },
+      // {
+      //   Header: 'Permissible Value',
+      //   accessor: 'Permissible Value',
+      //   style: { whiteSpace: 'unset' },
+      //   Cell: this.renderCell.bind(this),
+      // }],
       columns: [{
-        Header: 'Data Field',
-        accessor: 'Data Field',
-        style: { whiteSpace: 'unset' },
-        Cell: this.renderCell.bind(this),
+        title: 'Data Field',
+        key: 'Data Field',
+        render: (text, record) => (this.renderCell('Data Field', record)),
       },
       {
-        Header: 'Permissible Value',
-        accessor: 'Permissible Value',
-        style: { whiteSpace: 'unset' },
-        Cell: this.renderCell.bind(this),
+        title: 'Permissible Value',
+        key: 'Permissible Value',
+        render: (text, record) => (this.renderCell('Permissible Value', record)),
       }],
     };
   }
@@ -30,22 +41,22 @@ class MatchedChoices extends Component {
     const {
       removeChoiceMatch,
     } = this.props;
-    removeChoiceMatch(cellInfo.original['Data Field'], cellInfo.original['Permissible Value']);
+    removeChoiceMatch(cellInfo['Data Field'], cellInfo['Permissible Value']);
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, cellInfo) {
     let className = 'MatchedChoices-cell';
-    if (!cellInfo.original['Permissible Value']) {
+    if (!cellInfo['Permissible Value']) {
       className += ' MatchedChoices-cellError';
     }
     let cellValue = '';
-    if (Array.isArray(cellInfo.value)) {
-      cellValue = cellInfo.value.join(', ');
+    if (Array.isArray(cellInfo[header])) {
+      cellValue = cellInfo[header].join(', ');
     } else {
-      cellValue = cellInfo.value;
+      cellValue = cellInfo[header];
     }
     let cancelButton = '';
-    if (cellInfo.column.Header === 'Permissible Value' && cellInfo.original['Permissible Value'] !== cellInfo.original['Data Field']) {
+    if (header === 'Permissible Value' && cellInfo['Permissible Value'] !== cellInfo['Data Field']) {
       cancelButton = (
         <div className="MatchedChoices-cancel">
           <a onClick={e => this.removeChoiceMatch(cellInfo, e)}>
@@ -83,13 +94,7 @@ class MatchedChoices extends Component {
           Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={12}
-          minRows={12}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

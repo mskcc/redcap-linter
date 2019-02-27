@@ -4,7 +4,8 @@ import '../../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
-import CancelIcon from '../../CancelIcon/CancelIcon';
+import { Table, Divider, Tag } from 'antd';
+import CancelIcon from '../../CancelIcon/CancelIcon'
 
 class MatchedFields extends Component {
   constructor(props) {
@@ -12,16 +13,14 @@ class MatchedFields extends Component {
     this.state = {
       search: '',
       columns: [{
-        Header: 'REDCap Field',
-        accessor: 'REDCap Field',
-        style: { whiteSpace: 'unset' },
-        Cell: this.renderCell.bind(this),
+        title: 'REDCap Field',
+        key: 'REDCap Field',
+        render: (text, record) => (this.renderCell('REDCap Field', record)),
       },
       {
-        Header: 'Data Field',
-        accessor: 'Data Field',
-        style: { whiteSpace: 'unset' },
-        Cell: this.renderCell.bind(this),
+        title: 'Data Field',
+        key: 'Data Field',
+        render: (text, record) => (this.renderCell('Data Field', record)),
       }],
     };
   }
@@ -30,16 +29,16 @@ class MatchedFields extends Component {
     const {
       removeFieldMatch,
     } = this.props;
-    removeFieldMatch(cellInfo.original['REDCap Field'], cellInfo.original['Data Field']);
+    removeFieldMatch(cellInfo['REDCap Field'], cellInfo['Data Field']);
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, cellInfo) {
     let className = 'MatchedFields-cell';
-    if (!cellInfo.original['Data Field']) {
+    if (!cellInfo['Data Field']) {
       className += ' MatchedFields-cellError';
     }
     let cancelButton = '';
-    if (cellInfo.column.Header === 'Data Field' && cellInfo.original['Data Field'] !== cellInfo.original['REDCap Field']) {
+    if (header === 'Data Field' && cellInfo['Data Field'] !== cellInfo['REDCap Field']) {
       cancelButton = (
         <div className="MatchedFields-cancel">
           <a onClick={e => this.removeFieldMatch(cellInfo, e)}>
@@ -51,7 +50,7 @@ class MatchedFields extends Component {
     return (
       <div className="MatchedFields-cellContainer">
         <div className={className}>
-          { cellInfo.value }
+          { cellInfo[header] }
         </div>
         { cancelButton }
       </div>
@@ -71,16 +70,17 @@ class MatchedFields extends Component {
     if (search) {
       data = data.filter(row => row['REDCap Field'].includes(search) || row['Data Field'].includes(search));
     }
+    // <ReactTable
+    //   data={data}
+    //   className="-striped -highlight"
+    //   columns={columns}
+    //   defaultPageSize={18}
+    //   minRows={18}
+    // />
     return (
       <div className="MatchedFields-table">
         Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={18}
-          minRows={18}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

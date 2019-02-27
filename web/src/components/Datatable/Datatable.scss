@@ -10,3 +10,17 @@
 	width: 100%;
 	text-align: left;
 }
+
+// .ReactTable, .ReactTable .rt-th, .rt-td, .rt-table, .rt-tbody {
+//     overflow: visible;
+// }
+
+table.ant-table-fixed {
+  table-layout: fixed;
+}
+
+div.truncated {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
