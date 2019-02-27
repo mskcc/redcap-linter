@@ -16,6 +16,8 @@ class ChoiceMatcher extends Component {
     this.state = {
       dataFieldToChoiceMap: {},
       noMatch: '',
+      workingColumn: '',
+      workingSheetName: '',
       search: '',
       columns: [{
         Header: 'Data Field',
@@ -35,6 +37,17 @@ class ChoiceMatcher extends Component {
         Cell: this.renderMatchButton.bind(this),
       }],
     };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      workingColumn,
+      workingSheetName,
+    } = prevState;
+    if (nextProps.workingColumn !== workingColumn || nextProps.workingSheetName !== workingSheetName) {
+      return { dataFieldToChoiceMap: {}, workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName};
+    }
+    return null;
   }
 
   changeResolve(e) {

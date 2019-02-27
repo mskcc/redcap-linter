@@ -539,7 +539,6 @@ def post_form():
 
     all_errors                  = []
     # sheets_not_in_redcap        = []
-    record_fields_not_in_redcap = {}
     recordid_field              = dd[0]
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
@@ -556,7 +555,6 @@ def post_form():
         redcap_fields_not_in_data = [f for f in redcap_field_names if f not in sheet.columns]
 
         sheet_fields_not_in_redcap = [f for f in sheet.columns if f not in redcap_field_names]
-        record_fields_not_in_redcap[sheet_name] = sheet_fields_not_in_redcap
 
         if sheet_fields_not_in_redcap:
             all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(sheet_name, str(sheet_fields_not_in_redcap)))
@@ -583,9 +581,7 @@ def post_form():
         'ddData':                  dd_data,
         'dateColumns':             date_cols,
         'malformedSheets':         malformed_sheets,
-        'recordFieldsNotInRedcap': record_fields_not_in_redcap,
-        'fieldsNotInRedcap':       fields_not_in_redcap,
-        'formNames':               form_names,
+        'recordFieldsNotInRedcap': fields_not_in_redcap,
         'projectInfo':             project_info,
         'matchingHeaders':         matching_headers,
         'fieldCandidates':         field_candidates,

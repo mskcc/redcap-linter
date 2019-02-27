@@ -48,7 +48,6 @@ class TabbedDatatable extends Component {
       workingSheetName,
       workingColumn,
       filter,
-      formNames,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const panes = [];
@@ -158,7 +157,6 @@ TabbedDatatable.propTypes = {
   recordFieldsNotInRedcap: PropTypes.object,
   allErrors: PropTypes.array,
   sheetsNotInRedcap: PropTypes.array,
-  formNames: PropTypes.array,
 };
 
 TabbedDatatable.defaultProps = {
@@ -169,7 +167,6 @@ TabbedDatatable.defaultProps = {
   recordFieldsNotInRedcap: {},
   allErrors: [],
   sheetsNotInRedcap: [],
-  formNames: [],
 };
 
 function mapStateToProps(state) {

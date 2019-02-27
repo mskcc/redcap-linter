@@ -45,4 +45,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: "10.10.10.1/24"
+        - subnet: "10.10.11.1/24"
