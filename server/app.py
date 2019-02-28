@@ -360,8 +360,11 @@ def download_progress():
                 continue
             for index, row in error_df.iterrows():
                 error_cell = error_df.iloc[index][col]
-                dd_field = [f for f in dd if f.field_name == col][0]
-                if error_cell is None and dd_field.required:
+                required = False
+                dd_field = [f for f in dd if f.field_name == col]
+                if dd_field:
+                    required = dd_field[0].required
+                if error_cell is None and required:
                     data_worksheet.write(index + 1, j, '', empty_format)
                 elif error_cell:
                     cell = df.iloc[index][df.columns[j]]
@@ -369,7 +372,7 @@ def download_progress():
                     cell_format = None
                     if cell:
                         cell_format = error_format
-                    elif dd_field.required:
+                    elif required:
                         cell_format = empty_format
                     data_worksheet.write(index + 1, j, target_string, cell_format)
     writer.close()
