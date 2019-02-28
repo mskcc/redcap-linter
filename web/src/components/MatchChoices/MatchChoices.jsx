@@ -96,20 +96,22 @@ class MatchChoices extends Component {
     }, []));
 
     return (
-      <div className="MatchChoices-container">
-        <div className="MatchChoices-matchedChoices">
-          <div className="MatchChoices-title">Matched Choices</div>
-          <MatchedChoices
-            removeChoiceMatch={removeChoiceMatch}
-            tableData={matchedChoices}
-          />
-        </div>
-        <div className="MatchChoices-unmatchedChoices">
-          <div className="MatchChoices-title">Unmatched Choices</div>
-          <ChoiceMatcher
-            fieldsToMatch={fieldErrors.unmatchedChoices}
-            fieldCandidates={fieldErrors.choiceCandidates}
-          />
+      <div>
+        <div className="MatchChoices-container">
+          <div className="MatchChoices-matchedChoices">
+            <div className="MatchChoices-title">Matched Choices</div>
+            <MatchedChoices
+              removeChoiceMatch={removeChoiceMatch}
+              tableData={matchedChoices}
+            />
+          </div>
+          <div className="MatchChoices-unmatchedChoices">
+            <div className="MatchChoices-title">Unmatched Choices</div>
+            <ChoiceMatcher
+              fieldsToMatch={fieldErrors.unmatchedChoices}
+              fieldCandidates={fieldErrors.choiceCandidates}
+            />
+          </div>
         </div>
         <div className="MatchChoices-saveAndContinue">
           <button type="button" onClick={this.saveChanges.bind(this)} className="MatchChoices-save">Save</button>

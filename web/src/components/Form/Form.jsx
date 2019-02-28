@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import '../../App.scss';
 import './Form.scss';
-import 'semantic-ui-css/semantic.min.css';
-import { Loader } from 'semantic-ui-react';
+import { Input, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
@@ -82,9 +81,9 @@ class Form extends Component {
       ddData,
       malformedSheets,
     } = this.props;
-    let loader = '';
+    let buttonText = 'Submit';
     if (loading) {
-      loader = <Loader active content="Loading" />;
+      buttonText = <Spin />;
     }
     let project = '';
     let warning = '';
@@ -120,7 +119,7 @@ class Form extends Component {
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel">Environment</label>
           <label className="App-fieldsetRadioLabel" htmlFor="development">
-            <input
+            <Input
               className="App-fieldsetRadio"
               type="radio"
               id="development"
@@ -131,7 +130,7 @@ class Form extends Component {
             Development
           </label>
           <label className="App-fieldsetRadioLabel" htmlFor="test">
-            <input
+            <Input
               className="App-fieldsetRadio"
               type="radio"
               id="test"
@@ -142,7 +141,7 @@ class Form extends Component {
             Test
           </label>
           <label className="App-fieldsetRadioLabel" htmlFor="production">
-            <input
+            <Input
               className="App-fieldsetRadio"
               type="radio"
               id="production"
@@ -156,7 +155,7 @@ class Form extends Component {
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="token">
             Token:
-            <input
+            <Input
               className="App-fieldsetInput"
               id="token"
               type="text"
@@ -185,7 +184,7 @@ class Form extends Component {
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">
             Repeatable Instruments:
-            <input
+            <Input
               className="App-fieldsetInput"
               id="repeatableInstruments"
               type="text"
@@ -213,9 +212,8 @@ class Form extends Component {
         </fieldset>
 
         <div className="Form-submitButtonDiv">
-          <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">Submit</button>
+          <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">{ buttonText }</button>
         </div>
-        { loader }
         <div
           className="Form-projectInfo"
           dangerouslySetInnerHTML={{ __html: project }}

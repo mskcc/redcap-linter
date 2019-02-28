@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import './ResolvedTextErrors.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
+import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
 
 class ResolvedTextErrors extends Component {
@@ -11,26 +10,26 @@ class ResolvedTextErrors extends Component {
     this.state = {
       search: '',
       columns: [{
-        Header: 'Original Value',
-        accessor: 'Original Value',
-        Cell: this.renderCell.bind(this),
+        title: 'Original Value',
+        key: 'Original Value',
+        render: (text, record) => (this.renderCell('Original Value', record)),
       },
       {
-        Header: 'Corrected Value',
-        accessor: 'Corrected Value',
-        Cell: this.renderCell.bind(this),
+        title: 'Corrected Value',
+        key: 'Corrected Value',
+        render: (text, record) => (this.renderCell('Corrected Value', record)),
       }],
     };
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, record) {
     let className = '';
-    if (!cellInfo.original['Corrected Value']) {
+    if (!record['Corrected Value']) {
       className = 'ResolvedTextErrors-cellError';
     }
     return (
       <div className={className}>
-        { cellInfo.value }
+        { record[header] }
       </div>
     );
   }
@@ -52,16 +51,10 @@ class ResolvedTextErrors extends Component {
       <div className="ResolvedTextErrors-table">
         <div className="ResolvedTextErrors-tableTitle">
             <span className="ResolvedTextErrors-searchBar">
-          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+          Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={12}
-          minRows={12}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

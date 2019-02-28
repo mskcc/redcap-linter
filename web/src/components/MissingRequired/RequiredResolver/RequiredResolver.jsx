@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import './RequiredResolver.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
+import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -16,22 +15,38 @@ class RequiredResolver extends Component {
     this.state = {
       localFieldToValueMap: {},
       search: '',
+      // columns: [{
+      //   Header: 'Field',
+      //   accessor: 'Field',
+      //   Cell: this.renderCell.bind(this),
+      // },
+      // {
+      //   Header: 'Value',
+      //   accessor: 'Value',
+      //   style: { overflow: 'visible' },
+      //   Cell: this.renderInput.bind(this),
+      // },
+      // {
+      //   Header: 'Action',
+      //   accessor: 'Action',
+      //   style: { overflow: 'visible' },
+      //   Cell: this.renderMatchButton.bind(this),
+      // }],
       columns: [{
-        Header: 'Field',
-        accessor: 'Field',
-        Cell: this.renderCell.bind(this),
+        title: 'Field',
+        key: 'Field',
+        render: (text, record) => (this.renderCell('Field', record)),
       },
       {
-        Header: 'Value',
-        accessor: 'Value',
-        style: { overflow: 'visible' },
-        Cell: this.renderInput.bind(this),
+        title: 'Value',
+        key: 'Value',
+        width: '200px',
+        render: (text, record) => (this.renderInput(record)),
       },
       {
-        Header: 'Action',
-        accessor: 'Action',
-        style: { overflow: 'visible' },
-        Cell: this.renderMatchButton.bind(this),
+        title: 'Action',
+        key: 'Action',
+        render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
   }
@@ -109,23 +124,23 @@ class RequiredResolver extends Component {
     this.setState({ localFieldToValueMap });
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, record) {
     return (
       <Cell
-        cellData={cellInfo.value}
+        cellData={record[header]}
         editable={false}
       />
     );
   }
 
-  renderInput(cellInfo) {
+  renderInput(record) {
     const {
       localFieldToValueMap,
     } = this.state;
     const {
       ddData,
     } = this.props;
-    const fieldName = cellInfo.original['Field'];
+    const fieldName = record['Field'];
     const ddField = ddData.find((field) => {
       return field.field_name === fieldName;
     });
@@ -161,8 +176,8 @@ class RequiredResolver extends Component {
     );
   }
 
-  renderMatchButton(cellInfo) {
-    const field = cellInfo.original['Field'];
+  renderMatchButton(record) {
+    const field = record['Field'];
     const {
       localFieldToValueMap,
     } = this.state;
@@ -274,17 +289,11 @@ class RequiredResolver extends Component {
       <div className="RequiredResolver-table">
         <div className="RequiredResolver-tableTitle">
           <div className="RequiredResolver-searchBar">
-            Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
           <div className="RequiredResolver-tableLabel">{ rowInErrorSelector }</div>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={12}
-          minRows={12}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

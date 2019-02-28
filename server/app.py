@@ -479,14 +479,16 @@ def post_form():
     all_csv_headers = []
     dd_headers  = []
     dd_data     = {}
+    dd_data_raw = {}
     if data_dictionary is not None:
         dd_headers = data_dictionary[0].keys()
-        dd_data = data_dictionary
-        dd_data[0]['required'] = True
+        dd_data_raw = data_dictionary
     else:
         dd_headers = list(dd_df.columns)
-        dd_data = [field.__dict__ for field in dd]
-        dd_data[0]['required'] = True
+        dd_data_raw = json.loads(dd_df.to_json(orient='records', date_format='iso'))
+
+    dd_data = [field.__dict__ for field in dd]
+    dd_data[0]['required'] = True
 
     for sheet_name, sheet in records.items():
         all_csv_headers += utils.parameterize_list(list(sheet.columns))
@@ -582,6 +584,7 @@ def post_form():
         'jsonData':                json_data,
         'ddHeaders':               dd_headers,
         'ddData':                  dd_data,
+        'ddDataRaw':               dd_data_raw,
         'dateColumns':             date_cols,
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': fields_not_in_redcap,

@@ -3,7 +3,7 @@ import './Datatable.scss';
 import '../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
-import { Table, Divider, Tag } from 'antd';
+import { Table, Divider, Tag, Tooltip } from 'antd';
 import PropTypes from 'prop-types';
 import Cell from '../Cell/Cell';
 
@@ -37,8 +37,9 @@ class Datatable extends Component {
         }
       }
       filterErrors = indicesToFilter.map(index => tableErrors[index]);
+      return { filterErrors };
     }
-    return { filterErrors };
+    return null;
   }
 
   onSearchChange(e) {
@@ -63,24 +64,6 @@ class Datatable extends Component {
     this.setState({ search: e.target.value, filterErrors });
   }
 
-  getTrProps(state, rowInfo) {
-    if (rowInfo && rowInfo.row) {
-      const { selected } = this.state;
-      return {
-        onClick: (e) => {
-          this.setState({
-            selected: rowInfo.index,
-          });
-        },
-        style: {
-          background: rowInfo.index === selected ? '#00afec' : 'white',
-          color: rowInfo.index === selected ? 'white' : 'black',
-        },
-      };
-    }
-    return { };
-  }
-
   renderCell(header, cellInfo, index) {
     const {
       tableErrors,
@@ -89,6 +72,7 @@ class Datatable extends Component {
     const {
       filterErrors,
     } = this.state;
+    // console.log(this.state);
     let tErrors = tableErrors;
     if (filterErrors.length > 0) {
       tErrors = filterErrors;
@@ -101,7 +85,7 @@ class Datatable extends Component {
       <Cell
         cellData={cellInfo[header]}
         hasError={hasError}
-        editable={editable}
+        editable={false}
       />
     );
   }
@@ -136,21 +120,21 @@ class Datatable extends Component {
       sheetInError,
     } = this.props;
     const { search } = this.state;
+
     let columns = [];
     if (headers.length > 0) {
       columns = headers.map((header, idx) => {
-        let headerClassName = '';
+        let headerClassName = 'truncated';
         let className = '';
         if (tableFieldsNotInRedcap.includes(header)) {
-          headerClassName = 'Datatable-headerError';
+          headerClassName += ' Datatable-headerError';
         }
         if (sheetInError) {
           headerClassName = 'Datatable-headerError';
           className += ' Datatable-cellError';
         }
         const column = {
-          title: <div className="truncated">{header}</div>,
-          headerClassName,
+          title: <Tooltip title={header}><div className={headerClassName}>{header}</div></Tooltip>,
           className,
           key: header,
           render: (text, record, index) => (this.renderCell(header, record, index)),
@@ -159,9 +143,10 @@ class Datatable extends Component {
         // if (idx > 0) {
         //   column.width = 100;
         // }
-        if (idx === 0) {
-          column.fixed = 'left';
-        }
+        // if (idx === 0) {
+        //   column.width = 100;
+        //   column.fixed = 'left';
+        // }
         return column;
       });
     }
@@ -200,7 +185,7 @@ class Datatable extends Component {
         <div className="Datatable-searchBar">
           Search: <input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
         </div>
-        <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: '150%' }} />
+        <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: columns.length * 100 }} />
       </div>
     );
   }

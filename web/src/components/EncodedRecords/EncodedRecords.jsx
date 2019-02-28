@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Tabs } from 'antd';
 import { Tab } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import Datatable from '../Datatable/Datatable';
 import './EncodedRecords.scss';
 import { postForm } from '../../actions/RedcapLinterActions';
+
+const { TabPane } = Tabs;
 
 class EncodedRecords extends Component {
   constructor(props) {
@@ -27,31 +30,28 @@ class EncodedRecords extends Component {
         const tData = encodedRecords[sheetName];
         const headers = encodedRecordsHeaders[sheetName];
 
-        panes.push({
-          menuItem: sheetName,
-          render: () => (
+        panes.push(
+          <TabPane tab={sheetName} key={panes.length.toString()}>
             <Datatable
               sheetName={`${sheetName}`}
               headers={headers}
               tableData={tData}
             />
-          ),
-        });
+          </TabPane>
+        );
       }
     } else {
-      panes.push({
-        menuItem: 'Sheet1',
-        render: () => (
+      panes.push(
+        <TabPane tab="Sheet1" key={panes.length.toString()}>
           <Datatable headers={[]} tableData={[]} />
-        ),
-      });
+        </TabPane>
+      );
     }
     const tabProps = {
       className: 'EncodedRecords-tabs',
-      menu: { secondary: true, pointing: true },
-      panes: panes,
+      animated: false,
     };
-    return <Tab {...tabProps} />;
+    return <Tabs {...tabProps}>{ panes }</Tabs>;
   }
 }
 

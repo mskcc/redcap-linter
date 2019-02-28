@@ -111,26 +111,28 @@ class MissingRequired extends Component {
     // <button type="button" onClick={e => this.handleSkip(field, e)} className="MissingRequired-skipButton">Skip</button>
 
     return (
-      <div className="MissingRequired-container">
-        <div className="MissingRequired-matchedChoices">
-          <div className="MissingRequired-title">Row Data</div>
-          <ResolvedRequiredErrors
-            fieldToValueMap={fieldToValueMap}
-            updateValue={this.props.updateValue}
-            tableData={rowData}
-            sheet={workingSheet}
-            rowNum={workingRowNum+1}
-            filterRow={filterRow}
-          />
-        </div>
-        <div className="MissingRequired-unmatchedChoices">
-          <div className="MissingRequired-title">Missing Required Values</div>
-          <RequiredResolver
-            row={row}
-            rowNum={workingRowNum}
-            sheet={workingSheet}
-            requiredDdFields={requiredDdFields}
-          />
+      <div>
+        <div className="MissingRequired-container">
+          <div className="MissingRequired-matchedChoices">
+            <div className="MissingRequired-title">Row Data</div>
+            <ResolvedRequiredErrors
+              fieldToValueMap={fieldToValueMap}
+              updateValue={this.props.updateValue}
+              tableData={rowData}
+              sheet={workingSheet}
+              rowNum={workingRowNum+1}
+              filterRow={filterRow}
+            />
+          </div>
+          <div className="MissingRequired-unmatchedChoices">
+            <div className="MissingRequired-title">Missing Required Values</div>
+            <RequiredResolver
+              row={row}
+              rowNum={workingRowNum}
+              sheet={workingSheet}
+              requiredDdFields={requiredDdFields}
+            />
+          </div>
         </div>
         <div className="MissingRequired-saveAndContinue">
           <button type="button" onClick={this.saveChanges.bind(this)} className="MissingRequired-save">Save</button>

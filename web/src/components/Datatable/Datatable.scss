@@ -19,6 +19,10 @@ table.ant-table-fixed {
   table-layout: fixed;
 }
 
+.ant-table-scroll table .ant-table-fixed-columns-in-body {
+	visibility: visible;
+}
+
 div.truncated {
   white-space: nowrap;
   overflow: hidden;

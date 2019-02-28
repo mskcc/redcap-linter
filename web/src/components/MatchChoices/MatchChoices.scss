@@ -13,6 +13,7 @@
 }
 
 .MatchChoices-unmatchedChoices {
+  float: right;
   display: inline-block;
   width: 65%;
   padding-left: 1%;
@@ -21,7 +22,7 @@
 .MatchChoices-title {
   text-align: center;
   font-size: 15px;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .MatchChoices-saveAndContinue {

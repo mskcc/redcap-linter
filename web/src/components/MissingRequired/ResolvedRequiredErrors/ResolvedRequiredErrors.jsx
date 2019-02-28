@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import './ResolvedRequiredErrors.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
+import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
 import CancelIcon from '../../CancelIcon/CancelIcon';
 
@@ -12,37 +11,37 @@ class ResolvedRequiredErrors extends Component {
     this.state = {
       search: '',
       columns: [{
-        Header: 'Field',
-        accessor: 'Field',
-        Cell: this.renderCell.bind(this),
+        title: 'Field',
+        key: 'Field',
+        render: (text, record) => (this.renderCell('Field', record)),
       },
       {
-        Header: 'Value',
-        accessor: 'Value',
-        Cell: this.renderCell.bind(this),
+        title: 'Value',
+        key: 'Value',
+        render: (text, record) => (this.renderCell('Value', record)),
       }],
     };
   }
 
-  removeRequiredMatch(cellInfo) {
+  removeRequiredMatch(record) {
     const {
       updateValue,
     } = this.props;
-    updateValue(cellInfo.original['Field'], '');
+    updateValue(record['Field'], '');
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, record) {
     const {
       fieldToValueMap,
     } = this.props;
     let cancelButton = '';
     let className = 'ResolvedRequiredErrors-cell';
-    if (fieldToValueMap.hasOwnProperty(cellInfo.original['Field'])) {
-      className += " ResolvedRequiredErrors-resolvedCell"
-      if (cellInfo.column.Header === 'Value') {
+    if (fieldToValueMap.hasOwnProperty(record['Field'])) {
+      className += ' ResolvedRequiredErrors-resolvedCell'
+      if (header === 'Value') {
         cancelButton = (
           <div className="ResolvedRequiredErrors-cancel">
-            <a onClick={e => this.removeRequiredMatch(cellInfo, e)}>
+            <a onClick={e => this.removeRequiredMatch(record, e)}>
               <CancelIcon />
             </a>
           </div>
@@ -53,7 +52,7 @@ class ResolvedRequiredErrors extends Component {
     return (
       <div className="ResolvedRequiredErrors-cellContainer">
         <div className={className}>
-          { cellInfo.value }
+          { record[header] }
         </div>
         { cancelButton }
       </div>
@@ -79,7 +78,7 @@ class ResolvedRequiredErrors extends Component {
       <div className="ResolvedRequiredErrors-table">
         <div className="ResolvedRequiredErrors-tableTitle">
           <span className="ResolvedRequiredErrors-searchBar">
-            Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
           <div className="ResolvedRequiredErrors-sheetInfo">
             <b>Sheet</b>: { sheet }
@@ -87,13 +86,7 @@ class ResolvedRequiredErrors extends Component {
             <b>Row num</b>: { rowNum }
           </div>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={12}
-          minRows={12}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import './MatchedFields.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
-import { Table, Divider, Tag } from 'antd';
+import { Table, Input } from 'antd';
 import CancelIcon from '../../CancelIcon/CancelIcon'
 
 class MatchedFields extends Component {
@@ -79,7 +77,7 @@ class MatchedFields extends Component {
     // />
     return (
       <div className="MatchedFields-table">
-        Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+        Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
         <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
