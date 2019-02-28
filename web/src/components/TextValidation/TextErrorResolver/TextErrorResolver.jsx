@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import './TextErrorResolver.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
+import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -23,21 +22,20 @@ class TextErrorResolver extends Component {
       removedValue: '',
       search: '',
       columns: [{
-        Header: 'Original Value',
-        accessor: 'Original Value',
-        Cell: this.renderCell.bind(this),
+        title: 'Original Value',
+        key: 'Original Value',
+        render: (text, record) => (this.renderCell('Original Value', record)),
       },
       {
-        Header: 'Corrected Value',
-        accessor: 'Corrected Value',
-        style: { overflow: 'visible' },
-        Cell: this.renderInput.bind(this),
+        title: 'Corrected Value',
+        key: 'Corrected Value',
+        width: '200px',
+        render: (text, record) => (this.renderInput(record)),
       },
       {
-        Header: 'Action',
-        accessor: 'Action',
-        style: { overflow: 'visible' },
-        Cell: this.renderMatchButton.bind(this),
+        title: 'Action',
+        key: 'Action',
+        render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
   }
@@ -119,25 +117,25 @@ class TextErrorResolver extends Component {
     this.setState({ originalToCorrectedValueMap });
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, record) {
     return (
       <Cell
-        cellData={cellInfo.value}
+        cellData={record[header]}
         editable={false}
       />
     );
   }
 
-  renderInput(cellInfo) {
+  renderInput(record) {
     const {
       originalToCorrectedValueMap,
     } = this.state;
-    const originalValue = cellInfo.original['Original Value'];
+    const originalValue = record['Original Value'];
     const value = originalToCorrectedValueMap[originalValue] || '';
     return (
-      <input
+      <Input
         className="TextErrorResolver-input"
-        key={`${cellInfo.original['Original Value']}`}
+        key={`${record['Original Value']}`}
         type="text"
         value={value}
         onBlur={this.onBlur.bind(this)}
@@ -147,8 +145,8 @@ class TextErrorResolver extends Component {
     );
   }
 
-  renderMatchButton(cellInfo) {
-    const originalValue = cellInfo.original['Original Value'];
+  renderMatchButton(record) {
+    const originalValue = record['Original Value'];
     const {
       originalToCorrectedValueMap,
     } = this.state;
@@ -254,7 +252,7 @@ class TextErrorResolver extends Component {
       <div className="TextErrorResolver-table">
         <div className="TextErrorResolver-tableTitle">
           <div className="TextErrorResolver-searchBar">
-            Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
           <div className="TextErrorResolver-textValidation">
             <b>Validation</b>: { fieldErrors.textValidation }
@@ -267,13 +265,7 @@ class TextErrorResolver extends Component {
           </div>
           <div className="TextErrorResolver-tableLabel">{ fieldInErrorSelector }</div>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={12}
-          minRows={12}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

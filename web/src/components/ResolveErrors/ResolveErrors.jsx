@@ -4,7 +4,7 @@ import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { Loader } from 'semantic-ui-react';
+import { Spin } from 'antd';
 import MatchChoices from '../MatchChoices/MatchChoices';
 import TextValidation from '../TextValidation/TextValidation';
 import MissingRequired from '../MissingRequired/MissingRequired';
@@ -67,7 +67,7 @@ class ResolveErrors extends Component {
     let content = '';
     // TODO rework the logic here
     if (loading) {
-      content = <Loader active content="Loading" />;
+      content = <Spin tip="Loading..." />;
     } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
       content = <MatchChoices />;
     } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {

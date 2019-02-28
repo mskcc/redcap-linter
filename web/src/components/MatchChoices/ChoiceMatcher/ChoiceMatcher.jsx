@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import './ChoiceMatcher.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
+import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -19,22 +18,38 @@ class ChoiceMatcher extends Component {
       workingColumn: '',
       workingSheetName: '',
       search: '',
+      // columns: [{
+      //   Header: 'Data Field',
+      //   accessor: 'Data Field',
+      //   Cell: this.renderCell.bind(this),
+      // },
+      // {
+      //   Header: 'Candidate',
+      //   accessor: 'Candidate',
+      //   style: { overflow: 'visible' },
+      //   Cell: this.renderCandidates.bind(this),
+      // },
+      // {
+      //   Header: 'Match',
+      //   accessor: 'Match',
+      //   style: { overflow: 'visible' },
+      //   Cell: this.renderMatchButton.bind(this),
+      // }],
       columns: [{
-        Header: 'Data Field',
-        accessor: 'Data Field',
-        Cell: this.renderCell.bind(this),
+        title: 'Data Field',
+        key: 'Data Field',
+        render: (text, record) => (this.renderCell('Data Field', record)),
       },
       {
-        Header: 'Candidate',
-        accessor: 'Candidate',
-        style: { overflow: 'visible' },
-        Cell: this.renderCandidates.bind(this),
+        title: 'Candidate',
+        key: 'Candidate',
+        width: '200px',
+        render: (text, record) => (this.renderCandidates(record)),
       },
       {
-        Header: 'Match',
-        accessor: 'Match',
-        style: { overflow: 'visible' },
-        Cell: this.renderMatchButton.bind(this),
+        title: 'Match',
+        key: 'Match',
+        render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
   }
@@ -130,10 +145,10 @@ class ChoiceMatcher extends Component {
     this.setState({ dataFieldToChoiceMap });
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, cellInfo) {
     return (
       <Cell
-        cellData={cellInfo.value}
+        cellData={cellInfo[header]}
         editable={false}
       />
     );
@@ -150,8 +165,8 @@ class ChoiceMatcher extends Component {
       dataFieldToChoiceMap,
     } = this.state;
     const ddField = ddData.find(field => field.field_name === workingColumn);
-    const dataField = cellInfo.original['Data Field'];
-    const value = dataFieldToChoiceMap[dataField];
+    const fieldToMatch = cellInfo['Data Field'];
+    const value = dataFieldToChoiceMap[fieldToMatch];
     let selectedValue = [];
     if (Array.isArray(value)) {
       selectedValue = value.map(choice => ({
@@ -164,7 +179,7 @@ class ChoiceMatcher extends Component {
         label: value,
       };
     } else if (ddField.field_type === 'checkbox' && !value) {
-      const checkboxItems = dataField.split(',').map(item => item.trim());
+      const checkboxItems = fieldToMatch.split(',').map(item => item.trim());
       const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
       checkboxItems.forEach((item) => {
         if (choices.indexOf(item.toLowerCase()) >= 0) {
@@ -175,7 +190,6 @@ class ChoiceMatcher extends Component {
         }
       });
     }
-    const fieldToMatch = cellInfo.value;
     let scores = choiceCandidates[fieldToMatch];
     scores = scores.sort((a, b) => b.score - a.score);
     const options = scores.map(score => ({
@@ -200,7 +214,7 @@ class ChoiceMatcher extends Component {
   }
 
   renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo.original['Data Field'];
+    const fieldToMatch = cellInfo['Data Field'];
     const {
       dataFieldToChoiceMap,
     } = this.state;
@@ -311,18 +325,12 @@ class ChoiceMatcher extends Component {
       <div className="ChoiceMatcher-table">
         <div className="ChoiceMatcher-tableTitle">
           <span className="ChoiceMatcher-searchBar">
-            Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
           <span className="ChoiceMatcher-tableLabel">{ fieldInErrorSelector }</span>
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Match All</button>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={12}
-          minRows={12}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

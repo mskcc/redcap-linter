@@ -4,6 +4,7 @@ import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import { Breadcrumb } from 'antd';
 import DownloadIcon from '../DownloadIcon/DownloadIcon';
 import { navigateTo } from '../../actions/RedcapLinterActions';
 
@@ -83,44 +84,46 @@ class Breadcrumbs extends Component {
     const breadcrumbs = [];
 
     if (currentPage === 'intro' || page === 'intro') {
-      breadcrumbs.push('Intro');
+      breadcrumbs.push(<Breadcrumb.Item>Intro</Breadcrumb.Item>);
     } else {
-      breadcrumbs.push(<a key="intro" href="#" onClick={e => this.goTo('intro', e)}>Intro</a>);
+      breadcrumbs.push(<Breadcrumb.Item><a key="intro" href="#" onClick={e => this.goTo('intro', e)}>Intro</a></Breadcrumb.Item>);
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
-      breadcrumbs.push(' / ');
       if (page === 'matchFields') {
-        breadcrumbs.push('Match Fields');
+        breadcrumbs.push(<Breadcrumb.Item>Match Fields</Breadcrumb.Item>);
       } else {
-        breadcrumbs.push(<a key="matchFields" href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a>);
+        breadcrumbs.push(<Breadcrumb.Item><a key="matchFields" href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a></Breadcrumb.Item>);
       }
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
-      breadcrumbs.push(' / ');
       if (page === 'lint') {
-        breadcrumbs.push('Lint');
+        breadcrumbs.push(<Breadcrumb.Item>Lint</Breadcrumb.Item>);
       } else {
-        breadcrumbs.push(<a key="lint" href="#" onClick={e => this.goTo('lint', e)}>Lint</a>);
+        breadcrumbs.push(<Breadcrumb.Item><a key="lint" href="#" onClick={e => this.goTo('lint', e)}>Lint</a></Breadcrumb.Item>);
       }
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('finish')) {
-      breadcrumbs.push(' / ');
       if (page === 'finish') {
-        breadcrumbs.push('Finish');
+        breadcrumbs.push(<Breadcrumb.Item>Finish</Breadcrumb.Item>);
       } else {
-        breadcrumbs.push(<a key="finish" href="#" onClick={e => this.goTo('finish', e)}>Finish</a>);
+        breadcrumbs.push(<Breadcrumb.Item><a key="finish" href="#" onClick={e => this.goTo('finish', e)}>Finish</a></Breadcrumb.Item>);
       }
     }
 
+    let download = null;
+
     if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
-      breadcrumbs.push(downloadButton);
+      download = downloadButton;
     }
     return (
       <div className="Breadcrumbs-navigation">
-        { breadcrumbs }
+        <Breadcrumb className="Breadcrumbs-links">
+          { breadcrumbs }
+        </Breadcrumb>
+        { download }
       </div>
     );
   }

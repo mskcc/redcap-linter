@@ -9,14 +9,12 @@
 }
 
 .Breadcrumbs-downloadIcon {
-  width: 25px;
-  height: 25px;
+  width: 30px;
   float: right;
   fill: color(blue500);
 }
 
 .Breadcrumbs-buttonText {
-  margin-top: 5px;
   float: left;
 }
 
@@ -33,4 +31,8 @@
 
 .Breadcrumbs-finish {
   float: right;
+}
+
+.Breadcrumbs-links {
+  display: inline-block;
 }

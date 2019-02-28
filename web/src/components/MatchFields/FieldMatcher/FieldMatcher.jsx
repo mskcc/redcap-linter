@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import './FieldMatcher.scss';
 import '../../../App.scss';
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
+import { Table, Input } from 'antd';
 import Cell from '../../Cell/Cell';
 import { matchFields } from '../../../actions/RedcapLinterActions';
 
@@ -18,21 +17,20 @@ class FieldMatcher extends Component {
       noMatch: '',
       search: '',
       columns: [{
-        Header: 'REDCap Field',
-        accessor: 'REDCap Field',
-        Cell: this.renderCell.bind(this),
+        title: 'REDCap Field',
+        key: 'REDCap Field',
+        render: (text, record) => (this.renderCell('REDCap Field', record)),
       },
       {
-        Header: 'Candidate',
-        accessor: 'Candidate',
-        style: { overflow: 'visible' },
-        Cell: this.renderCandidates.bind(this),
+        title: 'Candidate',
+        key: 'Candidate',
+        width: '200px',
+        render: (text, record) => (this.renderCandidates(record)),
       },
       {
-        Header: 'Match',
-        accessor: 'Match',
-        style: { overflow: 'visible' },
-        Cell: this.renderMatchButton.bind(this),
+        title: 'Match',
+        key: 'Match',
+        render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
   }
@@ -80,12 +78,12 @@ class FieldMatcher extends Component {
     this.setState({ redcapFieldToDataFieldMap });
   }
 
-  renderCell(cellInfo) {
+  renderCell(header, cellInfo) {
     const {
       ddData,
     } = this.props;
-    const ddField = ddData.find(field => field.field_name === cellInfo.value);
-    const cellData = <span><b>{cellInfo.value}</b> | {ddField.form_name}</span>;
+    const ddField = ddData.find(field => field.field_name === cellInfo[header]);
+    const cellData = <span><b>{cellInfo[header]}</b> | {ddField.form_name}</span>;
     return (
       <Cell
         cellData={cellData}
@@ -101,8 +99,8 @@ class FieldMatcher extends Component {
     const {
       redcapFieldToDataFieldMap,
     } = this.state;
-    const redcapField = cellInfo.original['REDCap Field'];
-    const value = redcapFieldToDataFieldMap[redcapField];
+    const fieldToMatch = cellInfo['REDCap Field'];
+    const value = redcapFieldToDataFieldMap[fieldToMatch];
     let selectedValue = '';
     if (value) {
       selectedValue = {
@@ -110,7 +108,6 @@ class FieldMatcher extends Component {
         label: value,
       };
     }
-    const fieldToMatch = cellInfo.value;
     let scores = fieldCandidates[fieldToMatch];
     scores = scores.sort((a, b) => b.score - a.score);
     const mappedDataFieldValues = Object.values(redcapFieldToDataFieldMap);
@@ -143,6 +140,7 @@ class FieldMatcher extends Component {
         options={options}
         isSearchable
         value={selectedValue}
+        style={{ minWidth: '200px' }}
         onChange={e => this.handleChange(fieldToMatch, e)}
         styles={selectStyles}
         placeholder="Select..."
@@ -151,7 +149,7 @@ class FieldMatcher extends Component {
   }
 
   renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo.original['REDCap Field'];
+    const fieldToMatch = cellInfo['REDCap Field'];
     const {
       redcapFieldToDataFieldMap,
     } = this.state;
@@ -192,21 +190,16 @@ class FieldMatcher extends Component {
       data = data.filter(row => row['REDCap Field'].includes(search) || row['Form Name'].includes(search));
     }
 
-    const disabled = Object.keys(redcapFieldToDataFieldMap).length == 0;
+    const disabled = Object.keys(redcapFieldToDataFieldMap).length === 0;
+
 
     return (
       <div className="FieldMatcher-table">
         <div className="App-tableActions">
-          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+          Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Match All</button>
         </div>
-        <ReactTable
-          data={data}
-          className="-striped -highlight"
-          columns={columns}
-          defaultPageSize={18}
-          minRows={18}
-        />
+        <Table size="small" columns={columns} dataSource={data} />
       </div>
     );
   }

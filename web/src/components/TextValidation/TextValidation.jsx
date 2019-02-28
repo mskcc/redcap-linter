@@ -82,16 +82,18 @@ class TextValidation extends Component {
     }
 
     return (
-      <div className="TextValidation-container">
-        <div className="TextValidation-matchedChoices">
-          <div className="TextValidation-title">Corrected Values</div>
-          <ResolvedTextErrors
-            tableData={correctedValues}
-          />
-        </div>
-        <div className="TextValidation-unmatchedChoices">
-          <div className="TextValidation-title">Values in Error</div>
-          <TextErrorResolver />
+      <div>
+        <div className="TextValidation-container">
+          <div className="TextValidation-matchedChoices">
+            <div className="TextValidation-title">Corrected Values</div>
+            <ResolvedTextErrors
+              tableData={correctedValues}
+            />
+          </div>
+          <div className="TextValidation-unmatchedChoices">
+            <div className="TextValidation-title">Values in Error</div>
+            <TextErrorResolver />
+          </div>
         </div>
         <div className="TextValidation-saveAndContinue">
           <button type="button" onClick={this.saveChanges.bind(this)} className="TextValidation-save">Save</button>

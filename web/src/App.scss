@@ -2,6 +2,12 @@
 @import './components/Utilities/color';
 @import './components/Utilities/mixins';
 
+@import '~antd/dist/antd.css';
+
+body {
+  color: rgba(0, 0, 0, 1);
+}
+
 .App {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 10pt;
@@ -12,7 +18,7 @@
 
 .App-fieldsetColumn {
   width: 20%;
-  padding-top: 5px;
+  padding: 5px;
   display: inline-block;
   float: left;
 }
@@ -39,10 +45,7 @@
   padding: 5px 5px;
   border: 1px solid #dbd7d3;
   border-radius: 5px;
-}
-
-.App-tableActions {
-  height: 36px;
+  width: 150px;
 }
 
 .App-fieldsetLabel {
@@ -53,7 +56,7 @@
 
 .App-fieldsetRadioLabel {
   font-size: 11px;
-  margin-right: 7px;
+  margin-left: 30px;
   margin-bottom: 2px;
 }
 

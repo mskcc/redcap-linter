@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Spin } from 'antd';
 import PropTypes from 'prop-types';
 import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
@@ -42,6 +43,7 @@ class MatchFields extends Component {
       unmatchedRedcapFields,
       fieldCandidates,
       removeFieldMatch,
+      loading,
     } = this.props;
     let matchedFields = matchingHeaders.map(header => ({
       'REDCap Field': header,
@@ -65,6 +67,11 @@ class MatchFields extends Component {
       }
       return filtered;
     }, []));
+
+    let buttonText = 'Save and Continue';
+    if (loading) {
+      buttonText = <Spin />;
+    }
     return (
       <div className="MatchFields-container">
         <div className="MatchFields-matchedFields">
@@ -83,7 +90,7 @@ class MatchFields extends Component {
           />
         </div>
         <div className="MatchFields-saveAndContinue">
-          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
+          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ buttonText }</button>
         </div>
       </div>
     );
