@@ -3,7 +3,7 @@ import './Datatable.scss';
 import '../../App.scss';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
-import { Table, Divider, Tag, Tooltip } from 'antd';
+import { Table, Input, Tooltip } from 'antd';
 import PropTypes from 'prop-types';
 import Cell from '../Cell/Cell';
 
@@ -183,7 +183,7 @@ class Datatable extends Component {
     return (
       <div className="Datatable-table">
         <div className="Datatable-searchBar">
-          Search: <input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
+          Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
         </div>
         <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: columns.length * 100 }} />
       </div>
