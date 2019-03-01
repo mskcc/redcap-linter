@@ -11,6 +11,7 @@
 }
 
 .MatchFields-unmatchedFields {
+  float: right;
   display: inline-block;
   width: 65%;
   padding-left: 1%;
@@ -25,4 +26,8 @@
 .MatchFields-saveAndContinue {
   padding-top: 15px;
   float: right;
+}
+
+.MatchFields-wrapFloats {
+  overflow: hidden;
 }

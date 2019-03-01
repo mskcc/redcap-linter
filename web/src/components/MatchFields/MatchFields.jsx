@@ -74,20 +74,22 @@ class MatchFields extends Component {
     }
     return (
       <div className="MatchFields-container">
-        <div className="MatchFields-matchedFields">
-          <div className="MatchFields-title">Matched Fields</div>
-          <MatchedFields
-            removeFieldMatch={removeFieldMatch}
-            tableData={matchedFields}
-          />
-        </div>
-        <div className="MatchFields-unmatchedFields">
-          <div className="MatchFields-title">Unmatched Fields</div>
-          <FieldMatcher
-            fieldsToMatch={unmatchedRedcapFields}
-            fieldCandidates={fieldCandidates}
-            dd={ddData}
-          />
+        <div className="MatchFields-wrapFloats">
+          <div className="MatchFields-matchedFields">
+            <div className="MatchFields-title">Matched Fields</div>
+            <MatchedFields
+              removeFieldMatch={removeFieldMatch}
+              tableData={matchedFields}
+            />
+          </div>
+          <div className="MatchFields-unmatchedFields">
+            <div className="MatchFields-title">Unmatched Fields</div>
+            <FieldMatcher
+              fieldsToMatch={unmatchedRedcapFields}
+              fieldCandidates={fieldCandidates}
+              dd={ddData}
+            />
+          </div>
         </div>
         <div className="MatchFields-saveAndContinue">
           <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ buttonText }</button>
