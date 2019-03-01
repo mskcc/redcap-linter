@@ -16,6 +16,21 @@
 	text-align: center;
 }
 
+.FieldMatcher-tableActions {
+	position: relative;
+	text-align: center;
+	height: 36px;
+}
+
+.FieldMatcher-tableSearch {
+	position: absolute;
+}
+
 .FieldMatcher-matchAll {
-	float: right;
+	position: absolute;
+	left: calc(100% - 91px);
+}
+
+.FieldMatcher-switch {
+	margin-top: 7px;
 }

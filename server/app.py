@@ -9,6 +9,7 @@ import numbers
 import pandas as pd
 from datetime import datetime
 from collections import OrderedDict
+import collections
 from fuzzywuzzy import fuzz
 from flask_cors import CORS, cross_origin
 from models.redcap_field import RedcapField
@@ -27,7 +28,8 @@ def save_fields():
     csv_headers = json.loads(form.get('csvHeaders'))
     date_cols = json.loads(form.get('dateColumns'))
     # data field -> REDCap field
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v}
+    # TODO Delete columns that are indicated as no match
+    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v and isinstance(v, collections.Hashable)}
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
@@ -329,7 +331,7 @@ def download_progress():
     record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
 
     # data field -> REDCap field
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v}
+    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v and isinstance(v, collections.Hashable)}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
@@ -496,7 +498,8 @@ def post_form():
 
     all_field_names = [f.field_name for f in dd]
 
-    field_candidates = {}
+    redcap_field_candidates = {}
+    data_field_candidates = {}
     csv_headers = {}
     fields_not_in_redcap = {}
 
@@ -512,23 +515,39 @@ def post_form():
     # TODO matches the variable on all sheets, do variables need to be sheet specific?
     matching_headers = list(set(all_field_names) & set(all_csv_headers))
     unmatched_redcap_fields = [f for f in all_field_names if f not in all_csv_headers]
-
+    unmatched_data_fields = [f for f in all_csv_headers if f not in all_field_names]
 
     for f1 in unmatched_redcap_fields:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]
         for sheet in fields_not_in_redcap:
             for f2 in fields_not_in_redcap[sheet]:
-                if not field_candidates.get(f1):
-                    field_candidates[f1] = []
-                existing_candidate = [item for item in field_candidates[f1] if item['candidate'] == f2]
+                if not redcap_field_candidates.get(f1):
+                    redcap_field_candidates[f1] = []
+                existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
                 if len(existing_candidate) > 0:
                     existing_candidate[0]['sheets'].append(sheet)
                 else:
-                    field_candidates[f1].append({
+                    redcap_field_candidates[f1].append({
                         'candidate': f2,
                         'sheets': [sheet],
                         'score': max(fuzz.ratio(f1, f2), fuzz.ratio(dd_field['field_label'], f2))
                     })
+
+    data_field_to_sheets = {}
+    for sheet in fields_not_in_redcap:
+        for f1 in fields_not_in_redcap[sheet]:
+            if not data_field_to_sheets.get(f1):
+                data_field_to_sheets[f1] = []
+            data_field_to_sheets[f1].append(sheet)
+            for f2 in unmatched_redcap_fields:
+                dd_field = [f for f in dd_data if f['field_name'] == f2][0]
+                if not data_field_candidates.get(f1):
+                    data_field_candidates[f1] = []
+                data_field_candidates[f1].append({
+                    'candidate': f2,
+                    'form_name': dd_field['form_name'],
+                    'score': max(fuzz.ratio(f1, f2), fuzz.ratio(dd_field['field_label'], f1))
+                })
 
     malformed_sheets = []
     # for sheet_name, sheet in records.items():
@@ -590,8 +609,11 @@ def post_form():
         'recordFieldsNotInRedcap': fields_not_in_redcap,
         'projectInfo':             project_info,
         'matchingHeaders':         matching_headers,
-        'fieldCandidates':         field_candidates,
+        'redcapFieldCandidates':   redcap_field_candidates,
+        'dataFieldCandidates':     data_field_candidates,
+        'dataFieldToSheets':       data_field_to_sheets,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
+        'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name
     }
     response = flask.jsonify(results)

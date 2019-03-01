@@ -103,9 +103,8 @@ export function matchFieldsFailure(payload) {
   };
 }
 
-export function matchFields(redcapFieldToDataFieldMap) {
+export function matchFields(payload) {
   return function action(dispatch) {
-    const payload = redcapFieldToDataFieldMap;
     return dispatch(matchFieldsSuccess(payload));
   };
 }

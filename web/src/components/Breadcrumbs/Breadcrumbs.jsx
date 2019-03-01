@@ -84,32 +84,32 @@ class Breadcrumbs extends Component {
     const breadcrumbs = [];
 
     if (currentPage === 'intro' || page === 'intro') {
-      breadcrumbs.push(<Breadcrumb.Item>Intro</Breadcrumb.Item>);
+      breadcrumbs.push(<Breadcrumb.Item key="intro">Intro</Breadcrumb.Item>);
     } else {
-      breadcrumbs.push(<Breadcrumb.Item><a key="intro" href="#" onClick={e => this.goTo('intro', e)}>Intro</a></Breadcrumb.Item>);
+      breadcrumbs.push(<Breadcrumb.Item key="intro"><a href="#" onClick={e => this.goTo('intro', e)}>Intro</a></Breadcrumb.Item>);
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
       if (page === 'matchFields') {
-        breadcrumbs.push(<Breadcrumb.Item>Match Fields</Breadcrumb.Item>);
+        breadcrumbs.push(<Breadcrumb.Item key="matchFields">Match Fields</Breadcrumb.Item>);
       } else {
-        breadcrumbs.push(<Breadcrumb.Item><a key="matchFields" href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a></Breadcrumb.Item>);
+        breadcrumbs.push(<Breadcrumb.Item key="matchFields"><a href="#" onClick={e => this.goTo('matchFields', e)}>Match Fields</a></Breadcrumb.Item>);
       }
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
       if (page === 'lint') {
-        breadcrumbs.push(<Breadcrumb.Item>Lint</Breadcrumb.Item>);
+        breadcrumbs.push(<Breadcrumb.Item key="lint">Lint</Breadcrumb.Item>);
       } else {
-        breadcrumbs.push(<Breadcrumb.Item><a key="lint" href="#" onClick={e => this.goTo('lint', e)}>Lint</a></Breadcrumb.Item>);
+        breadcrumbs.push(<Breadcrumb.Item key="lint"><a href="#" onClick={e => this.goTo('lint', e)}>Lint</a></Breadcrumb.Item>);
       }
     }
 
     if (pages.indexOf(currentPage) >= pages.indexOf('finish')) {
       if (page === 'finish') {
-        breadcrumbs.push(<Breadcrumb.Item>Finish</Breadcrumb.Item>);
+        breadcrumbs.push(<Breadcrumb.Item key="finish">Finish</Breadcrumb.Item>);
       } else {
-        breadcrumbs.push(<Breadcrumb.Item><a key="finish" href="#" onClick={e => this.goTo('finish', e)}>Finish</a></Breadcrumb.Item>);
+        breadcrumbs.push(<Breadcrumb.Item key="finish"><a href="#" onClick={e => this.goTo('finish', e)}>Finish</a></Breadcrumb.Item>);
       }
     }
 

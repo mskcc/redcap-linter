@@ -43,7 +43,7 @@ class ChoiceMatcher extends Component {
       {
         title: 'Candidate',
         key: 'Candidate',
-        width: '200px',
+        width: '250px',
         render: (text, record) => (this.renderCandidates(record)),
       },
       {
@@ -232,7 +232,7 @@ class ChoiceMatcher extends Component {
 
   render() {
     const {
-      fieldsToMatch,
+      fieldErrors,
       recordsMissingRequiredData,
       workingSheetName,
       workingColumn,
@@ -244,7 +244,7 @@ class ChoiceMatcher extends Component {
       dataFieldToChoiceMap,
     } = this.state;
 
-    const tableData = fieldsToMatch.map(f => ({
+    const tableData = fieldErrors.unmatchedChoices.map(f => ({
       'Data Field': f,
       'Candidate': f,
       'Match': '',
@@ -337,12 +337,10 @@ class ChoiceMatcher extends Component {
 }
 
 ChoiceMatcher.propTypes = {
-  fieldsToMatch: PropTypes.array,
   fieldErrors: PropTypes.object,
 };
 
 ChoiceMatcher.defaultProps = {
-  fieldsToMatch: [],
   fieldErrors: {},
 };
 

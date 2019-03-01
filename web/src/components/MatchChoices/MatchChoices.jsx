@@ -107,10 +107,7 @@ class MatchChoices extends Component {
           </div>
           <div className="MatchChoices-unmatchedChoices">
             <div className="MatchChoices-title">Unmatched Choices</div>
-            <ChoiceMatcher
-              fieldsToMatch={fieldErrors.unmatchedChoices}
-              fieldCandidates={fieldErrors.choiceCandidates}
-            />
+            <ChoiceMatcher />
           </div>
         </div>
         <div className="MatchChoices-saveAndContinue">

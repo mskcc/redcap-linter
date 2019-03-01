@@ -41,7 +41,7 @@ class MatchFields extends Component {
       matchingHeaders,
       redcapFieldToDataFieldMap,
       unmatchedRedcapFields,
-      fieldCandidates,
+      redcapFieldCandidates,
       removeFieldMatch,
       loading,
     } = this.props;
@@ -50,7 +50,7 @@ class MatchFields extends Component {
       'Data Field': header,
     }));
     matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
-      if (redcapFieldToDataFieldMap[redcapField]) {
+      if (redcapField && redcapFieldToDataFieldMap[redcapField]) {
         filtered.push({
           'REDCap Field': redcapField,
           'Data Field': redcapFieldToDataFieldMap[redcapField],
@@ -59,7 +59,7 @@ class MatchFields extends Component {
       return filtered;
     }, []));
     matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
-      if (!redcapFieldToDataFieldMap[redcapField]) {
+      if (redcapField && !redcapFieldToDataFieldMap[redcapField]) {
         filtered.push({
           'REDCap Field': redcapField,
           'Data Field': redcapFieldToDataFieldMap[redcapField],
@@ -67,6 +67,15 @@ class MatchFields extends Component {
       }
       return filtered;
     }, []));
+    if (redcapFieldToDataFieldMap['']) {
+      matchedFields = matchedFields.concat(redcapFieldToDataFieldMap[''].map((dataField) => {
+        return {
+          'REDCap Field': '',
+          'Data Field': dataField,
+        }
+      }));
+    }
+
 
     let buttonText = 'Save and Continue';
     if (loading) {
@@ -84,11 +93,7 @@ class MatchFields extends Component {
           </div>
           <div className="MatchFields-unmatchedFields">
             <div className="MatchFields-title">Unmatched Fields</div>
-            <FieldMatcher
-              fieldsToMatch={unmatchedRedcapFields}
-              fieldCandidates={fieldCandidates}
-              dd={ddData}
-            />
+            <FieldMatcher />
           </div>
         </div>
         <div className="MatchFields-saveAndContinue">
@@ -102,14 +107,14 @@ class MatchFields extends Component {
 MatchFields.propTypes = {
   matchingHeaders: PropTypes.array,
   unmatchedRedcapFields: PropTypes.array,
-  fieldCandidates: PropTypes.object,
+  redcapFieldCandidates: PropTypes.object,
   redcapFieldToDataFieldMap: PropTypes.object,
 };
 
 MatchFields.defaultProps = {
   matchingHeaders: [],
   unmatchedRedcapFields: [],
-  fieldCandidates: {},
+  redcapFieldCandidates: {},
   redcapFieldToDataFieldMap: {},
 };
 

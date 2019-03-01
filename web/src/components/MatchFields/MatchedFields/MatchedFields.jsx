@@ -32,7 +32,7 @@ class MatchedFields extends Component {
 
   renderCell(header, cellInfo) {
     let className = 'MatchedFields-cell';
-    if (!cellInfo['Data Field']) {
+    if (!cellInfo['REDCap Field'] || !cellInfo['Data Field']) {
       className += ' MatchedFields-cellError';
     }
     let cancelButton = '';
