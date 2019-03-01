@@ -295,7 +295,11 @@ class FieldMatcher extends Component {
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['REDCap Field'].includes(search) || row['Form Name'].includes(search) || row['Sheets'].includes(search));
+      if (mode === 'REDCap Field') {
+        data = data.filter(row => row['REDCap Field'].includes(search) || row['Form Name'].includes(search));
+      } else if (mode === 'Data Field') {
+        data = data.filter(row => row['Data Field'].includes(search) || row['Sheets'].includes(search));
+      }
     }
 
     const disabled = Object.keys(redcapFieldToDataFieldMap).length === 0;
