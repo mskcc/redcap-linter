@@ -27,7 +27,10 @@ class TabbedDatatable extends Component {
     } = nextProps;
     const sheets = Object.keys(csvHeaders);
     if (!prevSheetName || (prevSheetName !== workingSheetName || prevColumn !== workingColumn)) {
-      return { activeIndex: sheets.indexOf(workingSheetName).toString(), workingSheetName, workingColumn };
+      if (workingSheetName && workingColumn) {
+        return { activeIndex: sheets.indexOf(workingSheetName).toString(), workingSheetName, workingColumn };
+      }
+      return null;
     }
     return { activeIndex: prevState.activeIndex };
   }

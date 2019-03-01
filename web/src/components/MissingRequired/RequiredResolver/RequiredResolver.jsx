@@ -165,7 +165,7 @@ class RequiredResolver extends Component {
       );
     }
     return (
-      <input
+      <Input
         className="RequiredResolver-input"
         type="text"
         onFocus={e => this.onFocus(e)}

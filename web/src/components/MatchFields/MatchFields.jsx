@@ -5,6 +5,7 @@ import { Spin } from 'antd';
 import PropTypes from 'prop-types';
 import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
+import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import './MatchFields.scss';
 import { saveFields, removeFieldMatch } from '../../actions/RedcapLinterActions';
 
@@ -82,22 +83,27 @@ class MatchFields extends Component {
       buttonText = <Spin />;
     }
     return (
-      <div className="MatchFields-container">
-        <div className="MatchFields-wrapFloats">
-          <div className="MatchFields-matchedFields">
-            <div className="MatchFields-title">Matched Fields</div>
-            <MatchedFields
-              removeFieldMatch={removeFieldMatch}
-              tableData={matchedFields}
-            />
+      <div>
+        <div className="MatchFields-container">
+          <div className="MatchFields-wrapFloats">
+            <div className="MatchFields-matchedFields">
+              <div className="MatchFields-title">Matched Fields</div>
+              <MatchedFields
+                removeFieldMatch={removeFieldMatch}
+                tableData={matchedFields}
+              />
+            </div>
+            <div className="MatchFields-unmatchedFields">
+              <div className="MatchFields-title">Unmatched Fields</div>
+              <FieldMatcher />
+            </div>
           </div>
-          <div className="MatchFields-unmatchedFields">
-            <div className="MatchFields-title">Unmatched Fields</div>
-            <FieldMatcher />
+          <div className="MatchFields-saveAndContinue">
+            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ buttonText }</button>
           </div>
         </div>
-        <div className="MatchFields-saveAndContinue">
-          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ buttonText }</button>
+        <div className="MatchFields-tabbedDatatable">
+          <TabbedDatatable />
         </div>
       </div>
     );
