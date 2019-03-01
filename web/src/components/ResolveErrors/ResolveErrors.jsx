@@ -11,7 +11,7 @@ import MissingRequired from '../MissingRequired/MissingRequired';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
-import { resolveColumn } from '../../actions/RedcapLinterActions';
+import { resolveColumn, navigateTo } from '../../actions/RedcapLinterActions';
 
 class ResolveErrors extends Component {
   constructor(props) {
@@ -60,6 +60,7 @@ class ResolveErrors extends Component {
       columnsInError,
       fieldErrors,
       recordsMissingRequiredData,
+      navigateTo,
     } = this.props;
     const {
       loading,
@@ -75,7 +76,7 @@ class ResolveErrors extends Component {
     } else if (Object.keys(recordsMissingRequiredData).length > 0) {
       content = <MissingRequired />;
     } else if (Object.keys(columnsInError).length === 0 && Object.keys(recordsMissingRequiredData).length === 0) {
-      content = <ErrorsResolved />;
+      navigateTo('finish');
     }
     return (
       <div className="ResolveErrors-container">
@@ -105,7 +106,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn }, dispatch);
+  return bindActionCreators({ resolveColumn, navigateTo }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResolveErrors);
