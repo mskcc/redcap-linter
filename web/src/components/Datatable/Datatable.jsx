@@ -68,10 +68,15 @@ class Datatable extends Component {
     const {
       tableErrors,
       editable,
+      selectedColumns,
     } = this.props;
     const {
       filterErrors,
     } = this.state;
+    let className = '';
+    if (selectedColumns && selectedColumns.includes(header)) {
+      className += ' Datatable-highlight';
+    }
     // console.log(this.state);
     let tErrors = tableErrors;
     if (filterErrors.length > 0) {
@@ -83,6 +88,7 @@ class Datatable extends Component {
     }
     return (
       <Cell
+        className={className}
         cellData={cellInfo[header]}
         hasError={hasError}
         editable={false}
@@ -116,6 +122,7 @@ class Datatable extends Component {
       filterColumn,
       tableFilter,
       selectedRowNum,
+      selectedColumns,
       tableFieldsNotInRedcap,
       sheetInError,
     } = this.props;
@@ -132,6 +139,9 @@ class Datatable extends Component {
         if (sheetInError) {
           headerClassName = 'Datatable-headerError';
           className += ' Datatable-cellError';
+        }
+        if (selectedColumns && selectedColumns.includes(header)) {
+          className += ' Datatable-highlight';
         }
         const column = {
           title: <Tooltip title={header}><div className={headerClassName}>{header}</div></Tooltip>,
@@ -196,6 +206,7 @@ Datatable.propTypes = {
   tableData: PropTypes.array,
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
+  selectedColumns: PropTypes.array,
   sheetName: PropTypes.string,
   sheetInError: PropTypes.bool,
   editable: PropTypes.bool,
@@ -205,6 +216,7 @@ Datatable.defaultProps = {
   tableData: [],
   tableErrors: [],
   tableFieldsNotInRedcap: [],
+  selectedColumns: [],
   sheetName: '',
   editable: true,
   sheetInError: false,

@@ -5,9 +5,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
-import { Table, Input, Switch } from 'antd';
+import { Table, Input, Switch, Icon } from 'antd';
 import Cell from '../../Cell/Cell';
-import { matchFields } from '../../../actions/RedcapLinterActions';
+import { matchFields, highlightColumns } from '../../../actions/RedcapLinterActions';
 
 class FieldMatcher extends Component {
   constructor(props) {
@@ -17,6 +17,7 @@ class FieldMatcher extends Component {
       redcapFieldToDataFieldMap: {},
       noMatch: '',
       search: '',
+      selectedColumns: [],
       mode: mode,
       columns: [{
         title: mode,
@@ -88,6 +89,9 @@ class FieldMatcher extends Component {
 
   handleChange(fieldToMatch, e) {
     const {
+      highlightColumns,
+    } = this.props;
+    const {
       redcapFieldToDataFieldMap,
       mode,
     } = this.state;
@@ -96,11 +100,25 @@ class FieldMatcher extends Component {
     } else if (mode === 'Data Field') {
       redcapFieldToDataFieldMap[e.value] = fieldToMatch;
     }
+    const selectedColumns = Object.values(redcapFieldToDataFieldMap).reduce((filtered, dataField) => {
+      if (dataField) {
+        if (Array.isArray(dataField)) {
+          console.log('pushAll');
+        } else {
+          filtered.push(dataField);
+        }
+      }
+      return filtered;
+    }, []);
+    highlightColumns({ selectedColumns });
     this.setState({ redcapFieldToDataFieldMap });
   }
 
-  onSwitchChange(checked) {
-    const mode = checked ? 'REDCap Field' : 'Data Field';
+  onSwitchChange(e) {
+    let {
+      mode
+    } = this.state;
+    mode = mode === 'REDCap Field' ? 'Data Field' : 'REDCap Field';
     const columns = [{
       title: mode,
       key: mode,
@@ -304,14 +322,16 @@ class FieldMatcher extends Component {
 
     const disabled = Object.keys(redcapFieldToDataFieldMap).length === 0;
 
+    const iconType = mode === 'REDCap Field' ? 'arrow-right' : 'arrow-left';
 
+    // <Switch className="FieldMatcher-switch" defaultChecked checkedChildren="REDCap -> Data Field" unCheckedChildren="Data -> REDCap Field" size="large" onChange={this.onSwitchChange.bind(this)} />
     return (
       <div className="FieldMatcher-table">
         <div className="FieldMatcher-tableActions">
           <div className="FieldMatcher-tableSearch">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
-          <Switch className="FieldMatcher-switch" defaultChecked checkedChildren="REDCap -> Data Field" unCheckedChildren="Data -> REDCap Field" size="large" onChange={this.onSwitchChange.bind(this)} />
+          <div className="FieldMatcher-switch"><b>REDCap Field</b><button type="button" onClick={this.onSwitchChange.bind(this)} className="App-actionButton FieldMatcher-switchButton"><Icon type={iconType} /></button> <b>Data Field</b></div>
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Match All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
@@ -339,7 +359,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ matchFields }, dispatch);
+  return bindActionCreators({ matchFields, highlightColumns }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(FieldMatcher);

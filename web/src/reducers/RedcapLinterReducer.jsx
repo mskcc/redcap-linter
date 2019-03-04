@@ -4,6 +4,8 @@ import {
   POST_FORM_FAILURE,
   MATCH_FIELDS_SUCCESS,
   MATCH_FIELDS_FAILURE,
+  HIGHLIGHT_COLUMNS_SUCCESS,
+  HIGHLIGHT_COLUMNS_FAILURE,
   REMOVE_FIELD_MATCH_SUCCESS,
   REMOVE_FIELD_MATCH_FAILURE,
   MATCH_CHOICES_SUCCESS,
@@ -46,7 +48,8 @@ export default function (state = {}, action) {
       });
     }
     case SAVE_FIELDS_SUCCESS: {
-      return Object.assign({}, state, { loading: false, new: false, page: 'lint' }, action.payload.data);
+      const selectedColumns = [];
+      return Object.assign({}, state, { loading: false, new: false, page: 'lint', selectedColumns }, action.payload.data);
     }
     case SAVE_FIELDS_FAILURE: {
       return Object.assign({}, state, {
@@ -73,6 +76,14 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload);
     }
     case NAVIGATE_TO_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case HIGHLIGHT_COLUMNS_SUCCESS: {
+      return Object.assign({}, state, action.payload);
+    }
+    case HIGHLIGHT_COLUMNS_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });
@@ -185,26 +196,6 @@ export default function (state = {}, action) {
       redcapFieldToDataFieldMap = Object.assign(redcapFieldToDataFieldMap, action.payload)
       redcapFieldToDataFieldMap[''] = noMatchData;
       return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields, unmatchedDataFields });
-    }
-    case MATCH_FIELDS_FAILURE: {
-      let noMatchFields = [];
-      if (state.noMatchFields) {
-        noMatchFields = state.noMatchFields.slice();
-      }
-      noMatchFields.push(action.payload.redcapField);
-      let unmatchedRedcapFields = [];
-      if (state.unmatchedRedcapFields) {
-        unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
-      }
-      let unmatchedDataFields = [];
-      if (state.unmatchedDataFields) {
-        unmatchedDataFields = state.unmatchedDataFields.slice();
-      }
-      let idx = unmatchedRedcapFields.indexOf(action.payload.redcapField);
-      if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
-      idx = unmatchedDataFields.indexOf(action.payload.dataField);
-      if (idx !== -1) unmatchedDataFields.splice(idx, 1);
-      return Object.assign({}, state, { noMatchFields, unmatchedRedcapFields, unmatchedDataFields });
     }
     case REMOVE_FIELD_MATCH_SUCCESS: {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};

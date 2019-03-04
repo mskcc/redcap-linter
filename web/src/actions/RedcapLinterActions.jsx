@@ -8,6 +8,9 @@ export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 export const MATCH_FIELDS_SUCCESS = 'MATCH_FIELDS_SUCCESS';
 export const MATCH_FIELDS_FAILURE = 'MATCH_FIELDS_FAILURE';
 
+export const HIGHLIGHT_COLUMNS_SUCCESS = 'HIGHLIGHT_COLUMNS_SUCCESS';
+export const HIGHLIGHT_COLUMNS_FAILURE = 'HIGHLIGHT_COLUMNS_FAILURE';
+
 export const REMOVE_FIELD_MATCH_SUCCESS = 'REMOVE_FIELD_MATCH_SUCCESS';
 export const REMOVE_FIELD_MATCH_FAILURE = 'REMOVE_FIELD_MATCH_FAILURE';
 
@@ -106,6 +109,26 @@ export function matchFieldsFailure(payload) {
 export function matchFields(payload) {
   return function action(dispatch) {
     return dispatch(matchFieldsSuccess(payload));
+  };
+}
+
+export function highlightColumnsSuccess(payload) {
+  return {
+    type: HIGHLIGHT_COLUMNS_SUCCESS,
+    payload,
+  };
+}
+
+export function highlightColumnsFailure(payload) {
+  return {
+    type: HIGHLIGHT_COLUMNS_FAILURE,
+    payload,
+  };
+}
+
+export function highlightColumns(payload) {
+  return function action(dispatch) {
+    return dispatch(highlightColumnsSuccess(payload));
   };
 }
 

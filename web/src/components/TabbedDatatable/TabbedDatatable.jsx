@@ -46,6 +46,7 @@ class TabbedDatatable extends Component {
       ddHeaders,
       ddData,
       ddDataRaw,
+      selectedColumns,
       cellsWithErrors,
       recordFieldsNotInRedcap,
       allErrors,
@@ -100,6 +101,7 @@ class TabbedDatatable extends Component {
               headers={tHeaders}
               tableData={tData}
               tableFilter={tableFilter}
+              selectedColumns={selectedColumns}
               selectedRowNum={selectedRowNum}
               filterColumn={filterColumn}
               tableErrors={tableErrors}

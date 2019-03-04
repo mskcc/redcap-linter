@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import 'react-table/react-table.css';
 import PropTypes from 'prop-types';
-import './Cell.css'
+import './Cell.scss'
 
 class Cell extends Component {
   constructor(props) {
