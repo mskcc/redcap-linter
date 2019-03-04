@@ -98,6 +98,15 @@ class FieldMatcher extends Component {
     if (mode === 'REDCap Field') {
       redcapFieldToDataFieldMap[fieldToMatch] = e.value;
     } else if (mode === 'Data Field') {
+      let previouslyMatched = '';
+      for (const redcapField in redcapFieldToDataFieldMap) {
+        if (redcapFieldToDataFieldMap[redcapField] === fieldToMatch) {
+          previouslyMatched = redcapField;
+        }
+      }
+      if (previouslyMatched) {
+        delete redcapFieldToDataFieldMap[previouslyMatched];
+      }
       redcapFieldToDataFieldMap[e.value] = fieldToMatch;
     }
     const selectedColumns = Object.values(redcapFieldToDataFieldMap).reduce((filtered, dataField) => {
