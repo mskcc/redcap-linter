@@ -13,7 +13,7 @@ class ChoiceMatcher extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dataFieldToChoiceMap: {},
+      choiceMap: {},
       noMatch: '',
       workingColumn: '',
       workingSheetName: '',
@@ -60,7 +60,7 @@ class ChoiceMatcher extends Component {
       workingSheetName,
     } = prevState;
     if (nextProps.workingColumn !== workingColumn || nextProps.workingSheetName !== workingSheetName) {
-      return { dataFieldToChoiceMap: {}, workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName};
+      return { choiceMap: {}, workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName};
     }
     return null;
   }
@@ -97,22 +97,22 @@ class ChoiceMatcher extends Component {
 
   handleMatchAll(e) {
     const {
-      dataFieldToChoiceMap,
+      choiceMap,
     } = this.state;
     const {
       matchChoices,
     } = this.props;
-    matchChoices(dataFieldToChoiceMap);
+    matchChoices(choiceMap);
   }
 
   handleMatch(fieldToMatch) {
     const {
-      dataFieldToChoiceMap,
+      choiceMap,
     } = this.state;
     const {
       matchChoices,
     } = this.props;
-    const match = dataFieldToChoiceMap[fieldToMatch] || '';
+    const match = choiceMap[fieldToMatch] || '';
     const payload = {};
     payload[fieldToMatch] = match;
     matchChoices(payload);
@@ -135,14 +135,14 @@ class ChoiceMatcher extends Component {
       fieldErrors,
     } = this.props;
     const {
-      dataFieldToChoiceMap,
+      choiceMap,
     } = this.state;
     if (fieldErrors && fieldErrors.fieldType === 'checkbox') {
-      dataFieldToChoiceMap[fieldToMatch] = e.map(choice => choice.value);
+      choiceMap[fieldToMatch] = e.map(choice => choice.value);
     } else {
-      dataFieldToChoiceMap[fieldToMatch] = e.value;
+      choiceMap[fieldToMatch] = e.value;
     }
-    this.setState({ dataFieldToChoiceMap });
+    this.setState({ choiceMap });
   }
 
   renderCell(header, cellInfo) {
@@ -162,11 +162,11 @@ class ChoiceMatcher extends Component {
     } = this.props;
     const choiceCandidates = fieldErrors.choiceCandidates || {};
     const {
-      dataFieldToChoiceMap,
+      choiceMap,
     } = this.state;
     const ddField = ddData.find(field => field.field_name === workingColumn);
     const fieldToMatch = cellInfo['Data Field'];
-    const value = dataFieldToChoiceMap[fieldToMatch];
+    const value = choiceMap[fieldToMatch];
     let selectedValue = [];
     if (Array.isArray(value)) {
       selectedValue = value.map(choice => ({
@@ -190,7 +190,7 @@ class ChoiceMatcher extends Component {
         }
       });
     }
-    let scores = choiceCandidates[fieldToMatch];
+    let scores = choiceCandidates[fieldToMatch] || [];
     scores = scores.sort((a, b) => b.score - a.score);
     const options = scores.map(score => ({
       value: score.candidate,
@@ -216,10 +216,10 @@ class ChoiceMatcher extends Component {
   renderMatchButton(cellInfo) {
     const fieldToMatch = cellInfo['Data Field'];
     const {
-      dataFieldToChoiceMap,
+      choiceMap,
     } = this.state;
     let disabled = true;
-    if (dataFieldToChoiceMap[fieldToMatch]) {
+    if (choiceMap[fieldToMatch]) {
       disabled = false;
     }
     return (
@@ -236,19 +236,30 @@ class ChoiceMatcher extends Component {
       recordsMissingRequiredData,
       workingSheetName,
       workingColumn,
+      dataFieldToChoiceMap,
       columnsInError,
     } = this.props;
     const {
       search,
       columns,
-      dataFieldToChoiceMap,
+      choiceMap,
     } = this.state;
 
-    const tableData = fieldErrors.unmatchedChoices.map(f => ({
-      'Data Field': f,
-      'Candidate': f,
-      'Match': '',
-    }));
+    let propsChoiceMap = {};
+    if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {
+      propsChoiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
+    }
+
+    const tableData = fieldErrors.unmatchedChoices.reduce((filtered, f) => {
+      if (!Object.keys(propsChoiceMap).includes(f)) {
+        filtered.push({
+          'Data Field': f,
+          'Candidate': f,
+          'Match': '',
+        });
+      }
+      return filtered;
+  }, []);
 
     const options = [];
     let allErrors = [];
@@ -319,7 +330,7 @@ class ChoiceMatcher extends Component {
 
     // {`${workingSheetName}: ${workingColumn}`}
 
-    const disabled = Object.keys(dataFieldToChoiceMap).length == 0;
+    const disabled = Object.keys(choiceMap).length == 0;
 
     return (
       <div className="ChoiceMatcher-table">
@@ -338,10 +349,12 @@ class ChoiceMatcher extends Component {
 
 ChoiceMatcher.propTypes = {
   fieldErrors: PropTypes.object,
+  dataFieldToChoiceMap: PropTypes.object,
 };
 
 ChoiceMatcher.defaultProps = {
   fieldErrors: {},
+  dataFieldToChoiceMap: {},
 };
 
 function mapStateToProps(state) {

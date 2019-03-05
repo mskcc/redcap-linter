@@ -97,9 +97,13 @@ def resolve_column():
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
+    choice_map = {}
+    if working_sheet_name in data_field_to_choice_map and working_column in data_field_to_choice_map[working_sheet_name]:
+        choice_map = data_field_to_choice_map[working_sheet_name][working_column]
+
     dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
-    transform_map = data_field_to_choice_map
+    transform_map = choice_map
     if not transform_map:
         transform_map = original_to_correct_value_map
     records = {}
@@ -226,7 +230,6 @@ def resolve_column():
         results['workingColumn'] = next_column
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = field_errors
-        results['dataFieldToChoiceMap'] = {}
         results['originalToCorrectedValueMap'] = {}
 
     response = flask.jsonify(results)
@@ -377,6 +380,29 @@ def download_progress():
                     elif required:
                         cell_format = empty_format
                     data_worksheet.write(index + 1, j, target_string, cell_format)
+    writer.close()
+    output.seek(0)
+    return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
+
+@app.route('/download_mappings', methods=['GET', 'POST', 'OPTIONS'])
+def download_mappings():
+    form  = request.form.to_dict()
+    datafile_name = form.get('dataFileName')
+    redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+
+    datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
+    current_date = datetime.now().strftime("%m-%d-%Y")
+    new_datafile_name = datafile_name + '-' + current_date + '-Mappings.xlsx'
+
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+    wb  = writer.book
+    df = pd.DataFrame({'REDCap Field': redcap_field_to_data_field_dict.keys(),
+                  'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in redcap_field_to_data_field_dict.values()]
+                  })
+
+    df.to_excel(writer, index=False)
     writer.close()
     output.seek(0)
     return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)

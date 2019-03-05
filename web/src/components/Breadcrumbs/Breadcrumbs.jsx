@@ -56,6 +56,8 @@ class Breadcrumbs extends Component {
 
     const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_progress`;
 
+    const downloadMappingsLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_mappings`;
+
     const downloadButton = (
       <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
         <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
@@ -67,6 +69,18 @@ class Breadcrumbs extends Component {
           <input key="recordFieldsNotInRedcap" name="recordFieldsNotInRedcap" type="hidden" value={JSON.stringify(recordFieldsNotInRedcap || {})} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
+        <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
+          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
+        </form>
+        <button type="submit" form="downloadMappingsForm" className="App-actionButton" value="Submit">
+          <div className="Breadcrumbs-buttonText">
+            Download Mappings
+          </div>
+          <div className="Breadcrumbs-downloadIcon">
+            <DownloadIcon />
+          </div>
+        </button>
         <button type="submit" form="downloadForm" className="App-actionButton" value="Submit">
           <div className="Breadcrumbs-buttonText">
             Download Progress

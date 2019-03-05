@@ -69,27 +69,33 @@ class MatchChoices extends Component {
     const {
       fieldErrors,
       dataFieldToChoiceMap,
+      workingSheetName,
+      workingColumn,
       removeChoiceMatch,
     } = this.props;
     let matchedChoices = fieldErrors.matchedChoices || [];
+    let choiceMap = {};
+    if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {
+      choiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
+    }
     matchedChoices = matchedChoices.map(header => ({
       'Data Field': header,
       'Permissible Value': header,
     }));
-    matchedChoices = matchedChoices.concat(Object.keys(dataFieldToChoiceMap).reduce((filtered, dataField) => {
-      if (dataFieldToChoiceMap[dataField]) {
+    matchedChoices = matchedChoices.concat(Object.keys(choiceMap).reduce((filtered, dataField) => {
+      if (choiceMap[dataField]) {
         filtered.push({
           'Data Field': dataField,
-          'Permissible Value': dataFieldToChoiceMap[dataField],
+          'Permissible Value': choiceMap[dataField],
         });
       }
       return filtered;
     }, []));
-    matchedChoices = matchedChoices.concat(Object.keys(dataFieldToChoiceMap).reduce((filtered, dataField) => {
-      if (!dataFieldToChoiceMap[dataField]) {
+    matchedChoices = matchedChoices.concat(Object.keys(choiceMap).reduce((filtered, dataField) => {
+      if (!choiceMap[dataField]) {
         filtered.push({
           'Data Field': dataField,
-          'Permissible Value': dataFieldToChoiceMap[dataField],
+          'Permissible Value': choiceMap[dataField],
         });
       }
       return filtered;

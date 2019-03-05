@@ -138,6 +138,10 @@ export default function (state = {}, action) {
     }
     case MATCH_CHOICES_SUCCESS: {
       let dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
+      const {
+        workingSheetName,
+        workingColumn,
+      } = state;
       const fieldErrors = state.fieldErrors || {};
       let unmatchedChoices = [];
       if (fieldErrors.unmatchedChoices) {
@@ -147,7 +151,9 @@ export default function (state = {}, action) {
         const idx = unmatchedChoices.indexOf(Object.keys(action.payload)[i]);
         if (idx !== -1) unmatchedChoices.splice(idx, 1);
       }
-      dataFieldToChoiceMap = Object.assign(dataFieldToChoiceMap, action.payload)
+      dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {}
+      dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {}
+      dataFieldToChoiceMap[workingSheetName][workingColumn] = Object.assign(dataFieldToChoiceMap[workingSheetName][workingColumn], action.payload)
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
@@ -158,7 +164,13 @@ export default function (state = {}, action) {
     }
     case REMOVE_CHOICE_MATCH_SUCCESS: {
       const dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
-      delete dataFieldToChoiceMap[action.payload.dataField];
+      const {
+        workingSheetName,
+        workingColumn,
+      } = state;
+      dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {}
+      dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {}
+      delete dataFieldToChoiceMap[workingSheetName][workingColumn][action.payload.dataField];
       const fieldErrors = state.fieldErrors || {};
       let unmatchedChoices = [];
       if (fieldErrors.unmatchedChoices) {
