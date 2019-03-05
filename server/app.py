@@ -389,6 +389,7 @@ def download_mappings():
     form  = request.form.to_dict()
     datafile_name = form.get('dataFileName')
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
 
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
@@ -398,9 +399,12 @@ def download_mappings():
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
     wb  = writer.book
-    df = pd.DataFrame({'REDCap Field': redcap_field_to_data_field_dict.keys(),
-                  'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in redcap_field_to_data_field_dict.values()]
-                  })
+    # df = pd.DataFrame({'REDCap Field': redcap_field_to_data_field_dict.keys(),
+    #               'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in redcap_field_to_data_field_dict.values()]
+    #               })
+
+    df = pd.DataFrame({'redcapFieldToDataFieldMap': [redcap_field_to_data_field_dict],
+                        'dataFieldToChoiceMap': [data_field_to_choice_map]})
 
     df.to_excel(writer, index=False)
     writer.close()
