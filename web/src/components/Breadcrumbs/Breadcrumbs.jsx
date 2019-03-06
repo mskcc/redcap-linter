@@ -4,9 +4,11 @@ import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Menu, Icon, Button } from 'antd';
 import DownloadIcon from '../DownloadIcon/DownloadIcon';
 import { navigateTo } from '../../actions/RedcapLinterActions';
+
+const { SubMenu } = Menu;
 
 class Breadcrumbs extends Component {
   constructor(props) {
@@ -59,6 +61,23 @@ class Breadcrumbs extends Component {
 
     const downloadMappingsLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_mappings`;
 
+    // <button type="submit" form="downloadMappingsForm" className="App-actionButton" value="Submit">
+    //   <div className="Breadcrumbs-buttonText">
+    //     Download Mappings
+    //   </div>
+    //   <div className="Breadcrumbs-downloadIcon">
+    //     <DownloadIcon />
+    //   </div>
+    // </button>
+    // <button type="submit" form="downloadForm" className="App-actionButton" value="Submit">
+    //   <div className="Breadcrumbs-buttonText">
+    //     Download Progress
+    //   </div>
+    //   <div className="Breadcrumbs-downloadIcon">
+    //     <DownloadIcon />
+    //   </div>
+    // </button>
+
     const downloadButton = (
       <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
         <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
@@ -75,25 +94,25 @@ class Breadcrumbs extends Component {
           <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
-        <button type="submit" form="downloadMappingsForm" className="App-actionButton" value="Submit">
-          <div className="Breadcrumbs-buttonText">
-            Download Mappings
-          </div>
-          <div className="Breadcrumbs-downloadIcon">
-            <DownloadIcon />
-          </div>
-        </button>
-        <button type="submit" form="downloadForm" className="App-actionButton" value="Submit">
-          <div className="Breadcrumbs-buttonText">
-            Download Progress
-          </div>
-          <div className="Breadcrumbs-downloadIcon">
-            <DownloadIcon />
-          </div>
-        </button>
-        <button type="submit" onClick={e => this.goTo('finish', e)} className="App-submitButton Breadcrumbs-finish" value="Submit">
-            Finish Resolving
-        </button>
+        <Menu className="Breadcrumbs-menu" mode="horizontal" style={{ width: 120 }}>
+          <SubMenu key="actions" title={<span><Icon type="down" style={{ fontSize: '10px' }} /> Actions</span>}>
+            <Menu.Item key="downloadMappings"><span><Icon type="download" /></span>
+              <Button htmlType="submit" form="downloadMappingsForm" value="Submit" className="Breadcrumbs-button">
+                Download Mappings
+              </Button>
+            </Menu.Item>
+            <Menu.Item key="downloadProgress"><span><Icon type="download" /></span>
+              <Button htmlType="submit" form="downloadForm" value="Submit" className="Breadcrumbs-button">
+                Download Progress
+              </Button>
+            </Menu.Item>
+            <Menu.Item key="finishResolving"><span><Icon type="check" /></span>
+              <Button htmlType="submit" onClick={e => this.goTo('finish', e)} value="Submit" className="Breadcrumbs-button">
+                Finish Resolving
+              </Button>
+            </Menu.Item>
+          </SubMenu>
+        </Menu>
       </div>
     );
 
@@ -131,7 +150,7 @@ class Breadcrumbs extends Component {
 
     let download = null;
 
-    if (pages.indexOf(currentPage) >= pages.indexOf('lint')) {
+    if (pages.indexOf(currentPage) >= pages.indexOf('matchFields')) {
       download = downloadButton;
     }
     return (

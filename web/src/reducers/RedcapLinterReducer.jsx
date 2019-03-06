@@ -176,7 +176,9 @@ export default function (state = {}, action) {
       if (fieldErrors.unmatchedChoices) {
         unmatchedChoices = fieldErrors.unmatchedChoices.slice();
       }
-      unmatchedChoices.unshift(action.payload.dataField);
+      if (!unmatchedChoices.includes(action.payload.dataField)) {
+        unmatchedChoices.unshift(action.payload.dataField);
+      }
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
@@ -219,9 +221,13 @@ export default function (state = {}, action) {
       if (state.unmatchedDataFields) {
         unmatchedDataFields = state.unmatchedDataFields.slice();
       }
-      unmatchedDataFields.unshift(action.payload.dataField);
+      if (!unmatchedDataFields.includes(action.payload.dataField)) {
+        unmatchedDataFields.unshift(action.payload.dataField);
+      }
       if (action.payload.redcapField) {
-        unmatchedRedcapFields.unshift(action.payload.redcapField);
+        if (!unmatchedRedcapFields.includes(action.payload.redcapField)) {
+          unmatchedRedcapFields.unshift(action.payload.redcapField);
+        }
         delete redcapFieldToDataFieldMap[action.payload.redcapField];
       } else {
         const noMatchData = redcapFieldToDataFieldMap[action.payload.redcapField];

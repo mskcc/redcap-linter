@@ -20,6 +20,8 @@ class Form extends Component {
         dataDictionaryName: '',
         dataFile: '',
         dataFileName: '',
+        mappingsFile: '',
+        mappingsFileName: '',
         environment: 'test',
       },
     };
@@ -68,6 +70,8 @@ class Form extends Component {
       newForm.dataFileName = e.target.value;
     } else if (field === 'dataDictionary') {
       newForm.dataDictionaryName = e.target.value;
+    } else if (field === 'mappingsFile') {
+      newForm.mappingsFileName = e.target.value;
     }
     this.setState({ form: newForm });
   }
@@ -117,7 +121,7 @@ class Form extends Component {
     return (
       <div className="App-fieldsetColumn">
         <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel">Environment</label>
+          <label className="App-fieldsetLabel"><span className="Form-label">Environment</span></label>
           <label className="App-fieldsetRadioLabel" htmlFor="development">
             <Input
               className="App-fieldsetRadio"
@@ -154,7 +158,7 @@ class Form extends Component {
         </fieldset>
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="token">
-            Token:
+            <span className="Form-label">Token</span>
             <Input
               className="App-fieldsetInput"
               id="token"
@@ -170,7 +174,7 @@ class Form extends Component {
 
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="dataDictionary">
-            Data-Dictionary:
+            <span className="Form-label">Data-Dictionary</span>
             <input
               className="App-fieldsetInput"
               id="dataDictionary"
@@ -183,7 +187,7 @@ class Form extends Component {
         </fieldset>
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">
-            Repeatable Instruments:
+            <span className="Form-label">Repeatable Instruments</span>
             <Input
               className="App-fieldsetInput"
               id="repeatableInstruments"
@@ -198,8 +202,22 @@ class Form extends Component {
         <hr />
 
         <fieldset className="App-fieldset">
+          <label className="App-fieldsetLabel" htmlFor="mappingsFile">
+            <span className="Form-label">Mappings File</span> (Optional)
+            <input
+              className="App-fieldsetInput"
+              type="file"
+              id="mappingsFile"
+              accept=".xls,.xlsx"
+              value={form.mappingsFileName}
+              onChange={this.handleSelectedFile.bind(this, 'mappingsFile')}
+            />
+          </label>
+        </fieldset>
+
+        <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="dataFile">
-            Datafile:
+            <span className="Form-label">Datafile</span>
             <input
               className="App-fieldsetInput"
               type="file"

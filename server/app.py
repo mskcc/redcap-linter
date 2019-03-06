@@ -403,8 +403,8 @@ def download_mappings():
     #               'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in redcap_field_to_data_field_dict.values()]
     #               })
 
-    df = pd.DataFrame({'redcapFieldToDataFieldMap': [redcap_field_to_data_field_dict],
-                        'dataFieldToChoiceMap': [data_field_to_choice_map]})
+    df = pd.DataFrame({'redcapFieldToDataFieldMap': [json.dumps(redcap_field_to_data_field_dict)],
+                        'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)]})
 
     df.to_excel(writer, index=False)
     writer.close()
@@ -469,6 +469,19 @@ def post_form():
     env   = form.get('environment')
     ri    = form.get('repeatableInstruments')
     datafile_name = form.get('dataFileName')
+    mappings_file_name = None
+    mappings = None
+    redcap_field_to_data_field_dict = None
+    data_field_to_choice_map = None
+
+    if 'mappingsFile' in request.files:
+        mappings_file_name = form.get('mappingsFileName')
+        mappings =  pd.read_excel(request.files['mappingsFile'], sheet_name="Sheet1")
+
+        if len(list(mappings["redcapFieldToDataFieldMap"])) > 0:
+            redcap_field_to_data_field_dict = json.loads(list(mappings["redcapFieldToDataFieldMap"])[0])
+        if len(list(mappings["dataFieldToChoiceMap"])) > 0:
+            data_field_to_choice_map = json.loads(list(mappings["dataFieldToChoiceMap"])[0])
 
     project_info = {
         'custom_record_label': '',
@@ -646,6 +659,10 @@ def post_form():
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name
     }
+    if redcap_field_to_data_field_dict:
+        results['redcapFieldToDataFieldMap'] = redcap_field_to_data_field_dict
+    if data_field_to_choice_map:
+        results['dataFieldToChoiceMap'] = data_field_to_choice_map
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
