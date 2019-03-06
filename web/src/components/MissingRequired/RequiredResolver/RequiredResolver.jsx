@@ -261,6 +261,7 @@ class RequiredResolver extends Component {
 
     const rowInErrorSelector = (
       <Select
+        className="RequiredResolver-elevate"
         options={options}
         isSearchable
         value={selectedValue}

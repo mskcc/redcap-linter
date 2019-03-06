@@ -48,6 +48,10 @@
   position: absolute;
 }
 
+.RequiredResolver-elevate {
+	z-index: 10;
+}
+
 .RequiredResolver-textValidation {
   display: inline-block;
 }

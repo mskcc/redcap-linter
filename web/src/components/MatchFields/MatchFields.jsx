@@ -85,7 +85,7 @@ class MatchFields extends Component {
     return (
       <div>
         <div className="MatchFields-container">
-          <div className="MatchFields-wrapFloats">
+          <div>
             <div className="MatchFields-matchedFields">
               <div className="MatchFields-title">Matched Fields</div>
               <MatchedFields
@@ -97,6 +97,7 @@ class MatchFields extends Component {
               <div className="MatchFields-title">Unmatched Fields</div>
               <FieldMatcher />
             </div>
+            <div style={{ clear: 'both' }} />
           </div>
           <div className="MatchFields-saveAndContinue">
             <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ buttonText }</button>

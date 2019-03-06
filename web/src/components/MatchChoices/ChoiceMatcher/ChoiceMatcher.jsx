@@ -319,6 +319,7 @@ class ChoiceMatcher extends Component {
 
     const fieldInErrorSelector = (
       <Select
+        className="ChoiceMatcher-elevate"
         options={options}
         isSearchable
         value={selectedValue}

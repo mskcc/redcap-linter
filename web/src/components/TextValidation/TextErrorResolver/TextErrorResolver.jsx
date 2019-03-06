@@ -235,6 +235,7 @@ class TextErrorResolver extends Component {
 
     const fieldInErrorSelector = (
       <Select
+        className="TextErrorResolver-elevate"
         options={options}
         isSearchable
         value={selectedValue}
