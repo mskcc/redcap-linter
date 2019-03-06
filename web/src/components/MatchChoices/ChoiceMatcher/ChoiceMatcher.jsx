@@ -196,6 +196,10 @@ class ChoiceMatcher extends Component {
       value: score.candidate,
       label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.choiceValue}</span></span>,
     }));
+    options.push({
+      value: null,
+      label: 'None',
+    });
 
     let isMulti = false;
     if (fieldErrors.fieldType === 'checkbox') {

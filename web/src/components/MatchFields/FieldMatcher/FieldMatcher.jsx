@@ -215,6 +215,10 @@ class FieldMatcher extends Component {
         }
         return filtered;
       }, []);
+      options.push({
+        value: null,
+        label: 'None',
+      });
     } else if (mode === 'Data Field') {
       scores = dataFieldCandidates[fieldToMatch];
       scores = scores.sort((a, b) => b.score - a.score);
