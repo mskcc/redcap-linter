@@ -579,13 +579,15 @@ def post_form():
     data_field_to_sheets = {}
     for sheet in fields_not_in_redcap:
         for f1 in fields_not_in_redcap[sheet]:
+            if not data_field_candidates.get(f1):
+                data_field_candidates[f1] = []
+            else:
+                continue
             if not data_field_to_sheets.get(f1):
                 data_field_to_sheets[f1] = []
             data_field_to_sheets[f1].append(sheet)
             for f2 in unmatched_redcap_fields:
                 dd_field = [f for f in dd_data if f['field_name'] == f2][0]
-                if not data_field_candidates.get(f1):
-                    data_field_candidates[f1] = []
                 data_field_candidates[f1].append({
                     'candidate': f2,
                     'form_name': dd_field['form_name'],
