@@ -62,6 +62,7 @@ class ErrorSelector extends Component {
       recordsMissingRequiredData,
       workingSheetName,
       workingColumn,
+      workingRow,
       columnsInError,
     } = this.props;
 
@@ -97,10 +98,18 @@ class ErrorSelector extends Component {
       allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
     });
 
-    const selectedValue = {
-      value: { sheet: workingSheetName, column: workingColumn },
-      label: workingColumn,
-    };
+    let selectedValue = {}
+    if (workingColumn) {
+      selectedValue = {
+        value: { sheet: workingSheetName, column: workingColumn },
+        label: workingColumn,
+      };
+    } else if (workingRow) {
+      selectedValue = {
+        value: { sheet: workingSheetName, rowNum: workingRow },
+        label: workingRow+1,
+      };
+    }
 
     const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
     const selectWidth = 8 * longestOption + 60;

@@ -73,6 +73,8 @@ class ResolvedRequiredErrors extends Component {
     if (search) {
       data = data.filter(row => row['Field'].includes(search) || row['Value'].includes(search));
     }
+    // <br />
+    // <b>Row num</b>: { rowNum }
     return (
       <div className="ResolvedRequiredErrors-table">
         <div className="ResolvedRequiredErrors-tableTitle">
@@ -81,8 +83,6 @@ class ResolvedRequiredErrors extends Component {
           </span>
           <div className="ResolvedRequiredErrors-sheetInfo">
             <b>Sheet</b>: { sheet }
-            <br />
-            <b>Row num</b>: { rowNum }
           </div>
         </div>
         <Table size="small" columns={columns} dataSource={data} />

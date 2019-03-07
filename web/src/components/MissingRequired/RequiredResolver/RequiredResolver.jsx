@@ -165,8 +165,6 @@ class RequiredResolver extends Component {
       if (requiredDdFields.indexOf(field) >= 0 && !fieldToValueMap.hasOwnProperty(field) && !row[field]) {
         filtered.push({
           'Field': field,
-          'Value': field,
-          'Action': '',
         })
       }
       return filtered;

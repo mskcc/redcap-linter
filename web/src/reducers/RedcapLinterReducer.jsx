@@ -72,7 +72,7 @@ export default function (state = {}, action) {
       return Object.assign({}, state, action.payload);
     }
     case RESOLVE_COLUMN_SUCCESS: {
-      return Object.assign({}, state, action.payload.data);
+      return Object.assign({}, state, { workingRow: '' }, action.payload.data);
     }
     case RESOLVE_COLUMN_FAILURE: {
       return Object.assign({}, state, {
@@ -80,7 +80,7 @@ export default function (state = {}, action) {
       });
     }
     case RESOLVE_ROW_SUCCESS: {
-      return Object.assign({}, state, action.payload.data);
+      return Object.assign({}, state, { workingColumn: '' }, action.payload.data);
     }
     case RESOLVE_ROW_FAILURE: {
       return Object.assign({}, state, {
