@@ -59,6 +59,8 @@ class ErrorSelector extends Component {
 
   render() {
     const {
+      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
       recordsMissingRequiredData,
       workingSheetName,
       workingColumn,
@@ -76,6 +78,32 @@ class ErrorSelector extends Component {
           label: columnInError,
         });
       });
+      const choiceMap = dataFieldToChoiceMap[sheet] || {};
+      Object.keys(choiceMap).reduce((filtered, column) => {
+        if (!columnsInError[sheet].includes(column)) {
+          // All errors in column are resolved
+          filtered.push({
+            value: { sheet: sheet, column: column },
+            label: column,
+            color: '#237804',
+          })
+        }
+        return filtered;
+      }, subOptions);
+
+      const valueMap = originalToCorrectedValueMap[sheet] || {};
+      Object.keys(valueMap).reduce((filtered, column) => {
+        if (!columnsInError[sheet].includes(column)) {
+          // All errors in column are resolved
+          filtered.push({
+            value: { sheet: sheet, column: column },
+            label: column,
+            color: '#237804',
+          })
+        }
+        return filtered;
+      }, subOptions);
+
       options.push({
         label: `${sheet} | Column Errors`,
         options: subOptions,
@@ -124,6 +152,12 @@ class ErrorSelector extends Component {
         ...provided,
         minWidth: `${selectWidth}px`,
       }),
+      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+        return {
+          ...styles,
+          color: data.color,
+        };
+      },
     };
 
     return (
@@ -141,10 +175,14 @@ class ErrorSelector extends Component {
 
 ErrorSelector.propTypes = {
   fieldErrors: PropTypes.object,
+  dataFieldToChoiceMap: PropTypes.object,
+  originalToCorrectedValueMap: PropTypes.object,
 };
 
 ErrorSelector.defaultProps = {
   fieldErrors: {},
+  dataFieldToChoiceMap: {},
+  originalToCorrectedValueMap: {},
 };
 
 function mapStateToProps(state) {

@@ -42,7 +42,7 @@ class ChoiceMatcher extends Component {
       workingSheetName,
     } = prevState;
     if (nextProps.workingColumn !== workingColumn || nextProps.workingSheetName !== workingSheetName) {
-      return { choiceMap: {} };
+      return { choiceMap: {}, workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName };
     }
     return null;
   }
