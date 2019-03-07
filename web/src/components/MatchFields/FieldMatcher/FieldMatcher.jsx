@@ -339,7 +339,9 @@ class FieldMatcher extends Component {
 
     const disabled = Object.keys(fieldMap).length === 0;
 
-    const iconType = mode === 'REDCap Field' ? 'arrow-right' : 'arrow-left';
+    const iconType = 'swap';
+    const redcapField = mode === 'REDCap Field' ? <b>REDCap Field</b> : <span>REDCap Field</span>;
+    const dataField = mode === 'REDCap Field' ? <span>Data Field</span> : <b>Data Field</b>;
 
     // <Switch className="FieldMatcher-switch" defaultChecked checkedChildren="REDCap -> Data Field" unCheckedChildren="Data -> REDCap Field" size="large" onChange={this.onSwitchChange.bind(this)} />
     return (
@@ -348,7 +350,13 @@ class FieldMatcher extends Component {
           <div className="FieldMatcher-tableSearch">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
-          <div className="FieldMatcher-switch"><b>REDCap Field</b><button type="button" onClick={this.onSwitchChange.bind(this)} className="App-actionButton FieldMatcher-switchButton"><Icon type={iconType} /></button> <b>Data Field</b></div>
+          <div className="FieldMatcher-switch">
+            { redcapField }
+            <button type="button" onClick={this.onSwitchChange.bind(this)} className="App-actionButton FieldMatcher-switchButton">
+              <Icon type={iconType} />
+            </button>
+            { dataField }
+          </div>
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Match All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
