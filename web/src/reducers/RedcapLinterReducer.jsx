@@ -2,30 +2,24 @@ import {
   LOADING_START,
   POST_FORM_SUCCESS,
   POST_FORM_FAILURE,
-  MATCH_FIELDS_SUCCESS,
-  MATCH_FIELDS_FAILURE,
-  HIGHLIGHT_COLUMNS_SUCCESS,
-  HIGHLIGHT_COLUMNS_FAILURE,
-  REMOVE_FIELD_MATCH_SUCCESS,
-  REMOVE_FIELD_MATCH_FAILURE,
-  MATCH_CHOICES_SUCCESS,
-  MATCH_CHOICES_FAILURE,
-  REMOVE_CHOICE_MATCH_SUCCESS,
-  REMOVE_CHOICE_MATCH_FAILURE,
+  MATCH_FIELDS,
+  HIGHLIGHT_COLUMNS,
+  REMOVE_FIELD_MATCH,
+  MATCH_CHOICES,
+  REMOVE_CHOICE_MATCH,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
-  FILTER_TABLE_SUCCESS,
-  FILTER_TABLE_FAILURE,
-  FILTER_ROW_SUCCESS,
-  FILTER_ROW_FAILURE,
+  FILTER_TABLE,
+  FILTER_ROW,
   RESOLVE_COLUMN_SUCCESS,
   RESOLVE_COLUMN_FAILURE,
   RESOLVE_ROW_SUCCESS,
   RESOLVE_ROW_FAILURE,
   CORRECT_VALUE_SUCCESS,
   CORRECT_VALUE_FAILURE,
+  REMOVE_VALUE_MATCH,
   UPDATE_VALUE_SUCCESS,
   UPDATE_VALUE_FAILURE,
 } from '../actions/RedcapLinterActions';
@@ -56,21 +50,11 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
-    case FILTER_TABLE_SUCCESS: {
+    case FILTER_TABLE: {
       return Object.assign({}, state, action.payload);
     }
-    case FILTER_TABLE_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case FILTER_ROW_SUCCESS: {
+    case FILTER_ROW: {
       return Object.assign({}, state, action.payload);
-    }
-    case FILTER_ROW_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
     }
     case NAVIGATE_TO_SUCCESS: {
       return Object.assign({}, state, action.payload);
@@ -80,13 +64,8 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
-    case HIGHLIGHT_COLUMNS_SUCCESS: {
+    case HIGHLIGHT_COLUMNS: {
       return Object.assign({}, state, action.payload);
-    }
-    case HIGHLIGHT_COLUMNS_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
     }
     case RESOLVE_COLUMN_SUCCESS: {
       return Object.assign({}, state, action.payload.data);
@@ -120,7 +99,13 @@ export default function (state = {}, action) {
     }
     case CORRECT_VALUE_SUCCESS: {
       const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
-      originalToCorrectedValueMap[action.payload.originalValue] = action.payload.correctedValue;
+      const {
+        workingSheetName,
+        workingColumn,
+      } = state;
+      originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {}
+      originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {}
+      originalToCorrectedValueMap[workingSheetName][workingColumn][action.payload.originalValue] = action.payload.correctedValue
       const fieldErrors = state.fieldErrors || {};
       let textErrors = [];
       if (fieldErrors.textErrors) {
@@ -136,7 +121,7 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
-    case MATCH_CHOICES_SUCCESS: {
+    case MATCH_CHOICES: {
       let dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
       const {
         workingSheetName,
@@ -157,12 +142,7 @@ export default function (state = {}, action) {
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
-    case MATCH_CHOICES_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case REMOVE_CHOICE_MATCH_SUCCESS: {
+    case REMOVE_CHOICE_MATCH: {
       const dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
       const {
         workingSheetName,
@@ -182,12 +162,7 @@ export default function (state = {}, action) {
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
-    case REMOVE_CHOICE_MATCH_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case MATCH_FIELDS_SUCCESS: {
+    case MATCH_FIELDS: {
       let redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
@@ -211,7 +186,7 @@ export default function (state = {}, action) {
       redcapFieldToDataFieldMap[''] = noMatchData;
       return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields, unmatchedDataFields });
     }
-    case REMOVE_FIELD_MATCH_SUCCESS: {
+    case REMOVE_FIELD_MATCH: {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
@@ -237,10 +212,25 @@ export default function (state = {}, action) {
       }
       return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields, unmatchedDataFields });
     }
-    case REMOVE_FIELD_MATCH_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
+    case REMOVE_VALUE_MATCH: {
+      const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
+      const {
+        workingSheetName,
+        workingColumn,
+      } = state;
+      originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {}
+      originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {}
+      delete originalToCorrectedValueMap[workingSheetName][workingColumn][action.payload.originalValue];
+      const fieldErrors = state.fieldErrors || {};
+      let textErrors = [];
+      if (fieldErrors.textErrors) {
+        textErrors = fieldErrors.textErrors.slice();
+      }
+      if (!textErrors.includes(action.payload.originalValue)) {
+        textErrors.unshift(action.payload.originalValue);
+      }
+      fieldErrors.textErrors = textErrors;
+      return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
     }
     default: {
       return state;

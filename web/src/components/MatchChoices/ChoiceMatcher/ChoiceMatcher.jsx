@@ -258,8 +258,6 @@ class ChoiceMatcher extends Component {
       if (!Object.keys(propsChoiceMap).includes(f)) {
         filtered.push({
           'Data Field': f,
-          'Candidate': f,
-          'Match': '',
         });
       }
       return filtered;

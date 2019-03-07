@@ -18,7 +18,7 @@ class TextErrorResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      originalToCorrectedValueMap: {},
+      valueMap: {},
       removedValue: '',
       search: '',
       columns: [{
@@ -38,6 +38,43 @@ class TextErrorResolver extends Component {
         render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
+  }
+
+  // TODO Add button to batch this
+
+  onBlur(e) {
+    const {
+      filterTable,
+    } = this.props;
+    filterTable('');
+  }
+
+  onFocus(originalValue, e) {
+    const {
+      filterTable,
+    } = this.props;
+    filterTable(originalValue);
+  }
+
+  handleCorrect(originalValue) {
+    const {
+      valueMap,
+    } = this.state;
+    const {
+      correctValue,
+    } = this.props;
+    const correctedValue = valueMap[originalValue] || '';
+    correctValue(originalValue, correctedValue);
+  }
+
+  handleRemove(originalValue) {
+    const {
+      removedValue,
+    } = this.state;
+    const {
+      correctValue,
+    } = this.props;
+    correctValue(originalValue, removedValue);
   }
 
   changeResolve(e) {
@@ -72,49 +109,12 @@ class TextErrorResolver extends Component {
     }
   }
 
-  handleCorrect(originalValue) {
-    const {
-      originalToCorrectedValueMap,
-    } = this.state;
-    const {
-      correctValue,
-      filterTable,
-    } = this.props;
-    const correctedValue = originalToCorrectedValueMap[originalValue] || '';
-    correctValue(originalValue, correctedValue);
-  }
-
-  handleRemove(originalValue) {
-    const {
-      removedValue,
-    } = this.state;
-    const {
-      correctValue,
-      filterTable,
-    } = this.props;
-    correctValue(originalValue, removedValue);
-  }
-
-  onBlur(e) {
-    const {
-      filterTable,
-    } = this.props;
-    filterTable('');
-  }
-
-  onFocus(originalValue, e) {
-    const {
-      filterTable,
-    } = this.props;
-    filterTable(originalValue);
-  }
-
   handleChange(originalValue, e) {
     const {
-      originalToCorrectedValueMap,
+      valueMap,
     } = this.state;
-    originalToCorrectedValueMap[originalValue] = e.target.value;
-    this.setState({ originalToCorrectedValueMap });
+    valueMap[originalValue] = e.target.value;
+    this.setState({ valueMap });
   }
 
   renderCell(header, record) {
@@ -128,10 +128,10 @@ class TextErrorResolver extends Component {
 
   renderInput(record) {
     const {
-      originalToCorrectedValueMap,
+      valueMap,
     } = this.state;
     const originalValue = record['Original Value'];
-    const value = originalToCorrectedValueMap[originalValue] || '';
+    const value = valueMap[originalValue] || '';
     return (
       <Input
         className="TextErrorResolver-input"
@@ -148,10 +148,10 @@ class TextErrorResolver extends Component {
   renderMatchButton(record) {
     const originalValue = record['Original Value'];
     const {
-      originalToCorrectedValueMap,
+      valueMap,
     } = this.state;
     let disabled = true;
-    if (originalToCorrectedValueMap[originalValue]) {
+    if (valueMap[originalValue]) {
       disabled = false;
     }
     return (
@@ -166,6 +166,7 @@ class TextErrorResolver extends Component {
     const {
       workingSheetName,
       workingColumn,
+      originalToCorrectedValueMap,
       columnsInError,
       recordsMissingRequiredData,
       fieldErrors,
@@ -175,11 +176,19 @@ class TextErrorResolver extends Component {
       columns,
     } = this.state;
 
-    const tableData = fieldErrors.textErrors.map(e => ({
-      'Original Value': e,
-      'Corrected Value': e,
-      'Action': '',
-    }));
+    let valueMap = {};
+    if (originalToCorrectedValueMap[workingSheetName] && originalToCorrectedValueMap[workingSheetName][workingColumn]) {
+      valueMap = originalToCorrectedValueMap[workingSheetName][workingColumn];
+    }
+
+    const tableData = fieldErrors.textErrors.reduce((filtered, value) => {
+      if (!Object.keys(valueMap).includes(value.toString())) {
+        filtered.push({
+          'Original Value': value,
+        });
+      }
+      return filtered;
+    }, []);
 
     const options = [];
     let allErrors = [];
@@ -273,13 +282,13 @@ class TextErrorResolver extends Component {
 }
 
 TextErrorResolver.propTypes = {
-  fieldsToMatch: PropTypes.array,
   fieldErrors: PropTypes.object,
+  originalToCorrectedValueMap: PropTypes.object,
 };
 
 TextErrorResolver.defaultProps = {
-  fieldsToMatch: [],
   fieldErrors: {},
+  originalToCorrectedValueMap: {},
 };
 
 function mapStateToProps(state) {

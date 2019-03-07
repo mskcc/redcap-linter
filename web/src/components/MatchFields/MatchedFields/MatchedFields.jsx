@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import './MatchedFields.scss';
 import '../../../App.scss';
 import PropTypes from 'prop-types';
-import { Table, Input } from 'antd';
-import CancelIcon from '../../CancelIcon/CancelIcon'
+import { Table, Input, Icon } from 'antd';
 
 class MatchedFields extends Component {
   constructor(props) {
@@ -40,7 +39,7 @@ class MatchedFields extends Component {
       cancelButton = (
         <div className="MatchedFields-cancel">
           <a onClick={e => this.removeFieldMatch(cellInfo, e)}>
-            <CancelIcon />
+            <Icon type="close" />
           </a>
         </div>
       );

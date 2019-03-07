@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
 import './TextValidation.scss';
-import { resolveColumn, filterTable } from '../../actions/RedcapLinterActions';
+import { resolveColumn, filterTable, removeValueMatch } from '../../actions/RedcapLinterActions';
 
 class TextValidation extends Component {
   constructor(props) {
@@ -72,12 +72,16 @@ class TextValidation extends Component {
   render() {
     const {
       originalToCorrectedValueMap,
+      workingSheetName,
+      workingColumn,
+      removeValueMatch,
     } = this.props;
     let correctedValues = [];
-    if (originalToCorrectedValueMap) {
-      correctedValues = Object.keys(originalToCorrectedValueMap).map(originalValue => ({
+    if (originalToCorrectedValueMap[workingSheetName] && originalToCorrectedValueMap[workingSheetName][workingColumn]) {
+      const valueMap = originalToCorrectedValueMap[workingSheetName][workingColumn];
+      correctedValues = Object.keys(valueMap).map(originalValue => ({
         'Original Value': originalValue,
-        'Corrected Value': originalToCorrectedValueMap[originalValue],
+        'Corrected Value': valueMap[originalValue],
       }));
     }
 
@@ -87,6 +91,7 @@ class TextValidation extends Component {
           <div className="TextValidation-matchedChoices">
             <div className="TextValidation-title">Corrected Values</div>
             <ResolvedTextErrors
+              removeValueMatch={removeValueMatch}
               tableData={correctedValues}
             />
           </div>
@@ -107,11 +112,13 @@ class TextValidation extends Component {
 TextValidation.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
+  originalToCorrectedValueMap: PropTypes.object,
 };
 
 TextValidation.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
+  originalToCorrectedValueMap: {},
 };
 
 function mapStateToProps(state) {
@@ -119,7 +126,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, filterTable }, dispatch);
+  return bindActionCreators({ resolveColumn, filterTable, removeValueMatch }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextValidation);

@@ -101,11 +101,15 @@ def resolve_column():
     if working_sheet_name in data_field_to_choice_map and working_column in data_field_to_choice_map[working_sheet_name]:
         choice_map = data_field_to_choice_map[working_sheet_name][working_column]
 
+    value_map = {}
+    if working_sheet_name in original_to_correct_value_map and working_column in original_to_correct_value_map[working_sheet_name]:
+        value_map = original_to_correct_value_map[working_sheet_name][working_column]
+
     dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
     transform_map = choice_map
     if not transform_map:
-        transform_map = original_to_correct_value_map
+        transform_map = value_map
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
@@ -230,7 +234,6 @@ def resolve_column():
         results['workingColumn'] = next_column
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = field_errors
-        results['originalToCorrectedValueMap'] = {}
 
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

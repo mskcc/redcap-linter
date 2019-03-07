@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import './MatchedChoices.scss';
 import '../../../App.scss';
-import { Table, Input } from 'antd';
+import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
-import CancelIcon from '../../CancelIcon/CancelIcon';
 
 class MatchedChoices extends Component {
   constructor(props) {
@@ -58,7 +57,7 @@ class MatchedChoices extends Component {
       cancelButton = (
         <div className="MatchedChoices-cancel">
           <a onClick={e => this.removeChoiceMatch(cellInfo, e)}>
-            <CancelIcon />
+            <Icon type="close" />
           </a>
         </div>
       );

@@ -5,32 +5,25 @@ export const LOADING_START = 'LOADING_START';
 export const POST_FORM_SUCCESS = 'POST_FORM_SUCCESS';
 export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 
-export const MATCH_FIELDS_SUCCESS = 'MATCH_FIELDS_SUCCESS';
-export const MATCH_FIELDS_FAILURE = 'MATCH_FIELDS_FAILURE';
+export const MATCH_FIELDS = 'MATCH_FIELDS';
 
-export const HIGHLIGHT_COLUMNS_SUCCESS = 'HIGHLIGHT_COLUMNS_SUCCESS';
-export const HIGHLIGHT_COLUMNS_FAILURE = 'HIGHLIGHT_COLUMNS_FAILURE';
+export const HIGHLIGHT_COLUMNS = 'HIGHLIGHT_COLUMNS';
 
-export const REMOVE_FIELD_MATCH_SUCCESS = 'REMOVE_FIELD_MATCH_SUCCESS';
-export const REMOVE_FIELD_MATCH_FAILURE = 'REMOVE_FIELD_MATCH_FAILURE';
+export const REMOVE_FIELD_MATCH = 'REMOVE_FIELD_MATCH';
 
 export const SAVE_FIELDS_SUCCESS = 'SAVE_FIELDS_SUCCESS';
 export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
-export const MATCH_CHOICES_SUCCESS = 'MATCH_CHOICES_SUCCESS';
-export const MATCH_CHOICES_FAILURE = 'MATCH_CHOICES_FAILURE';
+export const MATCH_CHOICES = 'MATCH_CHOICES';
 
-export const REMOVE_CHOICE_MATCH_SUCCESS = 'REMOVE_CHOICE_MATCH_SUCCESS';
-export const REMOVE_CHOICE_MATCH_FAILURE = 'REMOVE_CHOICE_MATCH_FAILURE';
+export const REMOVE_CHOICE_MATCH = 'REMOVE_CHOICE_MATCH';
 
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
 export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
-export const FILTER_TABLE_SUCCESS = 'FILTER_TABLE_SUCCESS';
-export const FILTER_TABLE_FAILURE = 'FILTER_TABLE_FAILURE';
+export const FILTER_TABLE = 'FILTER_TABLE';
 
-export const FILTER_ROW_SUCCESS = 'FILTER_ROW_SUCCESS';
-export const FILTER_ROW_FAILURE = 'FILTER_ROW_FAILURE';
+export const FILTER_ROW = 'FILTER_ROW';
 
 export const RESOLVE_COLUMN_SUCCESS = 'RESOLVE_COLUMN_SUCCESS';
 export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
@@ -40,6 +33,8 @@ export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 
 export const CORRECT_VALUE_SUCCESS = 'CORRECT_VALUE_SUCCESS';
 export const CORRECT_VALUE_FAILURE = 'CORRECT_VALUE_FAILURE';
+
+export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
 
 export const UPDATE_VALUE_SUCCESS = 'UPDATE_VALUE_SUCCESS';
 export const UPDATE_VALUE_FAILURE = 'UPDATE_VALUE_FAILURE';
@@ -96,14 +91,7 @@ export function postForm(form) {
 
 export function matchFieldsSuccess(payload) {
   return {
-    type: MATCH_FIELDS_SUCCESS,
-    payload,
-  };
-}
-
-export function matchFieldsFailure(payload) {
-  return {
-    type: MATCH_FIELDS_FAILURE,
+    type: MATCH_FIELDS,
     payload,
   };
 }
@@ -116,14 +104,7 @@ export function matchFields(payload) {
 
 export function highlightColumnsSuccess(payload) {
   return {
-    type: HIGHLIGHT_COLUMNS_SUCCESS,
-    payload,
-  };
-}
-
-export function highlightColumnsFailure(payload) {
-  return {
-    type: HIGHLIGHT_COLUMNS_FAILURE,
+    type: HIGHLIGHT_COLUMNS,
     payload,
   };
 }
@@ -136,14 +117,7 @@ export function highlightColumns(payload) {
 
 export function removeFieldMatchSuccess(payload) {
   return {
-    type: REMOVE_FIELD_MATCH_SUCCESS,
-    payload,
-  };
-}
-
-export function removeFieldMatchFailure(payload) {
-  return {
-    type: REMOVE_FIELD_MATCH_FAILURE,
+    type: REMOVE_FIELD_MATCH,
     payload,
   };
 }
@@ -200,14 +174,7 @@ export function saveFields(payload) {
 
 export function matchChoicesSuccess(payload) {
   return {
-    type: MATCH_CHOICES_SUCCESS,
-    payload,
-  };
-}
-
-export function matchChoicesFailure(payload) {
-  return {
-    type: MATCH_CHOICES_FAILURE,
+    type: MATCH_CHOICES,
     payload,
   };
 }
@@ -221,14 +188,7 @@ export function matchChoices(dataFieldToChoiceMap) {
 
 export function removeChoiceMatchSuccess(payload) {
   return {
-    type: REMOVE_CHOICE_MATCH_SUCCESS,
-    payload,
-  };
-}
-
-export function removeChoiceMatchFailure(payload) {
-  return {
-    type: REMOVE_CHOICE_MATCH_FAILURE,
+    type: REMOVE_CHOICE_MATCH,
     payload,
   };
 }
@@ -243,6 +203,25 @@ export function removeChoiceMatch(dataField, permissibleValue) {
   };
 }
 
+
+export function removeValueMatchSuccess(payload) {
+  return {
+    type: REMOVE_VALUE_MATCH,
+    payload,
+  };
+}
+
+export function removeValueMatch(originalValue, correctedValue) {
+  return function action(dispatch) {
+    const payload = {
+      originalValue,
+      correctedValue,
+    };
+    return dispatch(removeValueMatchSuccess(payload));
+  };
+}
+
+// TODO make this one call
 export function correctValueSuccess(payload) {
   return {
     type: CORRECT_VALUE_SUCCESS,
@@ -322,14 +301,7 @@ export function navigateTo(page) {
 
 export function filterTableSuccess(payload) {
   return {
-    type: FILTER_TABLE_SUCCESS,
-    payload,
-  };
-}
-
-export function filterTableError(payload) {
-  return {
-    type: FILTER_TABLE_FAILURE,
+    type: FILTER_TABLE,
     payload,
   };
 }
@@ -345,14 +317,7 @@ export function filterTable(filter) {
 
 export function filterRowSuccess(payload) {
   return {
-    type: FILTER_ROW_SUCCESS,
-    payload,
-  };
-}
-
-export function filterRowError(payload) {
-  return {
-    type: FILTER_ROW_FAILURE,
+    type: FILTER_ROW,
     payload,
   };
 }

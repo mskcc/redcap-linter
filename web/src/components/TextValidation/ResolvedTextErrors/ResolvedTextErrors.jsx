@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './ResolvedTextErrors.scss';
 import '../../../App.scss';
-import { Table, Input } from 'antd';
+import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
 
 class ResolvedTextErrors extends Component {
@@ -22,14 +22,35 @@ class ResolvedTextErrors extends Component {
     };
   }
 
+  removeValueMatch(record) {
+    const {
+      removeValueMatch,
+    } = this.props;
+    removeValueMatch(record['Original Value'], record['Corrected Value']);
+  }
+
+
   renderCell(header, record) {
-    let className = '';
+    let className = 'ResolvedTextErrors-cell';
     if (!record['Corrected Value']) {
-      className = 'ResolvedTextErrors-cellError';
+      className += ' ResolvedTextErrors-cellError';
+    }
+    let cancelButton = '';
+    if (header === 'Corrected Value' && record['Original Value'] !== record['Corrected Value']) {
+      cancelButton = (
+        <div className="MatchedChoices-cancel">
+          <a onClick={e => this.removeValueMatch(record, e)}>
+            <Icon type="close" />
+          </a>
+        </div>
+      );
     }
     return (
-      <div className={className}>
-        { record[header] }
+      <div className="ResolvedTextErrors-cellContainer">
+        <div className={className}>
+          { record[header] }
+        </div>
+        { cancelButton }
       </div>
     );
   }

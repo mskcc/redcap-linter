@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import './ResolvedRequiredErrors.scss';
 import '../../../App.scss';
-import { Table, Input } from 'antd';
+import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
-import CancelIcon from '../../CancelIcon/CancelIcon';
 
 class ResolvedRequiredErrors extends Component {
   constructor(props) {
@@ -42,7 +41,7 @@ class ResolvedRequiredErrors extends Component {
         cancelButton = (
           <div className="ResolvedRequiredErrors-cancel">
             <a onClick={e => this.removeRequiredMatch(record, e)}>
-              <CancelIcon />
+              <Icon type="close" />
             </a>
           </div>
         );
