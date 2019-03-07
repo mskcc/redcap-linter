@@ -42,8 +42,12 @@ export default function (state = {}, action) {
       });
     }
     case SAVE_FIELDS_SUCCESS: {
-      const selectedColumns = [];
-      return Object.assign({}, state, { loading: false, new: false, page: 'lint', selectedColumns }, action.payload.data);
+      let nextPage = {};
+      if (action.payload && action.payload.page) {
+        const selectedColumns = [];
+        nextPage = { page: action.payload.page, new: false, selectedColumns };
+      }
+      return Object.assign({}, state, { loading: false }, nextPage, action.payload.data);
     }
     case SAVE_FIELDS_FAILURE: {
       return Object.assign({}, state, {

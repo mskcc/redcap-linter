@@ -155,7 +155,11 @@ export function saveFields(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('dateColumns', JSON.stringify(payload.dateColumns));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-
+    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
+    let nextPage = {};
+    if (payload.action === 'continue') {
+      nextPage = { page: 'lint' }
+    }
     const request = axios({
       method: 'POST',
       url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/save_fields`,
@@ -166,7 +170,7 @@ export function saveFields(payload) {
     dispatch(loadingStart());
 
     return request.then(
-      response => dispatch(saveFieldsSuccess(response)),
+      response => dispatch(saveFieldsSuccess(Object.assign({}, nextPage, response))),
       err => dispatch(saveFieldsError(err)),
     );
   };

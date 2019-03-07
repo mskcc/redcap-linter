@@ -12,7 +12,42 @@ import { saveFields, removeFieldMatch } from '../../actions/RedcapLinterActions'
 class MatchFields extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {
+      loadingSave: false,
+      loadingContinue: false,
+    };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      loading,
+    } = nextProps;
+    if (!loading) {
+      return { loadingSave: false, loadingContinue: false };
+    }
+    return null;
+  }
+
+  saveFields(e) {
+    const {
+      jsonData,
+      redcapFieldToDataFieldMap,
+      projectInfo,
+      ddData,
+      dateColumns,
+      csvHeaders,
+      saveFields,
+    } = this.props;
+    const payload = {
+      jsonData,
+      redcapFieldToDataFieldMap,
+      projectInfo,
+      ddData,
+      dateColumns,
+      csvHeaders,
+    };
+    saveFields(payload);
+    this.setState({ loadingSave: true });
   }
 
   saveAndContinue(e) {
@@ -32,8 +67,10 @@ class MatchFields extends Component {
       ddData,
       dateColumns,
       csvHeaders,
+      action: 'continue',
     };
     saveFields(payload);
+    this.setState({ loadingContinue: true });
   }
 
   render() {
@@ -44,7 +81,6 @@ class MatchFields extends Component {
       unmatchedRedcapFields,
       redcapFieldCandidates,
       removeFieldMatch,
-      loading,
     } = this.props;
     let matchedFields = matchingHeaders.map(header => ({
       'REDCap Field': header,
@@ -77,10 +113,19 @@ class MatchFields extends Component {
       }));
     }
 
+    const {
+      loadingSave,
+      loadingContinue,
+    } = this.state;
 
-    let buttonText = 'Save and Continue';
-    if (loading) {
-      buttonText = <Spin />;
+    let saveButtonText = 'Save';
+    if (loadingSave) {
+      saveButtonText = <Spin />;
+    }
+
+    let continueButtonText = 'Save and Continue';
+    if (loadingContinue) {
+      continueButtonText = <Spin />;
     }
     return (
       <div>
@@ -100,7 +145,8 @@ class MatchFields extends Component {
             <div style={{ clear: 'both' }} />
           </div>
           <div className="MatchFields-saveAndContinue">
-            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ buttonText }</button>
+            <button type="button" onClick={this.saveFields.bind(this)} className="App-actionButton">{ saveButtonText }</button>
+            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ continueButtonText }</button>
           </div>
         </div>
         <div className="MatchFields-tabbedDatatable">
