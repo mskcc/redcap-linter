@@ -226,7 +226,7 @@ export default function (state = {}, action) {
       if (fieldErrors.textErrors) {
         textErrors = fieldErrors.textErrors.slice();
       }
-      if (!textErrors.includes(action.payload.originalValue)) {
+      if (!textErrors.map(e => e.toString()).includes(action.payload.originalValue.toString())) {
         textErrors.unshift(action.payload.originalValue);
       }
       fieldErrors.textErrors = textErrors;

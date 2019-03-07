@@ -393,6 +393,7 @@ def download_mappings():
     datafile_name = form.get('dataFileName')
     redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
+    original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
 
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
@@ -407,7 +408,8 @@ def download_mappings():
     #               })
 
     df = pd.DataFrame({'redcapFieldToDataFieldMap': [json.dumps(redcap_field_to_data_field_dict)],
-                        'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)]})
+                        'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)],
+                        'originalToCorrectedValueMap': [json.dumps(original_to_correct_value_map)]})
 
     df.to_excel(writer, index=False)
     writer.close()
@@ -476,6 +478,7 @@ def post_form():
     mappings = None
     redcap_field_to_data_field_dict = None
     data_field_to_choice_map = None
+    original_to_correct_value_map = None
 
     if 'mappingsFile' in request.files:
         mappings_file_name = form.get('mappingsFileName')
@@ -485,6 +488,8 @@ def post_form():
             redcap_field_to_data_field_dict = json.loads(list(mappings["redcapFieldToDataFieldMap"])[0])
         if len(list(mappings["dataFieldToChoiceMap"])) > 0:
             data_field_to_choice_map = json.loads(list(mappings["dataFieldToChoiceMap"])[0])
+        if len(list(mappings["originalToCorrectedValueMap"])) > 0:
+            original_to_correct_value_map = json.loads(list(mappings["originalToCorrectedValueMap"])[0])
 
     project_info = {
         'custom_record_label': '',
@@ -668,6 +673,8 @@ def post_form():
         results['redcapFieldToDataFieldMap'] = redcap_field_to_data_field_dict
     if data_field_to_choice_map:
         results['dataFieldToChoiceMap'] = data_field_to_choice_map
+    if original_to_correct_value_map:
+        results['originalToCorrectedValueMap'] = original_to_correct_value_map
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

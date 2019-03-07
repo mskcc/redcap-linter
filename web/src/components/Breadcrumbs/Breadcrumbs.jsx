@@ -50,6 +50,7 @@ class Breadcrumbs extends Component {
       jsonData,
       redcapFieldToDataFieldMap,
       dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
       csvHeaders,
       ddData,
       dataFileName,
@@ -92,6 +93,7 @@ class Breadcrumbs extends Component {
         <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
           <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
           <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
+          <input key="originalToCorrectedValueMap" name="originalToCorrectedValueMap" type="hidden" value={JSON.stringify(originalToCorrectedValueMap)} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
         <Menu className="Breadcrumbs-menu" mode="horizontal" style={{ width: 120 }}>
@@ -168,12 +170,14 @@ Breadcrumbs.propTypes = {
   page: PropTypes.string,
   redcapFieldToDataFieldMap: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
+  originalToCorrectedValueMap: PropTypes.object,
 };
 
 Breadcrumbs.defaultProps = {
   page: 'intro',
   redcapFieldToDataFieldMap: {},
   dataFieldToChoiceMap: {},
+  originalToCorrectedValueMap: {},
 };
 
 function mapStateToProps(state) {
