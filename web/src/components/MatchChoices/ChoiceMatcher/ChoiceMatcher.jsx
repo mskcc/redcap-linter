@@ -7,7 +7,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { matchChoices, resolveColumn, resolveRow } from '../../../actions/RedcapLinterActions';
+import ErrorSelector from '../../ErrorSelector/ErrorSelector';
+import { matchChoices } from '../../../actions/RedcapLinterActions';
 
 class ChoiceMatcher extends Component {
   constructor(props) {
@@ -15,26 +16,7 @@ class ChoiceMatcher extends Component {
     this.state = {
       choiceMap: {},
       noMatch: '',
-      workingColumn: '',
-      workingSheetName: '',
       search: '',
-      // columns: [{
-      //   Header: 'Data Field',
-      //   accessor: 'Data Field',
-      //   Cell: this.renderCell.bind(this),
-      // },
-      // {
-      //   Header: 'Candidate',
-      //   accessor: 'Candidate',
-      //   style: { overflow: 'visible' },
-      //   Cell: this.renderCandidates.bind(this),
-      // },
-      // {
-      //   Header: 'Match',
-      //   accessor: 'Match',
-      //   style: { overflow: 'visible' },
-      //   Cell: this.renderMatchButton.bind(this),
-      // }],
       columns: [{
         title: 'Data Field',
         key: 'Data Field',
@@ -60,39 +42,9 @@ class ChoiceMatcher extends Component {
       workingSheetName,
     } = prevState;
     if (nextProps.workingColumn !== workingColumn || nextProps.workingSheetName !== workingSheetName) {
-      return { choiceMap: {}, workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName};
+      return { choiceMap: {} };
     }
     return null;
-  }
-
-  changeResolve(e) {
-    const {
-      jsonData,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      recordsMissingRequiredData,
-      columnsInError,
-      resolveRow,
-      resolveColumn,
-    } = this.props;
-    const payload = {
-      jsonData,
-      projectInfo,
-      columnsInError,
-      nextColumn: e.value.column,
-      nextRow: e.value.rowNum,
-      nextSheetName: e.value.sheet,
-      recordsMissingRequiredData,
-      ddData,
-      csvHeaders,
-      action: 'continue',
-    };
-    if (e.value.rowNum) {
-      resolveRow(payload);
-    } else {
-      resolveColumn(payload);
-    }
   }
 
   handleMatchAll(e) {
@@ -261,70 +213,8 @@ class ChoiceMatcher extends Component {
         });
       }
       return filtered;
-  }, []);
+    }, []);
 
-    const options = [];
-    let allErrors = [];
-    Object.keys(columnsInError).forEach((sheet) => {
-      const subOptions = [];
-      columnsInError[sheet].forEach((columnInError) => {
-        subOptions.push({
-          value: { sheet: sheet, column: columnInError },
-          label: columnInError,
-        });
-      });
-      options.push({
-        label: `${sheet} | Column Errors`,
-        options: subOptions,
-      });
-      allErrors = allErrors.concat(columnsInError[sheet]);
-    });
-
-    Object.keys(recordsMissingRequiredData).forEach((sheet) => {
-      const subOptions = [];
-      recordsMissingRequiredData[sheet].forEach((rowNumber) => {
-        subOptions.push({
-          value: { sheet: sheet, rowNum: rowNumber },
-          label: rowNumber+1,
-        });
-      });
-      options.push({
-        label: `${sheet} | Row Errors`,
-        options: subOptions,
-      });
-      allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
-    });
-
-    const selectedValue = {
-      value: { sheet: workingSheetName, column: workingColumn },
-      label: workingColumn,
-    };
-
-    const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
-    const selectWidth = 8 * longestOption + 60;
-
-    const selectStyles = {
-      control: provided => ({
-        ...provided,
-        minWidth: `${selectWidth}px`,
-      }),
-      menu: provided => ({
-        // none of react-select's styles are passed to <Control />
-        ...provided,
-        minWidth: `${selectWidth}px`,
-      }),
-    };
-
-    const fieldInErrorSelector = (
-      <Select
-        className="ChoiceMatcher-elevate"
-        options={options}
-        isSearchable
-        value={selectedValue}
-        styles={selectStyles}
-        onChange={this.changeResolve.bind(this)}
-      />
-    );
 
     let data = tableData;
     if (search) {
@@ -341,7 +231,7 @@ class ChoiceMatcher extends Component {
           <span className="ChoiceMatcher-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
-          <span className="ChoiceMatcher-tableLabel">{ fieldInErrorSelector }</span>
+          <span className="ChoiceMatcher-tableLabel"><ErrorSelector /></span>
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Match All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
@@ -365,7 +255,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ matchChoices, resolveColumn, resolveRow }, dispatch);
+  return bindActionCreators({ matchChoices }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChoiceMatcher);

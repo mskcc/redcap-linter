@@ -7,7 +7,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { updateValue, resolveRow, resolveColumn, filterRow } from '../../../actions/RedcapLinterActions';
+import ErrorSelector from '../../ErrorSelector/ErrorSelector';
+import { updateValue, filterRow } from '../../../actions/RedcapLinterActions';
 
 class RequiredResolver extends Component {
   constructor(props) {
@@ -15,23 +16,6 @@ class RequiredResolver extends Component {
     this.state = {
       localFieldToValueMap: {},
       search: '',
-      // columns: [{
-      //   Header: 'Field',
-      //   accessor: 'Field',
-      //   Cell: this.renderCell.bind(this),
-      // },
-      // {
-      //   Header: 'Value',
-      //   accessor: 'Value',
-      //   style: { overflow: 'visible' },
-      //   Cell: this.renderInput.bind(this),
-      // },
-      // {
-      //   Header: 'Action',
-      //   accessor: 'Action',
-      //   style: { overflow: 'visible' },
-      //   Cell: this.renderMatchButton.bind(this),
-      // }],
       columns: [{
         title: 'Field',
         key: 'Field',
@@ -49,36 +33,6 @@ class RequiredResolver extends Component {
         render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
-  }
-
-  changeResolve(e) {
-    const {
-      jsonData,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      recordsMissingRequiredData,
-      columnsInError,
-      resolveRow,
-      resolveColumn,
-    } = this.props;
-    const payload = {
-      jsonData,
-      projectInfo,
-      columnsInError,
-      nextColumn: e.value.column,
-      nextRow: e.value.rowNum,
-      nextSheetName: e.value.sheet,
-      recordsMissingRequiredData,
-      ddData,
-      csvHeaders,
-      action: 'continue',
-    };
-    if (e.value.rowNum) {
-      resolveRow(payload);
-    } else {
-      resolveColumn(payload);
-    }
   }
 
   onFocus(e) {
@@ -207,69 +161,6 @@ class RequiredResolver extends Component {
       columns,
     } = this.state;
 
-    const options = [];
-    let allErrors = [];
-    Object.keys(columnsInError).forEach((sheet) => {
-      const subOptions = [];
-      columnsInError[sheet].forEach((columnInError) => {
-        subOptions.push({
-          value: { sheet: sheet, column: columnInError },
-          label: columnInError,
-        });
-      });
-      options.push({
-        label: `${sheet} | Column Errors`,
-        options: subOptions,
-      });
-      allErrors = allErrors.concat(columnsInError[sheet]);
-    });
-
-    Object.keys(recordsMissingRequiredData).forEach((sheet) => {
-      const subOptions = [];
-      recordsMissingRequiredData[sheet].forEach((rowNumber) => {
-        subOptions.push({
-          value: { sheet: sheet, rowNum: rowNumber },
-          label: rowNumber+1,
-        });
-      });
-      options.push({
-        label: sheet,
-        options: subOptions,
-      });
-      allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
-    });
-
-    const selectedValue = {
-      value: { sheet: workingSheetName, rowNum: rowNum },
-      label: rowNum+1,
-    };
-
-    const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
-    const selectWidth = 8 * longestOption + 60;
-
-    const selectStyles = {
-      control: provided => ({
-        ...provided,
-        minWidth: `${selectWidth}px`,
-      }),
-      menu: provided => ({
-        // none of react-select's styles are passed to <Control />
-        ...provided,
-        minWidth: `${selectWidth}px`,
-      }),
-    };
-
-    const rowInErrorSelector = (
-      <Select
-        className="RequiredResolver-elevate"
-        options={options}
-        isSearchable
-        value={selectedValue}
-        styles={selectStyles}
-        onChange={this.changeResolve.bind(this)}
-      />
-    );
-
     const tableData = Object.keys(row).reduce((filtered, field) => {
       if (requiredDdFields.indexOf(field) >= 0 && !fieldToValueMap.hasOwnProperty(field) && !row[field]) {
         filtered.push({
@@ -292,7 +183,7 @@ class RequiredResolver extends Component {
           <div className="RequiredResolver-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
-          <div className="RequiredResolver-tableLabel">{ rowInErrorSelector }</div>
+          <div className="RequiredResolver-tableLabel"><ErrorSelector /></div>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>
@@ -301,12 +192,10 @@ class RequiredResolver extends Component {
 }
 
 RequiredResolver.propTypes = {
-  fieldsToMatch: PropTypes.array,
   fieldToValueMap: PropTypes.object,
 };
 
 RequiredResolver.defaultProps = {
-  fieldsToMatch: [],
   fieldToValueMap: {},
 };
 
@@ -315,7 +204,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ updateValue, resolveRow, resolveColumn, filterRow }, dispatch);
+  return bindActionCreators({ updateValue, filterRow }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RequiredResolver);

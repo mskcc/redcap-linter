@@ -7,10 +7,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
+import ErrorSelector from '../../ErrorSelector/ErrorSelector';
+
 import {
   correctValue,
-  resolveColumn,
-  resolveRow,
   filterTable,
 } from '../../../actions/RedcapLinterActions';
 
@@ -75,38 +75,6 @@ class TextErrorResolver extends Component {
       correctValue,
     } = this.props;
     correctValue(originalValue, removedValue);
-  }
-
-  changeResolve(e) {
-    const {
-      jsonData,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      recordsMissingRequiredData,
-      columnsInError,
-      resolveRow,
-      resolveColumn,
-      filterTable,
-    } = this.props;
-    const payload = {
-      jsonData,
-      projectInfo,
-      columnsInError,
-      nextColumn: e.value.column,
-      nextRow: e.value.rowNum,
-      nextSheetName: e.value.sheet,
-      recordsMissingRequiredData,
-      ddData,
-      csvHeaders,
-      action: 'continue',
-    };
-    filterTable('');
-    if (e.value.rowNum) {
-      resolveRow(payload);
-    } else {
-      resolveColumn(payload);
-    }
   }
 
   handleChange(originalValue, e) {
@@ -190,69 +158,6 @@ class TextErrorResolver extends Component {
       return filtered;
     }, []);
 
-    const options = [];
-    let allErrors = [];
-    Object.keys(columnsInError).forEach((sheet) => {
-      const subOptions = [];
-      columnsInError[sheet].forEach((columnInError) => {
-        subOptions.push({
-          value: { sheet: sheet, column: columnInError },
-          label: columnInError,
-        });
-      });
-      options.push({
-        label: `${sheet} | Column Errors`,
-        options: subOptions,
-      });
-      allErrors = allErrors.concat(columnsInError[sheet]);
-    });
-
-    Object.keys(recordsMissingRequiredData).forEach((sheet) => {
-      const subOptions = [];
-      recordsMissingRequiredData[sheet].forEach((rowNumber) => {
-        subOptions.push({
-          value: { sheet: sheet, rowNum: rowNumber },
-          label: rowNumber+1,
-        });
-      });
-      options.push({
-        label: `${sheet} | Row Errors`,
-        options: subOptions,
-      });
-      allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
-    });
-
-    const selectedValue = {
-      value: { sheet: workingSheetName, column: workingColumn },
-      label: workingColumn,
-    };
-
-    const longestOption = allErrors.sort((a, b) => b.length - a.length)[0];
-    const selectWidth = 8 * longestOption + 60;
-
-    const selectStyles = {
-      control: provided => ({
-        ...provided,
-        minWidth: `${selectWidth}px`,
-      }),
-      menu: provided => ({
-        // none of react-select's styles are passed to <Control />
-        ...provided,
-        minWidth: `${selectWidth}px`,
-      }),
-    };
-
-    const fieldInErrorSelector = (
-      <Select
-        className="TextErrorResolver-elevate"
-        options={options}
-        isSearchable
-        value={selectedValue}
-        styles={selectStyles}
-        onChange={this.changeResolve.bind(this)}
-      />
-    );
-
     let data = tableData;
     if (search) {
       data = data.filter(row => row['Original Value'].toString().includes(search));
@@ -273,7 +178,7 @@ class TextErrorResolver extends Component {
             |
             <span className="TextErrorResolver-textValidationRange"><b>Required</b>: { fieldErrors.required ? 'True' : 'False' }</span>
           </div>
-          <div className="TextErrorResolver-tableLabel">{ fieldInErrorSelector }</div>
+          <div className="TextErrorResolver-tableLabel"><ErrorSelector /></div>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>
@@ -296,7 +201,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ correctValue, resolveColumn, resolveRow, filterTable }, dispatch);
+  return bindActionCreators({ correctValue, filterTable }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TextErrorResolver);
