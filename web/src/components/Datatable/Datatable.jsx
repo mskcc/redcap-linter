@@ -39,7 +39,7 @@ class Datatable extends Component {
       filterErrors = indicesToFilter.map(index => tableErrors[index]);
       return { filterErrors };
     }
-    return null;
+    return { filterErrors };
   }
 
   onSearchChange(e) {
