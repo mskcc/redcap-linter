@@ -26,7 +26,9 @@ class ResolvedTextErrors extends Component {
     const {
       removeValueMatch,
     } = this.props;
-    removeValueMatch(record['Original Value'], record['Corrected Value']);
+    const payload = {};
+    payload[record['Original Value']] = record['Corrected Value'];
+    removeValueMatch(payload);
   }
 
 
@@ -71,8 +73,8 @@ class ResolvedTextErrors extends Component {
     return (
       <div className="ResolvedTextErrors-table">
         <div className="ResolvedTextErrors-tableTitle">
-            <span className="ResolvedTextErrors-searchBar">
-          Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+          <span className="ResolvedTextErrors-searchBar">
+            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
         </div>
         <Table size="small" columns={columns} dataSource={data} />

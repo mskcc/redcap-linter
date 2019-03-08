@@ -56,6 +56,16 @@ class TextErrorResolver extends Component {
     filterTable(originalValue);
   }
 
+  handleCorrectAll() {
+    const {
+      valueMap,
+    } = this.state;
+    const {
+      correctValue,
+    } = this.props;
+    correctValue(valueMap);
+  }
+
   handleCorrect(originalValue) {
     const {
       valueMap,
@@ -63,8 +73,9 @@ class TextErrorResolver extends Component {
     const {
       correctValue,
     } = this.props;
-    const correctedValue = valueMap[originalValue] || '';
-    correctValue(originalValue, correctedValue);
+    const payload = {};
+    payload[originalValue] = valueMap[originalValue];
+    correctValue(payload);
   }
 
   handleRemove(originalValue) {
@@ -74,7 +85,9 @@ class TextErrorResolver extends Component {
     const {
       correctValue,
     } = this.props;
-    correctValue(originalValue, removedValue);
+    let payload = {};
+    payload[originalValue] = removedValue;
+    correctValue(payload);
   }
 
   handleChange(originalValue, e) {
@@ -142,21 +155,27 @@ class TextErrorResolver extends Component {
     const {
       search,
       columns,
+      valueMap,
     } = this.state;
 
-    let valueMap = {};
+    let currentMap = {};
     if (originalToCorrectedValueMap[workingSheetName] && originalToCorrectedValueMap[workingSheetName][workingColumn]) {
-      valueMap = originalToCorrectedValueMap[workingSheetName][workingColumn];
+      currentMap = originalToCorrectedValueMap[workingSheetName][workingColumn];
     }
 
     const tableData = fieldErrors.textErrors.reduce((filtered, value) => {
-      if (!Object.keys(valueMap).includes(value.toString())) {
+      if (!Object.keys(currentMap).includes(value.toString())) {
         filtered.push({
           'Original Value': value,
         });
       }
       return filtered;
     }, []);
+
+    let disabled = true;
+    if (Object.keys(valueMap).length > 0) {
+      disabled = false;
+    }
 
     let data = tableData;
     if (search) {
@@ -170,15 +189,16 @@ class TextErrorResolver extends Component {
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
           <div className="TextErrorResolver-textValidation">
-            <b>Validation</b>: { fieldErrors.textValidation }
+            <span className="TextErrorResolver-textValidationRange"><b>Validation</b>: { fieldErrors.textValidation }</span>
+            |
+            <span className="TextErrorResolver-textValidationRange"><b>Required</b>: { fieldErrors.required ? 'True' : 'False' }</span>
             <br />
             <span className="TextErrorResolver-textValidationRange"><b>Min</b>: { fieldErrors.textValidationMin || 'None' }</span>
             |
             <span className="TextErrorResolver-textValidationRange"><b>Max</b>: { fieldErrors.textValidationMax || 'None' }</span>
-            |
-            <span className="TextErrorResolver-textValidationRange"><b>Required</b>: { fieldErrors.required ? 'True' : 'False' }</span>
           </div>
           <div className="TextErrorResolver-tableLabel"><ErrorSelector /></div>
+          <button type="button" disabled={disabled} onClick={this.handleCorrectAll.bind(this)} className="App-submitButton TextErrorResolver-correctAll">Correct All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>

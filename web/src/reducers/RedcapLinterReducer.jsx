@@ -109,21 +109,18 @@ export default function (state = {}, action) {
       } = state;
       originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {}
       originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {}
-      originalToCorrectedValueMap[workingSheetName][workingColumn][action.payload.originalValue] = action.payload.correctedValue
+      originalToCorrectedValueMap[workingSheetName][workingColumn] = Object.assign(originalToCorrectedValueMap[workingSheetName][workingColumn], action.payload)
       const fieldErrors = state.fieldErrors || {};
       let textErrors = [];
       if (fieldErrors.textErrors) {
         textErrors = fieldErrors.textErrors.slice();
       }
-      const idx = textErrors.indexOf(action.payload.originalValue);
-      if (idx !== -1) textErrors.splice(idx, 1);
+      Object.keys(action.payload).forEach((originalValue) => {
+        const idx = textErrors.indexOf(originalValue);
+        if (idx !== -1) textErrors.splice(idx, 1);
+      })
       fieldErrors.textErrors = textErrors;
       return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
-    }
-    case CORRECT_VALUE_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
     }
     case MATCH_CHOICES: {
       let dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
@@ -224,15 +221,20 @@ export default function (state = {}, action) {
       } = state;
       originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {}
       originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {}
-      delete originalToCorrectedValueMap[workingSheetName][workingColumn][action.payload.originalValue];
+      Object.keys(action.payload).forEach((originalValue) => {
+        delete originalToCorrectedValueMap[workingSheetName][workingColumn][originalValue];
+      });
       const fieldErrors = state.fieldErrors || {};
       let textErrors = [];
       if (fieldErrors.textErrors) {
         textErrors = fieldErrors.textErrors.slice();
       }
-      if (!textErrors.map(e => e.toString()).includes(action.payload.originalValue.toString())) {
-        textErrors.unshift(action.payload.originalValue);
-      }
+
+      Object.keys(action.payload).forEach((originalValue) => {
+        if (!textErrors.map(e => e.toString()).includes(originalValue.toString())) {
+          textErrors.unshift(originalValue);
+        }
+      });
       fieldErrors.textErrors = textErrors;
       return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
     }

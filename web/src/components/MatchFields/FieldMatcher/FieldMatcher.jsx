@@ -318,14 +318,17 @@ class FieldMatcher extends Component {
         return filtered;
       }, []);
     } else if (mode === 'Data Field') {
-      tableData = unmatchedDataFields.map(f => {
+      tableData = unmatchedDataFields.reduce((filtered, f) => {
         // TODO Handle multiple forms
-        const sheets = dataFieldToSheets[f];
-        return {
-          'Data Field': f,
-          'Sheets': sheets.toString(),
-        };
-      });
+        if (f) {
+          const sheets = dataFieldToSheets[f];
+          filtered.push({
+            'Data Field': f,
+            'Sheets': sheets.toString(),
+          });
+        }
+        return filtered;
+      }, []);
     }
 
     let data = tableData;

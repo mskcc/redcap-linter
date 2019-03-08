@@ -123,10 +123,10 @@ def resolve_column():
                 if isinstance(new_value, list):
                     new_value = ', '.join([str(i) for i in new_value])
                 new_list.append(new_value)
-            if dd_field.text_validation == 'integer':
-                new_list = [int(i) if i else i for i in new_list]
-            elif dd_field.text_validation == 'number_2dp':
-                new_list = [float(i) if i else i for i in new_list]
+            # if dd_field.text_validation == 'integer':
+            #     new_list = [int(i) if i else i for i in new_list]
+            # elif dd_field.text_validation == 'number_2dp':
+            #     new_list = [float(i) if i else i for i in new_list]
             df[working_column] = new_list
         records[sheet] = df
 

@@ -32,7 +32,6 @@ export const RESOLVE_ROW_SUCCESS = 'RESOLVE_ROW_SUCCESS';
 export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 
 export const CORRECT_VALUE_SUCCESS = 'CORRECT_VALUE_SUCCESS';
-export const CORRECT_VALUE_FAILURE = 'CORRECT_VALUE_FAILURE';
 
 export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
 
@@ -215,12 +214,8 @@ export function removeValueMatchSuccess(payload) {
   };
 }
 
-export function removeValueMatch(originalValue, correctedValue) {
+export function removeValueMatch(payload) {
   return function action(dispatch) {
-    const payload = {
-      originalValue,
-      correctedValue,
-    };
     return dispatch(removeValueMatchSuccess(payload));
   };
 }
@@ -233,22 +228,8 @@ export function correctValueSuccess(payload) {
   };
 }
 
-export function correctValueFailure(payload) {
-  return {
-    type: CORRECT_VALUE_FAILURE,
-    payload,
-  };
-}
-
-export function correctValue(originalValue, correctedValue) {
+export function correctValue(payload) {
   return function action(dispatch) {
-    const payload = {
-      originalValue,
-      correctedValue,
-    };
-    if (!originalValue) {
-      return dispatch(correctValueFailure(payload));
-    }
     return dispatch(correctValueSuccess(payload));
   };
 }

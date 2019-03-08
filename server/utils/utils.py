@@ -67,10 +67,10 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
             else:
                 formatted_numbers.append(None)
             continue
-        if not isinstance(d, numbers.Number):
+        try:
+            d = float(d)
+        except ValueError:
             formatted_numbers.append(False)
-            continue
-        d = float(d)
         if ((number_min and d < number_min) or
               (number_max and d > number_max)):
             logging.error("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, number_min, number_max))
