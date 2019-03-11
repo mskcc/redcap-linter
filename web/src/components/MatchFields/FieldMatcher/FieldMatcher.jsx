@@ -360,7 +360,7 @@ class FieldMatcher extends Component {
             </button>
             { dataField }
           </div>
-          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Match All</button>
+          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Accept Matches</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>

@@ -232,7 +232,7 @@ class ChoiceMatcher extends Component {
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
           <span className="ChoiceMatcher-tableLabel"><ErrorSelector /></span>
-          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Match All</button>
+          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Accept Matches</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>

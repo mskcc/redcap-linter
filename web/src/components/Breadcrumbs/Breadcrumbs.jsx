@@ -79,6 +79,12 @@ class Breadcrumbs extends Component {
     //   </div>
     // </button>
 
+    // <Menu.Item key="downloadMappings"><span><Icon type="download" /></span>
+    //   <Button htmlType="submit" form="downloadMappingsForm" value="Submit" className="Breadcrumbs-button">
+    //     Download Mappings
+    //   </Button>
+    // </Menu.Item>
+
     const downloadButton = (
       <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
         <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
@@ -98,11 +104,6 @@ class Breadcrumbs extends Component {
         </form>
         <Menu className="Breadcrumbs-menu" mode="horizontal" style={{ width: 120 }}>
           <SubMenu key="actions" title={<span><Icon type="down" style={{ fontSize: '10px' }} /> Actions</span>}>
-            <Menu.Item key="downloadMappings"><span><Icon type="download" /></span>
-              <Button htmlType="submit" form="downloadMappingsForm" value="Submit" className="Breadcrumbs-button">
-                Download Mappings
-              </Button>
-            </Menu.Item>
             <Menu.Item key="downloadProgress"><span><Icon type="download" /></span>
               <Button htmlType="submit" form="downloadForm" value="Submit" className="Breadcrumbs-button">
                 Download Progress

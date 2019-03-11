@@ -118,6 +118,20 @@ class Form extends Component {
         warning = `<ul><li><b>Sheets without matches to REDCap</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</li></ul>`;
       }
     }
+
+    // <fieldset className="App-fieldset">
+    //   <label className="App-fieldsetLabel" htmlFor="mappingsFile">
+    //     <span className="Form-label">Mappings File</span> (Optional)
+    //     <input
+    //       className="App-fieldsetInput"
+    //       type="file"
+    //       id="mappingsFile"
+    //       accept=".xls,.xlsx"
+    //       value={form.mappingsFileName}
+    //       onChange={this.handleSelectedFile.bind(this, 'mappingsFile')}
+    //     />
+    //   </label>
+    // </fieldset>
     return (
       <div className="App-fieldsetColumn">
         <fieldset className="App-fieldset">
@@ -200,20 +214,6 @@ class Form extends Component {
         </fieldset>
 
         <hr />
-
-        <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel" htmlFor="mappingsFile">
-            <span className="Form-label">Mappings File</span> (Optional)
-            <input
-              className="App-fieldsetInput"
-              type="file"
-              id="mappingsFile"
-              accept=".xls,.xlsx"
-              value={form.mappingsFileName}
-              onChange={this.handleSelectedFile.bind(this, 'mappingsFile')}
-            />
-          </label>
-        </fieldset>
 
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="dataFile">
