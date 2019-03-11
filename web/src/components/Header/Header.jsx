@@ -1,6 +1,7 @@
 import React from 'react';
+import { Icon } from 'antd';
 import Logo from './Logo/Logo';
-import './Header.css'
+import './Header.scss';
 
 function Header() {
   return (
@@ -9,8 +10,14 @@ function Header() {
         <Logo />
       </div>
       <h2 className="Header-title">REDCap Linter</h2>
+      <div className="Header-github">
+        <a target="_blank" href="https://github.mskcc.org/health-informatics/redcap-linter/issues">
+          <Icon className="Header-githubIcon" type="github" height="70px" />
+          <div style={{ fontSize: '11pt' }}>Issue Tracker</div>
+        </a>
+      </div>
     </header>
   );
-};
+}
 
 export default Header;
