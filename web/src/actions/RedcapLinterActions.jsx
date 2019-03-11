@@ -31,12 +31,11 @@ export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
 export const RESOLVE_ROW_SUCCESS = 'RESOLVE_ROW_SUCCESS';
 export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 
-export const CORRECT_VALUE_SUCCESS = 'CORRECT_VALUE_SUCCESS';
+export const CORRECT_VALUE = 'CORRECT_VALUE';
 
 export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
 
-export const UPDATE_VALUE_SUCCESS = 'UPDATE_VALUE_SUCCESS';
-export const UPDATE_VALUE_FAILURE = 'UPDATE_VALUE_FAILURE';
+export const UPDATE_VALUE = 'UPDATE_VALUE';
 
 
 export function loadingStart() {
@@ -223,7 +222,7 @@ export function removeValueMatch(payload) {
 // TODO make this one call
 export function correctValueSuccess(payload) {
   return {
-    type: CORRECT_VALUE_SUCCESS,
+    type: CORRECT_VALUE,
     payload,
   };
 }
@@ -236,24 +235,13 @@ export function correctValue(payload) {
 
 export function updateValueSuccess(payload) {
   return {
-    type: UPDATE_VALUE_SUCCESS,
+    type: UPDATE_VALUE,
     payload,
   };
 }
 
-export function updateValueFailure(payload) {
-  return {
-    type: UPDATE_VALUE_FAILURE,
-    payload,
-  };
-}
-
-export function updateValue(field, value) {
+export function updateValue(payload) {
   return function action(dispatch) {
-    const payload = {
-      field,
-      value,
-    };
     return dispatch(updateValueSuccess(payload));
   };
 }

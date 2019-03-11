@@ -17,11 +17,9 @@ import {
   RESOLVE_COLUMN_FAILURE,
   RESOLVE_ROW_SUCCESS,
   RESOLVE_ROW_FAILURE,
-  CORRECT_VALUE_SUCCESS,
-  CORRECT_VALUE_FAILURE,
+  CORRECT_VALUE,
   REMOVE_VALUE_MATCH,
-  UPDATE_VALUE_SUCCESS,
-  UPDATE_VALUE_FAILURE,
+  UPDATE_VALUE,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -87,21 +85,18 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
-    case UPDATE_VALUE_SUCCESS: {
+    case UPDATE_VALUE: {
       const fieldToValueMap = Object.assign({}, state.fieldToValueMap) || {};
-      if (!action.payload.value && fieldToValueMap.hasOwnProperty(action.payload.field)) {
-        delete fieldToValueMap[action.payload.field];
-      } else {
-        fieldToValueMap[action.payload.field] = action.payload.value;
-      }
+      Object.keys(action.payload).forEach((field) => {
+        if (!action.payload[field]) {
+          delete fieldToValueMap[field];
+        } else {
+          fieldToValueMap[field] = action.payload[field];
+        }
+      });
       return Object.assign({}, state, { fieldToValueMap });
     }
-    case UPDATE_VALUE_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case CORRECT_VALUE_SUCCESS: {
+    case CORRECT_VALUE: {
       const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
       const {
         workingSheetName,

@@ -14,7 +14,7 @@ class RequiredResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      localFieldToValueMap: {},
+      valueMap: {},
       search: '',
       columns: [{
         title: 'Field',
@@ -52,30 +52,42 @@ class RequiredResolver extends Component {
     filterRow(sheet, '');
   }
 
-  handleUpdate(field, e) {
+  handleUpdateAll() {
     const {
-      localFieldToValueMap,
+      valueMap,
     } = this.state;
     const {
       updateValue,
     } = this.props;
-    updateValue(field, localFieldToValueMap[field]);
+    updateValue(valueMap);
+  }
+
+  handleUpdate(field, e) {
+    const {
+      valueMap,
+    } = this.state;
+    const {
+      updateValue,
+    } = this.props;
+    const payload = {};
+    payload[field] = valueMap[field];
+    updateValue(payload);
   }
 
   handleSelectChange(field, e) {
     const {
-      localFieldToValueMap,
+      valueMap,
     } = this.state;
-    localFieldToValueMap[field] = e.value;
-    this.setState({ localFieldToValueMap });
+    valueMap[field] = e.value;
+    this.setState({ valueMap });
   }
 
   handleChange(field, e) {
     const {
-      localFieldToValueMap,
+      valueMap,
     } = this.state;
-    localFieldToValueMap[field] = e.target.value;
-    this.setState({ localFieldToValueMap });
+    valueMap[field] = e.target.value;
+    this.setState({ valueMap });
   }
 
   renderCell(header, record) {
@@ -89,7 +101,7 @@ class RequiredResolver extends Component {
 
   renderInput(record) {
     const {
-      localFieldToValueMap,
+      valueMap,
     } = this.state;
     const {
       ddData,
@@ -98,7 +110,7 @@ class RequiredResolver extends Component {
     const ddField = ddData.find((field) => {
       return field.field_name === fieldName;
     });
-    const value = localFieldToValueMap[fieldName] || '';
+    const value = valueMap[fieldName] || '';
     if (ddField.choices_dict) {
       const options = [];
       Object.keys(ddField.choices_dict).forEach((choice) => {
@@ -133,10 +145,10 @@ class RequiredResolver extends Component {
   renderMatchButton(record) {
     const field = record['Field'];
     const {
-      localFieldToValueMap,
+      valueMap,
     } = this.state;
     let disabled = true;
-    if (localFieldToValueMap[field]) {
+    if (valueMap[field]) {
       disabled = false;
     }
     return (
@@ -159,6 +171,7 @@ class RequiredResolver extends Component {
     const {
       search,
       columns,
+      valueMap,
     } = this.state;
 
     const tableData = Object.keys(row).reduce((filtered, field) => {
@@ -175,6 +188,11 @@ class RequiredResolver extends Component {
       data = data.filter(row => row['Field'].includes(search));
     }
 
+    let disabled = true;
+    if (Object.keys(valueMap).length > 0) {
+      disabled = false;
+    }
+
     return (
       <div className="RequiredResolver-table">
         <div className="RequiredResolver-tableTitle">
@@ -182,6 +200,7 @@ class RequiredResolver extends Component {
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
           <div className="RequiredResolver-tableLabel"><ErrorSelector /></div>
+          <button type="button" disabled={disabled} onClick={this.handleUpdateAll.bind(this)} className="App-submitButton RequiredResolver-updateAll">Update All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>

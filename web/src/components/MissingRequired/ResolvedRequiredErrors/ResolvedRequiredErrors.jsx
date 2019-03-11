@@ -26,7 +26,9 @@ class ResolvedRequiredErrors extends Component {
     const {
       updateValue,
     } = this.props;
-    updateValue(record['Field'], '');
+    const payload = {};
+    payload[record['Field']] = '';
+    updateValue(payload);
   }
 
   renderCell(header, record) {
