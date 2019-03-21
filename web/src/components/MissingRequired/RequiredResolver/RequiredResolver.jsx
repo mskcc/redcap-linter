@@ -22,6 +22,12 @@ class RequiredResolver extends Component {
         render: (text, record) => (this.renderCell('Field', record)),
       },
       {
+        title: 'Validation',
+        key: 'Validation',
+        width: '300px',
+        render: (text, record) => (this.renderValidation('Field', record)),
+      },
+      {
         title: 'Value',
         key: 'Value',
         width: '200px',
@@ -99,6 +105,28 @@ class RequiredResolver extends Component {
     } = this.state;
     valueMap[field] = e.target.value;
     this.setState({ valueMap });
+  }
+
+  renderValidation(header, record) {
+    const {
+      ddData,
+    } = this.props;
+    const fieldName = record['Field'];
+    const ddField = ddData.find(field => field.field_name === fieldName);
+    if (!ddField.text_validation) {
+      return 'None';
+    }
+    return (
+      <div className="RequiredResolver-textValidation">
+        <span className="RequiredResolver-textValidationRange"><b>Validation</b>: { ddField.text_validation }</span>
+        |
+        <span className="RequiredResolver-textValidationRange"><b>Required</b>: { ddField.required ? 'True' : 'False' }</span>
+        <br />
+        <span className="RequiredResolver-textValidationRange"><b>Min</b>: { ddField.text_min || 'None' }</span>
+        |
+        <span className="RequiredResolver-textValidationRange"><b>Max</b>: { ddField.text_max || 'None' }</span>
+      </div>
+    );
   }
 
   renderCell(header, record) {
