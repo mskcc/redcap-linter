@@ -11,7 +11,7 @@ function Header() {
       </div>
       <h2 className="Header-title">REDCap Linter</h2>
       <div className="Header-github">
-        <a target="_blank" href="https://github.mskcc.org/health-informatics/redcap-linter/issues">
+        <a className="issue-tracker" target="_blank" href="https://github.mskcc.org/health-informatics/redcap-linter/issues">
           <Icon className="Header-githubIcon" type="github" height="70px" />
           <div style={{ fontSize: '11pt' }}>Issue Tracker</div>
         </a>

@@ -73,6 +73,11 @@ class MatchChoices extends Component {
       workingColumn,
       removeChoiceMatch,
     } = this.props;
+
+    if (!workingColumn) {
+      return null;
+    }
+
     let matchedChoices = fieldErrors.matchedChoices || [];
     let choiceMap = {};
     if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {

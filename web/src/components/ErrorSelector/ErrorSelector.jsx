@@ -116,7 +116,7 @@ class ErrorSelector extends Component {
       recordsMissingRequiredData[sheet].forEach((rowNumber) => {
         subOptions.push({
           value: { sheet: sheet, rowNum: rowNumber },
-          label: rowNumber+1,
+          label: rowNumber+2,
         });
       });
       options.push({
@@ -135,7 +135,7 @@ class ErrorSelector extends Component {
     } else if (workingRow) {
       selectedValue = {
         value: { sheet: workingSheetName, rowNum: workingRow },
-        label: workingRow+1,
+        label: workingRow+2,
       };
     }
 

@@ -87,13 +87,20 @@ export default function (state = {}, action) {
     }
     case UPDATE_VALUE: {
       const fieldToValueMap = Object.assign({}, state.fieldToValueMap) || {};
-      Object.keys(action.payload).forEach((field) => {
-        if (!action.payload[field]) {
-          delete fieldToValueMap[field];
-        } else {
-          fieldToValueMap[field] = action.payload[field];
-        }
-      });
+      const {
+        workingSheetName,
+        workingRow,
+      } = state;
+      fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {}
+      fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {}
+      fieldToValueMap[workingSheetName][workingRow] = Object.assign(fieldToValueMap[workingSheetName][workingRow], action.payload)
+      // Object.keys(action.payload).forEach((field) => {
+      //   if (!action.payload[field]) {
+      //     delete fieldToValueMap[field];
+      //   } else {
+      //     fieldToValueMap[field] = action.payload[field];
+      //   }
+      // });
       return Object.assign({}, state, { fieldToValueMap });
     }
     case CORRECT_VALUE: {

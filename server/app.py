@@ -255,15 +255,19 @@ def resolve_row():
 
     dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
+    value_map = {}
+    if working_sheet_name in field_to_value_map and str(working_row) in field_to_value_map[working_sheet_name]:
+        value_map = field_to_value_map[working_sheet_name][str(working_row)]
+
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
         df = df[csv_headers[sheet]]
         df.fillna('',inplace=True)
         if sheet == working_sheet_name:
-            for field in field_to_value_map:
+            for field in value_map:
                 dd_field = [f for f in dd if f.field_name == field][0]
-                value = field_to_value_map[field]
+                value = value_map[field]
                 if dd_field.text_validation == 'integer':
                     value = int(value) if value else value
                 elif dd_field.text_validation == 'number_2dp':
@@ -320,7 +324,6 @@ def resolve_row():
     if action == 'continue':
         results['workingRow'] = next_row
         results['workingSheetName'] = next_sheet_name
-        results['fieldToValueMap'] = {}
         results['fieldErrors'] = {}
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

@@ -36,6 +36,7 @@ class MissingRequired extends Component {
       csvHeaders,
       action: 'save',
     };
+
     resolveRow(payload);
   }
 
@@ -75,14 +76,19 @@ class MissingRequired extends Component {
       workingRow,
       csvHeaders,
       filterRow,
-      ddData
+      ddData,
     } = this.props;
 
-    // TODO take workingSheetName from props
-    const workingSheet = workingSheetName || Object.keys(recordsMissingRequiredData)[0];
-    const sheetHeaders = csvHeaders[workingSheet];
-    const workingRowNum = workingRow || recordsMissingRequiredData[workingSheet][0];
-    const row = jsonData[workingSheet][workingRowNum];
+    if (!workingRow) {
+      return null;
+    }
+
+    const row = jsonData[workingSheetName][workingRow];
+
+    let valueMap = {}
+    if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
+      valueMap = fieldToValueMap[workingSheetName][workingRow];
+    }
 
     let requiredDdFields = ddData.reduce((filtered, field) => {
       if (field.required) {
@@ -91,7 +97,8 @@ class MissingRequired extends Component {
       return filtered;
     }, []);
 
-    let rowData = sheetHeaders.reduce((filtered, field) => {
+    const sheetHeaders = csvHeaders[workingSheetName];
+    let tableData = sheetHeaders.reduce((filtered, field) => {
       if (requiredDdFields.indexOf(field) === -1) {
         filtered.push({
           'Field': field,
@@ -101,11 +108,13 @@ class MissingRequired extends Component {
       return filtered;
     }, []);
 
-    Object.keys(fieldToValueMap).forEach((field) => {
-      rowData.unshift({
-        'Field': field,
-        'Value': fieldToValueMap[field],
-      })
+    Object.keys(valueMap).forEach((field) => {
+      if (valueMap[field]) {
+        tableData.unshift({
+          'Field': field,
+          'Value': valueMap[field],
+        })
+      }
     });
 
     // <button type="button" onClick={e => this.handleSkip(field, e)} className="MissingRequired-skipButton">Skip</button>
@@ -116,20 +125,16 @@ class MissingRequired extends Component {
           <div className="MissingRequired-matchedChoices">
             <div className="MissingRequired-title">Row Data</div>
             <ResolvedRequiredErrors
-              fieldToValueMap={fieldToValueMap}
-              updateValue={this.props.updateValue}
-              tableData={rowData}
-              sheet={workingSheet}
-              rowNum={workingRowNum+1}
-              filterRow={filterRow}
+              fieldToValueMap={valueMap}
+              updateValue={updateValue}
+              tableData={tableData}
+              workingSheetName={workingSheetName}
             />
           </div>
           <div className="MissingRequired-unmatchedChoices">
             <div className="MissingRequired-title">Missing Required Values</div>
             <RequiredResolver
               row={row}
-              rowNum={workingRowNum}
-              sheet={workingSheet}
               requiredDdFields={requiredDdFields}
             />
           </div>

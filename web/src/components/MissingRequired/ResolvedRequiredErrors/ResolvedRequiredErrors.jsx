@@ -63,8 +63,7 @@ class ResolvedRequiredErrors extends Component {
   render() {
     const {
       tableData,
-      sheet,
-      rowNum,
+      workingSheetName,
     } = this.props;
     const {
       search,
@@ -75,8 +74,6 @@ class ResolvedRequiredErrors extends Component {
     if (search) {
       data = data.filter(row => row['Field'].includes(search) || row['Value'].includes(search));
     }
-    // <br />
-    // <b>Row num</b>: { rowNum }
     return (
       <div className="ResolvedRequiredErrors-table">
         <div className="ResolvedRequiredErrors-tableTitle">
@@ -84,7 +81,7 @@ class ResolvedRequiredErrors extends Component {
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
           <div className="ResolvedRequiredErrors-sheetInfo">
-            <b>Sheet</b>: { sheet }
+            <b>Sheet</b>: { workingSheetName }
           </div>
         </div>
         <Table size="small" columns={columns} dataSource={data} />

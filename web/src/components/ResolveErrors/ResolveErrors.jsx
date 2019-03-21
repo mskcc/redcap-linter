@@ -11,7 +11,7 @@ import MissingRequired from '../MissingRequired/MissingRequired';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
-import { resolveColumn, navigateTo } from '../../actions/RedcapLinterActions';
+import { resolveColumn, resolveRow, navigateTo } from '../../actions/RedcapLinterActions';
 
 class ResolveErrors extends Component {
   constructor(props) {
@@ -35,8 +35,11 @@ class ResolveErrors extends Component {
       ddData,
       csvHeaders,
       workingColumn,
+      workingRow,
       columnsInError,
+      recordsMissingRequiredData,
       resolveColumn,
+      resolveRow,
     } = this.props;
     if (!workingColumn && Object.keys(columnsInError).length > 0) {
       const nextSheetName = Object.keys(columnsInError)[0];
@@ -51,7 +54,23 @@ class ResolveErrors extends Component {
         nextColumn,
         action: 'continue',
       };
+      // TODO Call on resolveRow if there are no column errors
       resolveColumn(payload);
+    } else if (!workingRow && Object.keys(recordsMissingRequiredData).length > 0) {
+      // TODO take workingSheetName from props
+      const nextSheetName = Object.keys(recordsMissingRequiredData)[0];
+      const nextRow = recordsMissingRequiredData[nextSheetName][0];
+      const payload = {
+        jsonData,
+        projectInfo,
+        recordsMissingRequiredData,
+        ddData,
+        csvHeaders,
+        nextSheetName,
+        nextRow,
+        action: 'continue',
+      };
+      resolveRow(payload);
     }
   }
 
@@ -106,7 +125,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, navigateTo }, dispatch);
+  return bindActionCreators({ resolveColumn, resolveRow, navigateTo }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResolveErrors);

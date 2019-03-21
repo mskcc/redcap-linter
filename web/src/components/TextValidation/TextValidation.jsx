@@ -76,6 +76,11 @@ class TextValidation extends Component {
       workingColumn,
       removeValueMatch,
     } = this.props;
+
+    if (!workingColumn) {
+      return null;
+    }
+
     let correctedValues = [];
     if (originalToCorrectedValueMap[workingSheetName] && originalToCorrectedValueMap[workingSheetName][workingColumn]) {
       const valueMap = originalToCorrectedValueMap[workingSheetName][workingColumn];

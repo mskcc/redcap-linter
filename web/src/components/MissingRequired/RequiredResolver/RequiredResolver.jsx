@@ -35,21 +35,32 @@ class RequiredResolver extends Component {
     };
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      workingRow,
+      workingSheetName,
+    } = prevState;
+    if (nextProps.workingRow !== workingRow || nextProps.workingSheetName !== workingSheetName) {
+      return { valueMap: {}, workingRow: nextProps.workingRow, workingSheetName: nextProps.workingSheetName };
+    }
+    return null;
+  }
+
   onFocus(e) {
     const {
-      sheet,
-      rowNum,
+      workingSheetName,
+      workingRow,
       filterRow,
     } = this.props;
-    filterRow(sheet, rowNum);
+    filterRow(workingSheetName, workingRow);
   }
 
   onBlur(e) {
     const {
-      sheet,
+      workingSheetName,
       filterRow,
     } = this.props;
-    filterRow(sheet, '');
+    filterRow(workingSheetName, '');
   }
 
   handleUpdateAll() {
@@ -161,10 +172,10 @@ class RequiredResolver extends Component {
   render() {
     const {
       workingSheetName,
+      workingRow,
       recordsMissingRequiredData,
       columnsInError,
       row,
-      rowNum,
       fieldToValueMap,
       requiredDdFields,
     } = this.props;
@@ -174,8 +185,13 @@ class RequiredResolver extends Component {
       valueMap,
     } = this.state;
 
+    let savedValueMap = {};
+    if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
+      savedValueMap = fieldToValueMap[workingSheetName][workingRow];
+    }
+
     const tableData = Object.keys(row).reduce((filtered, field) => {
-      if (requiredDdFields.indexOf(field) >= 0 && !fieldToValueMap.hasOwnProperty(field) && !row[field]) {
+      if ((!row[field] && requiredDdFields.indexOf(field) >= 0 && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
         filtered.push({
           'Field': field,
         })

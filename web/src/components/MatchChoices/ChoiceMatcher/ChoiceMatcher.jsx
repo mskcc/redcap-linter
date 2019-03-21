@@ -201,13 +201,13 @@ class ChoiceMatcher extends Component {
       choiceMap,
     } = this.state;
 
-    let propsChoiceMap = {};
+    let savedChoiceMap = {};
     if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {
-      propsChoiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
+      savedChoiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
     }
 
     const tableData = fieldErrors.unmatchedChoices.reduce((filtered, f) => {
-      if (!Object.keys(propsChoiceMap).includes(f)) {
+      if (!Object.keys(savedChoiceMap).includes(f)) {
         filtered.push({
           'Data Field': f,
         });
