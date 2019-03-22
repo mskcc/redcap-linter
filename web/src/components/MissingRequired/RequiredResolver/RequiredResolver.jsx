@@ -28,6 +28,12 @@ class RequiredResolver extends Component {
         render: (text, record) => (this.renderValidation('Field', record)),
       },
       {
+        title: 'Current',
+        key: 'Current',
+        width: '100px',
+        render: (text, record) => (this.renderCell('Value', record)),
+      },
+      {
         title: 'Value',
         key: 'Value',
         width: '200px',
@@ -130,10 +136,15 @@ class RequiredResolver extends Component {
   }
 
   renderCell(header, record) {
+    let hasError = false;
+    if (header == 'Value') {
+      hasError = true;
+    }
     return (
       <Cell
         cellData={record[header]}
         editable={false}
+        hasError={hasError}
       />
     );
   }
@@ -225,6 +236,7 @@ class RequiredResolver extends Component {
       if ((rowErrors[field] && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
         filtered.push({
           'Field': field,
+          'Value': row[field],
         })
       }
       return filtered;

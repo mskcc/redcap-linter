@@ -17,6 +17,7 @@ class ResolvedRequiredErrors extends Component {
       {
         title: 'Value',
         key: 'Value',
+        width: '100px',
         render: (text, record) => (this.renderCell('Value', record)),
       }],
     };
