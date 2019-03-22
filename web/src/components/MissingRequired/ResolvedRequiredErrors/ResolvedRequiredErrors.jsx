@@ -72,7 +72,7 @@ class ResolvedRequiredErrors extends Component {
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Field'].includes(search) || row['Value'].includes(search));
+      data = data.filter(row => row['Field'].includes(search) || row['Value'].toString().includes(search));
     }
     return (
       <div className="ResolvedRequiredErrors-table">

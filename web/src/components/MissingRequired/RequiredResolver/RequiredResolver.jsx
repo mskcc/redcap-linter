@@ -149,6 +149,8 @@ class RequiredResolver extends Component {
     const ddField = ddData.find((field) => {
       return field.field_name === fieldName;
     });
+
+    // TODO Get value from sheet data if exists
     const value = valueMap[fieldName] || '';
     if (ddField.choices_dict) {
       const options = [];
@@ -204,6 +206,7 @@ class RequiredResolver extends Component {
       recordsMissingRequiredData,
       columnsInError,
       row,
+      rowErrors,
       fieldToValueMap,
       requiredDdFields,
     } = this.props;
@@ -219,7 +222,7 @@ class RequiredResolver extends Component {
     }
 
     const tableData = Object.keys(row).reduce((filtered, field) => {
-      if ((!row[field] && requiredDdFields.indexOf(field) >= 0 && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
+      if ((rowErrors[field] && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
         filtered.push({
           'Field': field,
         })

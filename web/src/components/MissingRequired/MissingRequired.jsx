@@ -69,6 +69,7 @@ class MissingRequired extends Component {
   render() {
     const {
       jsonData,
+      cellsWithErrors,
       recordsMissingRequiredData,
       fieldToValueMap,
       updateValue,
@@ -84,6 +85,7 @@ class MissingRequired extends Component {
     }
 
     const row = jsonData[workingSheetName][workingRow];
+    const rowErrors = cellsWithErrors[workingSheetName][workingRow];
 
     let valueMap = {}
     if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
@@ -99,10 +101,11 @@ class MissingRequired extends Component {
 
     const sheetHeaders = csvHeaders[workingSheetName];
     let tableData = sheetHeaders.reduce((filtered, field) => {
+      // TODO Figure out why date of prior visit is null
       if (requiredDdFields.indexOf(field) === -1) {
         filtered.push({
           'Field': field,
-          'Value': row[field],
+          'Value': row[field] || "",
         });
       }
       return filtered;
@@ -135,6 +138,7 @@ class MissingRequired extends Component {
             <div className="MissingRequired-title">Missing Required Values</div>
             <RequiredResolver
               row={row}
+              rowErrors={rowErrors}
               requiredDdFields={requiredDdFields}
             />
           </div>

@@ -89,6 +89,9 @@ class TabbedDatatable extends Component {
         if (cellsWithErrors && cellsWithErrors[sheetName]) {
           tableErrors = cellsWithErrors[sheetName];
         }
+        if (selectedRowNum) {
+          tableErrors = [tableErrors[selectedRowNum]];
+        }
         let tableFieldsNotInRedcap = [];
         if (recordFieldsNotInRedcap && recordFieldsNotInRedcap[sheetName]) {
           tableFieldsNotInRedcap = recordFieldsNotInRedcap[sheetName];
