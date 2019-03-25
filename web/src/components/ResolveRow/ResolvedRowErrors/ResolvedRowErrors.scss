@@ -1,22 +1,22 @@
 @import '../../Utilities/color';
 
-.ResolvedRequiredErrors-headerError {
+.ResolvedRowErrors-headerError {
 	color: color(red500);
 }
 
-.ResolvedRequiredErrors-cellError {
+.ResolvedRowErrors-cellError {
 	color: color(red500);
 }
 
-.ResolvedRequiredErrors-tableTitle {
+.ResolvedRowErrors-tableTitle {
   overflow: hidden;
 }
 
-.ResolvedRequiredErrors-searchBar {
+.ResolvedRowErrors-searchBar {
   float: left;
 }
 
-.ResolvedRequiredErrors-cell {
+.ResolvedRowErrors-cell {
   width: 80%;
 	display: inline-block;
 	overflow-wrap: break-word;
@@ -24,20 +24,20 @@
   word-break: break-all;
 }
 
-.ResolvedRequiredErrors-resolvedCell {
+.ResolvedRowErrors-resolvedCell {
   color: color(green500);
 }
 
-.ResolvedRequiredErrors-cellContainer {
+.ResolvedRowErrors-cellContainer {
   display: flex;
 }
 
-.ResolvedRequiredErrors-sheetInfo {
+.ResolvedRowErrors-sheetInfo {
     float: right;
 		width: 50%;
 }
 
-.ResolvedRequiredErrors-cancel {
+.ResolvedRowErrors-cancel {
 	width: 25px;
 	opacity: 0.6;
 	text-align: right;

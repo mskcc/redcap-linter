@@ -34,7 +34,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     instrument_errors[:] = False
 
     all_errors = []
-    records_missing_required_data = []
+    rows_in_error = []
 
     total_error_count = 0
 
@@ -123,8 +123,8 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             if redcap_field.field_name != recordid_field.field_name or recordid_field.field_name != 'recordid':
                 for idx, item in enumerate(current_list):
                     if (pd.isnull(item) or not item) and redcap_field.required:
-                        if (idx not in records_missing_required_data):
-                            records_missing_required_data.append(idx)
+                        if idx not in rows_in_error:
+                            rows_in_error.append(idx)
                         all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
 
             if redcap_field.field_type in ['text', 'notes']:
@@ -134,6 +134,9 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     formatted_values = utils.format_dates(current_list, redcap_field.text_validation)
                 records[redcap_field.field_name] = formatted_values
                 instrument_errors[redcap_field.field_name] = [d is False for d in validations]
+                for idx, valid in enumerate(validations):
+                    if valid is False and idx not in rows_in_error:
+                        rows_in_error.append(idx)
                 if redcap_field.field_name != recordid_field.field_name:
                     output_records[redcap_field.field_name] = pd.Series([f if v else None for f, v in zip(formatted_values, validations)])
                     # if redcap_field.required:
@@ -148,6 +151,8 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 is_encoded = all([item in choices_dict.values() for item in current_list])
                 for idx, item in enumerate(current_list):
                     if item and not is_encoded and item not in choices_dict:
+                        if idx not in rows_in_error:
+                            rows_in_error.append(idx)
                         all_errors.append("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
                 errors = []
                 for row_num, item in enumerate(current_list):
@@ -188,13 +193,15 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     # rows_to_remove = list(set(rows_to_remove))
 
     # Drop rows with missing required data
-    output_records.drop(output_records.index[records_missing_required_data], inplace=True)
+    output_records.drop(output_records.index[rows_in_error], inplace=True)
+
+    rows_in_error.sort()
 
     return {
         'encoded_records': output_records,
         'instrument_errors': instrument_errors,
         'repeated_recordids': repeated_recordids,
-        'records_missing_required_data': records_missing_required_data,
+        'rows_in_error': rows_in_error,
         'all_errors': all_errors,
     }
 
@@ -206,7 +213,7 @@ def lint_datafile(data_dictionary, records, project_info):
 
     original_records = {}
     cells_with_errors = {}
-    records_missing_required_data = {}
+    rows_in_error = {}
     repeated_recordids = {}
     encoded_records = {}
 
@@ -230,8 +237,8 @@ def lint_datafile(data_dictionary, records, project_info):
             all_errors += results['all_errors']
             encoded_records[sheet_name] = results['encoded_records']
 
-            if len(results['records_missing_required_data']) > 0:
-                records_missing_required_data[sheet_name] = results['records_missing_required_data']
+            if len(results['rows_in_error']) > 0:
+                rows_in_error[sheet_name] = results['rows_in_error']
             if len(results['repeated_recordids']) > 0:
                 repeated_recordids[sheet_name] = results['repeated_recordids']
             errors = results['instrument_errors']
@@ -241,7 +248,7 @@ def lint_datafile(data_dictionary, records, project_info):
     return {
         'encoded_records': encoded_records,
         'cells_with_errors': cells_with_errors,
-        'records_missing_required_data': records_missing_required_data,
+        'rows_in_error': rows_in_error,
         'repeated_recordids': repeated_recordids,
         'linting_errors': all_errors
     }

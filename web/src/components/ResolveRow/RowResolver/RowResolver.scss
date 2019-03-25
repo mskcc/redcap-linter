@@ -2,19 +2,19 @@
 @import '../../Utilities/color';
 @import '../../Utilities/mixins';
 
-.RequiredResolver-headerError {
+.RowResolver-headerError {
 	color: color(red500);
 }
 
-.RequiredResolver-cellError {
+.RowResolver-cellError {
 	color: color(red500);
 }
 
-.RequiredResolver-dropdown {
+.RowResolver-dropdown {
   overflow: visible;
 }
 
-.RequiredResolver-noMatchButton {
+.RowResolver-noMatchButton {
 	background: transparent;
   border-color: color(blue500);
   border-style: solid;
@@ -29,51 +29,51 @@
   border-radius: 2px;
 }
 
-.RequiredResolver-noMatchButton:hover:enabled {
+.RowResolver-noMatchButton:hover:enabled {
   border-color: darken(color(blue500), 10%);
   color: darken(color(blue500), 10%);
 }
 
-.RequiredResolver-buttons {
+.RowResolver-buttons {
 	text-align: center;
 }
 
-.RequiredResolver-tableTitle {
+.RowResolver-tableTitle {
   text-align: center;
   position: relative;
   height: 40px;
 }
 
-.RequiredResolver-searchBar {
+.RowResolver-searchBar {
   position: absolute;
 }
 
-.RequiredResolver-elevate {
+.RowResolver-elevate {
 	z-index: 10;
 }
 
-.RequiredResolver-textValidation {
+.RowResolver-textValidation {
   display: inline-block;
 }
 
-.RequiredResolver-tableLabel {
+.RowResolver-tableLabel {
   position: absolute;
   left: calc(100% - 200px);
   min-width: 200px;
 }
 
-.RequiredResolver-updateAll {
+.RowResolver-updateAll {
 	position: absolute;
   left: calc(100% - 291px);
 	height: 38px;
 }
 
-.RequiredResolver-textValidationRange {
+.RowResolver-textValidationRange {
   padding-left: 5px;
   padding-right: 5px;
 }
 
-.RequiredResolver-input {
+.RowResolver-input {
   width: 100%;
   height: 100%;
   border: 1px solid #dbd7d3;

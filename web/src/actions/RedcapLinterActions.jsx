@@ -376,7 +376,7 @@ export function resolveRow(payload) {
     data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
     data.append('workingRow', payload.workingRow ? JSON.stringify(payload.workingRow) : 0);
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
-    data.append('recordsMissingRequiredData', JSON.stringify(payload.recordsMissingRequiredData));
+    data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', payload.action ? JSON.stringify(payload.action) : '');
 
     const request = axios({

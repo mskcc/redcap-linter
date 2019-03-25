@@ -47,7 +47,7 @@ def save_fields():
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
-    records_missing_required_data = datafile_errors['records_missing_required_data']
+    rows_in_error = datafile_errors['rows_in_error']
     repeated_recordids = datafile_errors['repeated_recordids']
     encoded_records = datafile_errors['encoded_records']
 
@@ -69,7 +69,7 @@ def save_fields():
 
     results = {
         'jsonData':                   json_data,
-        'recordsMissingRequiredData': records_missing_required_data,
+        'rowsInError':                  rows_in_error,
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
@@ -213,6 +213,7 @@ def resolve_column():
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
+    rows_in_error = datafile_errors['rows_in_error']
 
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
@@ -229,6 +230,7 @@ def resolve_column():
         'cellsWithErrors': cells_with_errors,
         'columnsInError':  columns_in_error,
         'allErrors':       all_errors,
+        'rowsInError':       rows_in_error,
     }
     if action == 'continue':
         results['workingColumn'] = next_column
@@ -275,19 +277,19 @@ def resolve_row():
                 df.iloc[working_row, df.columns.get_loc(field)] = value
         records[sheet] = df
 
-    records_missing_required_data = json.loads(form.get('recordsMissingRequiredData'))
+    rows_in_error = json.loads(form.get('rowsInError'))
     project_info = json.loads(form.get('projectInfo'))
 
     # TODO work on case of no more errors
 
     # TODO Suggest column changes and simplify this
     next_sheet = False
-    for sheet in records_missing_required_data:
+    for sheet in rows_in_error:
         if next_sheet:
             next_sheet_name = sheet
-            next_row = records_missing_required_data[sheet][0]
+            next_row = rows_in_error[sheet][0]
         if sheet == working_sheet_name:
-            sheet_rows_in_error = records_missing_required_data[sheet]
+            sheet_rows_in_error = rows_in_error[sheet]
             if sheet == working_sheet_name and working_row == sheet_rows_in_error[-1]:
                 next_sheet = True
             elif sheet == working_sheet_name:
@@ -307,6 +309,7 @@ def resolve_row():
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
+    rows_in_error = datafile_errors['rows_in_error']
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -319,6 +322,7 @@ def resolve_row():
     results = {
         'jsonData':         json_data,
         'allErrors':        all_errors,
+        'rowsInError':        rows_in_error,
         'cellsWithErrors':  cells_with_errors,
     }
     if action == 'continue':

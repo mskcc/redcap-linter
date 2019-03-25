@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import ResolvedRequiredErrors from './ResolvedRequiredErrors/ResolvedRequiredErrors';
-import RequiredResolver from './RequiredResolver/RequiredResolver';
-import './MissingRequired.scss';
+import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
+import RowResolver from './RowResolver/RowResolver';
+import './ResolveRow.scss';
 import { resolveRow, filterRow, updateValue } from '../../actions/RedcapLinterActions';
 
-class MissingRequired extends Component {
+class ResolveRow extends Component {
   constructor(props) {
     super(props);
     this.state = { };
@@ -21,7 +21,7 @@ class MissingRequired extends Component {
       ddData,
       workingRow,
       workingSheetName,
-      recordsMissingRequiredData,
+      rowsInError,
       csvHeaders,
       resolveRow,
     } = this.props;
@@ -31,7 +31,7 @@ class MissingRequired extends Component {
       projectInfo,
       workingRow,
       workingSheetName,
-      recordsMissingRequiredData,
+      rowsInError,
       ddData,
       csvHeaders,
       action: 'save',
@@ -49,7 +49,7 @@ class MissingRequired extends Component {
       projectInfo,
       ddData,
       csvHeaders,
-      recordsMissingRequiredData,
+      rowsInError,
       resolveRow,
     } = this.props;
     const payload = {
@@ -58,7 +58,7 @@ class MissingRequired extends Component {
       projectInfo,
       workingRow,
       workingSheetName,
-      recordsMissingRequiredData,
+      rowsInError,
       ddData,
       csvHeaders,
       action: 'continue',
@@ -70,7 +70,7 @@ class MissingRequired extends Component {
     const {
       jsonData,
       cellsWithErrors,
-      recordsMissingRequiredData,
+      rowsInError,
       fieldToValueMap,
       updateValue,
       workingSheetName,
@@ -85,24 +85,17 @@ class MissingRequired extends Component {
     }
 
     const row = jsonData[workingSheetName][workingRow];
-    const rowErrors = cellsWithErrors[workingSheetName][workingRow];
+    const currentRowErrors = cellsWithErrors[workingSheetName][workingRow];
 
-    let valueMap = {}
+    let valueMap = {};
     if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
       valueMap = fieldToValueMap[workingSheetName][workingRow];
     }
 
-    let requiredDdFields = ddData.reduce((filtered, field) => {
-      if (field.required) {
-        filtered.push(field.field_name);
-      }
-      return filtered;
-    }, []);
-
     const sheetHeaders = csvHeaders[workingSheetName];
-    let tableData = sheetHeaders.reduce((filtered, field) => {
+    const tableData = sheetHeaders.reduce((filtered, field) => {
       // TODO Figure out why date of prior visit is null
-      if (requiredDdFields.indexOf(field) === -1) {
+      if (!currentRowErrors[field]) {
         filtered.push({
           'Field': field,
           'Value': row[field] || "",
@@ -124,27 +117,23 @@ class MissingRequired extends Component {
 
     return (
       <div>
-        <div className="MissingRequired-container">
-          <div className="MissingRequired-matchedChoices">
-            <div className="MissingRequired-title">Row Data</div>
-            <ResolvedRequiredErrors
+        <div className="ResolveRow-container">
+          <div className="ResolveRow-matchedChoices">
+            <div className="ResolveRow-title">Row Data</div>
+            <ResolvedRowErrors
               fieldToValueMap={valueMap}
               updateValue={updateValue}
               tableData={tableData}
               workingSheetName={workingSheetName}
             />
           </div>
-          <div className="MissingRequired-unmatchedChoices">
-            <div className="MissingRequired-title">Missing Required Values</div>
-            <RequiredResolver
-              row={row}
-              rowErrors={rowErrors}
-              requiredDdFields={requiredDdFields}
-            />
+          <div className="ResolveRow-unmatchedChoices">
+            <div className="ResolveRow-title">Row Errors</div>
+            <RowResolver />
           </div>
         </div>
-        <div className="MissingRequired-saveAndContinue">
-          <button type="button" onClick={this.saveChanges.bind(this)} className="MissingRequired-save">Save</button>
+        <div className="ResolveRow-saveAndContinue">
+          <button type="button" onClick={this.saveChanges.bind(this)} className="ResolveRow-save">Save</button>
           <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
         </div>
       </div>
@@ -152,12 +141,12 @@ class MissingRequired extends Component {
   }
 }
 
-MissingRequired.propTypes = {
+ResolveRow.propTypes = {
   noMissingRequired: PropTypes.array,
   fieldToValueMap: PropTypes.object,
 };
 
-MissingRequired.defaultProps = {
+ResolveRow.defaultProps = {
   noMissingRequired: [],
   fieldToValueMap: {},
 };
@@ -170,4 +159,4 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveRow, filterRow, updateValue }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MissingRequired);
+export default connect(mapStateToProps, mapDispatchToProps)(ResolveRow);

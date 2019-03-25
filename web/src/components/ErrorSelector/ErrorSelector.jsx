@@ -33,7 +33,7 @@ class ErrorSelector extends Component {
       projectInfo,
       ddData,
       csvHeaders,
-      recordsMissingRequiredData,
+      rowsInError,
       columnsInError,
       resolveRow,
       resolveColumn,
@@ -45,7 +45,7 @@ class ErrorSelector extends Component {
       nextColumn: e.value.column,
       nextRow: e.value.rowNum,
       nextSheetName: e.value.sheet,
-      recordsMissingRequiredData,
+      rowsInError,
       ddData,
       csvHeaders,
       action: 'continue',
@@ -61,7 +61,8 @@ class ErrorSelector extends Component {
     const {
       dataFieldToChoiceMap,
       originalToCorrectedValueMap,
-      recordsMissingRequiredData,
+      fieldToValueMap,
+      rowsInError,
       workingSheetName,
       workingColumn,
       workingRow,
@@ -111,19 +112,32 @@ class ErrorSelector extends Component {
       allErrors = allErrors.concat(columnsInError[sheet]);
     });
 
-    Object.keys(recordsMissingRequiredData).forEach((sheet) => {
+    Object.keys(rowsInError).forEach((sheet) => {
       const subOptions = [];
-      recordsMissingRequiredData[sheet].forEach((rowNumber) => {
+      rowsInError[sheet].forEach((rowNumber) => {
         subOptions.push({
           value: { sheet: sheet, rowNum: rowNumber },
           label: rowNumber+2,
         });
       });
+      const valueMap = fieldToValueMap[sheet] || {};
+      Object.keys(valueMap).reduce((filtered, row) => {
+        const rowNum = Number(row);
+        if (!rowsInError[sheet].includes(rowNum)) {
+          // All errors in column are resolved
+          filtered.push({
+            value: { sheet: sheet, rowNum: rowNum },
+            label: rowNum + 2,
+            color: '#237804',
+          })
+        }
+        return filtered;
+      }, subOptions);
       options.push({
         label: `${sheet} | Row Errors`,
         options: subOptions,
       });
-      allErrors = allErrors.concat(recordsMissingRequiredData[sheet]);
+      allErrors = allErrors.concat(rowsInError[sheet]);
     });
 
     let selectedValue = {}
@@ -177,12 +191,14 @@ ErrorSelector.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
   originalToCorrectedValueMap: PropTypes.object,
+  fieldToValueMap: PropTypes.object,
 };
 
 ErrorSelector.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
   originalToCorrectedValueMap: {},
+  fieldToValueMap: {},
 };
 
 function mapStateToProps(state) {

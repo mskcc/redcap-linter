@@ -2,36 +2,36 @@
 @import '../Utilities/color';
 @import '../Utilities/mixins';
 
-.MissingRequired-container {
+.ResolveRow-container {
   width: 100%;
 	display: inline-block;
   padding-top: 10px;
 }
 
-.MissingRequired-matchedChoices {
+.ResolveRow-matchedChoices {
   display: inline-block;
   width: 35%;
 }
 
-.MissingRequired-unmatchedChoices {
+.ResolveRow-unmatchedChoices {
   float: right;
   display: inline-block;
   width: 65%;
   padding-left: 1%;
 }
 
-.MissingRequired-title {
+.ResolveRow-title {
   text-align: center;
   font-size: 16px;
   margin: 7px;
 }
 
-.MissingRequired-saveAndContinue {
+.ResolveRow-saveAndContinue {
   padding-top: 10px;
   float: right;
 }
 
-.MissingRequired-save {
+.ResolveRow-save {
 	background: transparent;
   border-color: color(blue500);
   border-style: solid;
@@ -46,7 +46,7 @@
   border-radius: 2px;
 }
 
-.MissingRequired-save:hover:enabled {
+.ResolveRow-save:hover:enabled {
   border-color: darken(color(blue500), 10%);
   color: darken(color(blue500), 10%);
 }

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import './ResolvedRequiredErrors.scss';
+import './ResolvedRowErrors.scss';
 import '../../../App.scss';
 import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
 
-class ResolvedRequiredErrors extends Component {
+class ResolvedRowErrors extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -37,12 +37,12 @@ class ResolvedRequiredErrors extends Component {
       fieldToValueMap,
     } = this.props;
     let cancelButton = '';
-    let className = 'ResolvedRequiredErrors-cell';
+    let className = 'ResolvedRowErrors-cell';
     if (fieldToValueMap.hasOwnProperty(record['Field'])) {
-      className += ' ResolvedRequiredErrors-resolvedCell'
+      className += ' ResolvedRowErrors-resolvedCell'
       if (header === 'Value') {
         cancelButton = (
-          <div className="ResolvedRequiredErrors-cancel">
+          <div className="ResolvedRowErrors-cancel">
             <a onClick={e => this.removeRequiredMatch(record, e)}>
               <Icon type="close" />
             </a>
@@ -52,7 +52,7 @@ class ResolvedRequiredErrors extends Component {
     }
 
     return (
-      <div className="ResolvedRequiredErrors-cellContainer">
+      <div className="ResolvedRowErrors-cellContainer">
         <div className={className}>
           { record[header] }
         </div>
@@ -76,12 +76,12 @@ class ResolvedRequiredErrors extends Component {
       data = data.filter(row => row['Field'].includes(search) || row['Value'].toString().includes(search));
     }
     return (
-      <div className="ResolvedRequiredErrors-table">
-        <div className="ResolvedRequiredErrors-tableTitle">
-          <span className="ResolvedRequiredErrors-searchBar">
+      <div className="ResolvedRowErrors-table">
+        <div className="ResolvedRowErrors-tableTitle">
+          <span className="ResolvedRowErrors-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
-          <div className="ResolvedRequiredErrors-sheetInfo">
+          <div className="ResolvedRowErrors-sheetInfo">
             <b>Sheet</b>: { workingSheetName }
           </div>
         </div>
@@ -91,14 +91,14 @@ class ResolvedRequiredErrors extends Component {
   }
 }
 
-ResolvedRequiredErrors.propTypes = {
+ResolvedRowErrors.propTypes = {
   tableData: PropTypes.array,
   fieldToValueMap: PropTypes.object,
 };
 
-ResolvedRequiredErrors.defaultProps = {
+ResolvedRowErrors.defaultProps = {
   tableData: [],
   fieldToValueMap: {},
 };
 
-export default ResolvedRequiredErrors;
+export default ResolvedRowErrors;

@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { Spin } from 'antd';
 import MatchChoices from '../MatchChoices/MatchChoices';
 import TextValidation from '../TextValidation/TextValidation';
-import MissingRequired from '../MissingRequired/MissingRequired';
+import ResolveRow from '../ResolveRow/ResolveRow';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
@@ -37,7 +37,7 @@ class ResolveErrors extends Component {
       workingColumn,
       workingRow,
       columnsInError,
-      recordsMissingRequiredData,
+      rowsInError,
       resolveColumn,
       resolveRow,
     } = this.props;
@@ -56,14 +56,14 @@ class ResolveErrors extends Component {
       };
       // TODO Call on resolveRow if there are no column errors
       resolveColumn(payload);
-    } else if (!workingRow && Object.keys(recordsMissingRequiredData).length > 0) {
+    } else if (!workingRow && Object.keys(rowsInError).length > 0) {
       // TODO take workingSheetName from props
-      const nextSheetName = Object.keys(recordsMissingRequiredData)[0];
-      const nextRow = recordsMissingRequiredData[nextSheetName][0];
+      const nextSheetName = Object.keys(rowsInError)[0];
+      const nextRow = rowsInError[nextSheetName][0];
       const payload = {
         jsonData,
         projectInfo,
-        recordsMissingRequiredData,
+        rowsInError,
         ddData,
         csvHeaders,
         nextSheetName,
@@ -78,7 +78,7 @@ class ResolveErrors extends Component {
     const {
       columnsInError,
       fieldErrors,
-      recordsMissingRequiredData,
+      rowsInError,
       navigateTo,
     } = this.props;
     const {
@@ -92,9 +92,9 @@ class ResolveErrors extends Component {
       content = <MatchChoices />;
     } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
       content = <TextValidation />;
-    } else if (Object.keys(recordsMissingRequiredData).length > 0) {
-      content = <MissingRequired />;
-    } else if (Object.keys(columnsInError).length === 0 && Object.keys(recordsMissingRequiredData).length === 0) {
+    } else if (Object.keys(rowsInError).length > 0) {
+      content = <ResolveRow />;
+    } else if (Object.keys(columnsInError).length === 0 && Object.keys(rowsInError).length === 0) {
       navigateTo('finish');
     }
     return (

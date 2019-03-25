@@ -189,7 +189,6 @@ class ChoiceMatcher extends Component {
   render() {
     const {
       fieldErrors,
-      recordsMissingRequiredData,
       workingSheetName,
       workingColumn,
       dataFieldToChoiceMap,

@@ -149,7 +149,7 @@ class TextErrorResolver extends Component {
       workingColumn,
       originalToCorrectedValueMap,
       columnsInError,
-      recordsMissingRequiredData,
+      rowsInError,
       fieldErrors,
     } = this.props;
     const {

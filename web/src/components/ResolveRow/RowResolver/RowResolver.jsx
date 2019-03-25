@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './RequiredResolver.scss';
+import './RowResolver.scss';
 import '../../../App.scss';
 import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
@@ -10,7 +10,7 @@ import Cell from '../../Cell/Cell';
 import ErrorSelector from '../../ErrorSelector/ErrorSelector';
 import { updateValue, filterRow } from '../../../actions/RedcapLinterActions';
 
-class RequiredResolver extends Component {
+class RowResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -123,14 +123,14 @@ class RequiredResolver extends Component {
       return 'None';
     }
     return (
-      <div className="RequiredResolver-textValidation">
-        <span className="RequiredResolver-textValidationRange"><b>Validation</b>: { ddField.text_validation }</span>
+      <div className="RowResolver-textValidation">
+        <span className="RowResolver-textValidationRange"><b>Validation</b>: { ddField.text_validation }</span>
         |
-        <span className="RequiredResolver-textValidationRange"><b>Required</b>: { ddField.required ? 'True' : 'False' }</span>
+        <span className="RowResolver-textValidationRange"><b>Required</b>: { ddField.required ? 'True' : 'False' }</span>
         <br />
-        <span className="RequiredResolver-textValidationRange"><b>Min</b>: { ddField.text_min || 'None' }</span>
+        <span className="RowResolver-textValidationRange"><b>Min</b>: { ddField.text_min || 'None' }</span>
         |
-        <span className="RequiredResolver-textValidationRange"><b>Max</b>: { ddField.text_max || 'None' }</span>
+        <span className="RowResolver-textValidationRange"><b>Max</b>: { ddField.text_max || 'None' }</span>
       </div>
     );
   }
@@ -184,7 +184,7 @@ class RequiredResolver extends Component {
     }
     return (
       <Input
-        className="RequiredResolver-input"
+        className="RowResolver-input"
         type="text"
         onFocus={e => this.onFocus(e)}
         onBlur={e => this.onBlur(e)}
@@ -204,7 +204,7 @@ class RequiredResolver extends Component {
       disabled = false;
     }
     return (
-      <div className="RequiredResolver-buttons">
+      <div className="RowResolver-buttons">
         <button type="button" disabled={disabled} onClick={e => this.handleUpdate(field, e)} className="App-submitButton">Update</button>
       </div>
     );
@@ -214,12 +214,10 @@ class RequiredResolver extends Component {
     const {
       workingSheetName,
       workingRow,
-      recordsMissingRequiredData,
-      columnsInError,
-      row,
-      rowErrors,
+      cellsWithErrors,
+      jsonData,
+      rowsInError,
       fieldToValueMap,
-      requiredDdFields,
     } = this.props;
     const {
       search,
@@ -227,13 +225,16 @@ class RequiredResolver extends Component {
       valueMap,
     } = this.state;
 
+    const row = jsonData[workingSheetName][workingRow];
+    const currentRowErrors = cellsWithErrors[workingSheetName][workingRow];
+
     let savedValueMap = {};
     if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
       savedValueMap = fieldToValueMap[workingSheetName][workingRow];
     }
 
     const tableData = Object.keys(row).reduce((filtered, field) => {
-      if ((rowErrors[field] && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
+      if ((currentRowErrors[field] && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
         filtered.push({
           'Field': field,
           'Value': row[field],
@@ -253,13 +254,13 @@ class RequiredResolver extends Component {
     }
 
     return (
-      <div className="RequiredResolver-table">
-        <div className="RequiredResolver-tableTitle">
-          <div className="RequiredResolver-searchBar">
+      <div className="RowResolver-table">
+        <div className="RowResolver-tableTitle">
+          <div className="RowResolver-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
-          <div className="RequiredResolver-tableLabel"><ErrorSelector /></div>
-          <button type="button" disabled={disabled} onClick={this.handleUpdateAll.bind(this)} className="App-submitButton RequiredResolver-updateAll">Update All</button>
+          <div className="RowResolver-tableLabel"><ErrorSelector /></div>
+          <button type="button" disabled={disabled} onClick={this.handleUpdateAll.bind(this)} className="App-submitButton RowResolver-updateAll">Update All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} />
       </div>
@@ -267,11 +268,11 @@ class RequiredResolver extends Component {
   }
 }
 
-RequiredResolver.propTypes = {
+RowResolver.propTypes = {
   fieldToValueMap: PropTypes.object,
 };
 
-RequiredResolver.defaultProps = {
+RowResolver.defaultProps = {
   fieldToValueMap: {},
 };
 
@@ -283,4 +284,4 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ updateValue, filterRow }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RequiredResolver);
+export default connect(mapStateToProps, mapDispatchToProps)(RowResolver);
