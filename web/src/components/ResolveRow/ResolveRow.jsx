@@ -80,7 +80,7 @@ class ResolveRow extends Component {
       ddData,
     } = this.props;
 
-    if (!workingRow) {
+    if (workingRow === -1) {
       return null;
     }
 
@@ -144,11 +144,13 @@ class ResolveRow extends Component {
 ResolveRow.propTypes = {
   noMissingRequired: PropTypes.array,
   fieldToValueMap: PropTypes.object,
+  workingRow: PropTypes.number,
 };
 
 ResolveRow.defaultProps = {
   noMissingRequired: [],
   fieldToValueMap: {},
+  workingRow: -1,
 };
 
 function mapStateToProps(state) {

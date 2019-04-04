@@ -69,7 +69,7 @@ def save_fields():
 
     results = {
         'jsonData':                   json_data,
-        'rowsInError':                  rows_in_error,
+        'rowsInError':                rows_in_error,
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
@@ -322,7 +322,7 @@ def resolve_row():
     results = {
         'jsonData':         json_data,
         'allErrors':        all_errors,
-        'rowsInError':        rows_in_error,
+        'rowsInError':      rows_in_error,
         'cellsWithErrors':  cells_with_errors,
     }
     if action == 'continue':
@@ -533,8 +533,7 @@ def post_form():
             dd_df.fillna('', inplace=True)
         elif dataDictionaryName.endswith('.xlsx') or dataDictionaryName.endswith('.xls'):
             dd_df = pd.read_excel(request.files['dataDictionary'])
-        dd_df.columns = utils.parameterize_list(list(dd_df.columns))
-        dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['variable_field_name'])]
+        dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['Variable / Field Name'])]
 
     all_csv_headers = []
     dd_headers  = []
@@ -551,8 +550,8 @@ def post_form():
     dd_data[0]['required'] = True
 
     for sheet_name, sheet in records.items():
-        all_csv_headers += utils.parameterize_list(list(sheet.columns))
-        all_csv_headers = [i for i in all_csv_headers if 'unnamed' not in i]
+        all_csv_headers += list(sheet.columns)
+        all_csv_headers = [i for i in all_csv_headers if 'Unnamed' not in i]
 
     all_field_names = [f.field_name for f in dd]
 
@@ -564,21 +563,29 @@ def post_form():
     for sheet_name, sheet in records.items():
         # Remove empty rows
         sheet.dropna(axis=0, how='all', inplace=True)
-        csv_headers[sheet_name] = utils.parameterize_list(list(sheet.columns))
-        normalized_list = [item for item in csv_headers[sheet_name] if 'unnamed' not in item]
-        fields_not_in_redcap[sheet_name] = [item for item in normalized_list if item not in all_field_names]
+        csv_headers[sheet_name] = list(sheet.columns)
+        csv_headers[sheet_name] = [item for item in csv_headers[sheet_name] if 'Unnamed' not in item]
+        normalized_headers = utils.parameterize_list(csv_headers[sheet_name])
+        fields_not_in_redcap[sheet_name] = [header for header, normalized_header in zip(csv_headers[sheet_name], normalized_headers) if normalized_header not in all_field_names]
 
     all_csv_headers = list(set(all_csv_headers))
 
-    # TODO matches the variable on all sheets, do variables need to be sheet specific?
-    matching_headers = list(set(all_field_names) & set(all_csv_headers))
-    unmatched_redcap_fields = [f for f in all_field_names if f not in all_csv_headers]
-    unmatched_data_fields = [f for f in all_csv_headers if f not in all_field_names]
+    redcap_field_to_data_field_dict = {}
 
-    for f1 in unmatched_redcap_fields:
+    # TODO matches the variable on all sheets, do variables need to be sheet specific?
+    for header in all_csv_headers:
+        normalized_header = utils.parameterize(header)
+        if normalized_header in all_field_names:
+            redcap_field_to_data_field_dict[normalized_header] = header
+
+    normalized_headers = utils.parameterize_list(all_csv_headers)
+    unmatched_redcap_fields = [f for f in all_field_names if f not in normalized_headers]
+    unmatched_data_fields = [header for header, normalized_header in zip(all_csv_headers, normalized_headers) if normalized_header not in all_field_names]
+
+    for f1 in all_field_names:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]
-        for sheet in fields_not_in_redcap:
-            for f2 in fields_not_in_redcap[sheet]:
+        for sheet in csv_headers:
+            for f2 in csv_headers[sheet]:
                 if not redcap_field_candidates.get(f1):
                     redcap_field_candidates[f1] = []
                 existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
@@ -588,12 +595,12 @@ def post_form():
                     redcap_field_candidates[f1].append({
                         'candidate': f2,
                         'sheets': [sheet],
-                        'score': max(fuzz.ratio(f1, f2), fuzz.ratio(dd_field['field_label'], f2))
+                        'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f2))
                     })
 
     data_field_to_sheets = {}
-    for sheet in fields_not_in_redcap:
-        for f1 in fields_not_in_redcap[sheet]:
+    for sheet in csv_headers:
+        for f1 in csv_headers[sheet]:
             if not data_field_candidates.get(f1):
                 data_field_candidates[f1] = []
             else:
@@ -601,12 +608,12 @@ def post_form():
             if not data_field_to_sheets.get(f1):
                 data_field_to_sheets[f1] = []
             data_field_to_sheets[f1].append(sheet)
-            for f2 in unmatched_redcap_fields:
+            for f2 in all_field_names:
                 dd_field = [f for f in dd_data if f['field_name'] == f2][0]
                 data_field_candidates[f1].append({
                     'candidate': f2,
                     'form_name': dd_field['form_name'],
-                    'score': max(fuzz.ratio(f1, f2), fuzz.ratio(dd_field['field_label'], f1))
+                    'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f1))
                 })
 
     malformed_sheets = []
@@ -628,7 +635,6 @@ def post_form():
     form_names = list(set(form_names))
     for sheet_name in records.keys():
         sheet = records.get(sheet_name)
-        sheet.columns = utils.parameterize_list(list(sheet.columns))
 
         redcap_field_names = [f.field_name for f in dd]
 
@@ -656,7 +662,15 @@ def post_form():
     json_data   = {}
 
     for sheet_name, sheet in records.items():
-        json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        try:
+            json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        except Exception as e:
+            results = {
+                'error': str(e)
+            }
+            response = flask.jsonify(results)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
 
     results = {
         'csvHeaders':              csv_headers,
@@ -668,7 +682,7 @@ def post_form():
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': fields_not_in_redcap,
         'projectInfo':             project_info,
-        'matchingHeaders':         matching_headers,
+        'redcapFieldToDataFieldMap': redcap_field_to_data_field_dict,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
         'dataFieldToSheets':       data_field_to_sheets,

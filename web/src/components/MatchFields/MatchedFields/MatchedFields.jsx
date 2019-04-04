@@ -35,7 +35,7 @@ class MatchedFields extends Component {
       className += ' MatchedFields-cellError';
     }
     let cancelButton = '';
-    if (header === 'Data Field' && cellInfo['Data Field'] !== cellInfo['REDCap Field']) {
+    if (header === 'Data Field') {
       cancelButton = (
         <div className="MatchedFields-cancel">
           <a onClick={e => this.removeFieldMatch(cellInfo, e)}>

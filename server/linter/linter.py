@@ -75,7 +75,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         repeat_instance_dict = {}  # Dict from recordid to repeat instance number, auto-increment from 1
 
         next_record_name = project_info['next_record_name']
-        repeatable = form_name in utils.parameterize_list(project_info['repeatable_instruments'])
+        repeatable = form_name in project_info['repeatable_instruments']
         unique_record_ids = []
         if recordid_field.field_name in records.columns:
             redcap_repeat_instance = []
@@ -115,7 +115,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             output_records[recordid_field.field_name] = pd.Series(list(range(next_record_name, next_record_name + len(records.index)+1)))
 
     for form_name in matching_fields:
-        repeatable = form_name in utils.parameterize_list(project_info['repeatable_instruments'])
+        repeatable = form_name in project_info['repeatable_instruments']
         for redcap_field in matching_fields[form_name]:
             current_list = list(records[redcap_field.field_name])
             current_list = [i.strip() if isinstance(i, basestring) else i for i in current_list]
@@ -196,6 +196,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     output_records.drop(output_records.index[rows_in_error], inplace=True)
 
     rows_in_error.sort()
+    logging.warning(rows_in_error)
 
     return {
         'encoded_records': output_records,
@@ -226,7 +227,6 @@ def lint_datafile(data_dictionary, records, project_info):
         instrument_records = records.get(sheet_name)
         original_records[sheet_name] = instrument_records.copy()
         instrument_errors = pd.DataFrame().reindex_like(instrument_records)
-        instrument_errors.columns = utils.parameterize_list(list(instrument_errors.columns))
         instrument_errors[:] = False
         cells_with_errors[sheet_name] = instrument_errors
 

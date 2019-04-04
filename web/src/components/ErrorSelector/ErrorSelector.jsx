@@ -50,7 +50,7 @@ class ErrorSelector extends Component {
       csvHeaders,
       action: 'continue',
     };
-    if (e.value.rowNum) {
+    if ('rowNum' in e.value) {
       resolveRow(payload);
     } else {
       resolveColumn(payload);
@@ -146,7 +146,7 @@ class ErrorSelector extends Component {
         value: { sheet: workingSheetName, column: workingColumn },
         label: workingColumn,
       };
-    } else if (workingRow) {
+    } else if (workingRow !== '') {
       selectedValue = {
         value: { sheet: workingSheetName, rowNum: workingRow },
         label: workingRow+2,

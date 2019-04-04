@@ -22,14 +22,14 @@ class RedcapField(object):
     def from_data_dictionary(cls, data_dictionary, field_name):
         field = {
             'field_name': field_name,
-            'field_label': utils.get_from_data_dictionary(data_dictionary, field_name, 'field_label'),
-            'field_type': utils.get_from_data_dictionary(data_dictionary, field_name, 'field_type'),
-            'text_validation': utils.get_from_data_dictionary(data_dictionary, field_name, 'text_validation_type_or_show_slider_number'),
-            'text_min': utils.get_from_data_dictionary(data_dictionary, field_name, 'text_validation_min'),
-            'text_max': utils.get_from_data_dictionary(data_dictionary, field_name, 'text_validation_max'),
-            'choices': utils.get_from_data_dictionary(data_dictionary, field_name, 'choices_calculations_or_slider_labels'),
-            'form_name': utils.get_from_data_dictionary(data_dictionary, field_name, 'form_name'),
-            'required': utils.get_from_data_dictionary(data_dictionary, field_name, 'required_field') in ['y', 'Y']
+            'field_label': utils.get_from_data_dictionary(data_dictionary, field_name, 'Field Label'),
+            'field_type': utils.get_from_data_dictionary(data_dictionary, field_name, 'Field Type'),
+            'text_validation': utils.get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Type OR Show Slider Number'),
+            'text_min': utils.get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Min'),
+            'text_max': utils.get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Max'),
+            'choices': utils.get_from_data_dictionary(data_dictionary, field_name, 'Choices, Calculations, OR Slider Labels'),
+            'form_name': utils.get_from_data_dictionary(data_dictionary, field_name, 'Form Name'),
+            'required': utils.get_from_data_dictionary(data_dictionary, field_name, 'Required Field?') in ['y', 'Y']
         }
 
         if field['field_type'] in ['yesno', 'truefalse']:
@@ -44,15 +44,15 @@ class RedcapField(object):
     @classmethod
     def from_json(cls, field_json):
         field = {
-            'field_name': field_json.get('field_name') or field_json.get('variable_field_name'),
-            'field_label': field_json.get('field_label'),
-            'field_type': field_json.get('field_type'),
-            'text_validation': field_json.get('text_validation') or field_json.get('text_validation_type_or_show_slider_number'),
-            'text_min': field_json.get('text_min') or field_json.get('text_validation_min'),
-            'text_max': field_json.get('text_max') or field_json.get('text_validation_max'),
-            'choices': field_json.get('choices') or field_json.get('select_choices_or_calculations') or field_json.get('choices_calculations_or_slider_labels'),
-            'form_name': field_json.get('form_name'),
-            'required': field_json.get('required') or field_json.get('required_field') in ['y', 'Y'],
+            'field_name': field_json.get('field_name') or field_json.get('Variable / Field Name'),
+            'field_label': field_json.get('field_label') or field_json.get('Field Label'),
+            'field_type': field_json.get('field_type') or field_json.get('Field Type'),
+            'text_validation': field_json.get('text_validation') or field_json.get('Text Validation Type OR Show Slider Number'),
+            'text_min': field_json.get('text_min') or field_json.get('Text Validation Min'),
+            'text_max': field_json.get('text_max') or field_json.get('Text Validation Max'),
+            'choices': field_json.get('choices') or field_json.get('Choices, Calculations, OR Slider Labels'),
+            'form_name': field_json.get('form_name') or field_json.get('Form Name'),
+            'required': field_json.get('required') or field_json.get('Required Field?') in ['y', 'Y'],
             'choices_dict': field_json.get('choices_dict')
         }
 

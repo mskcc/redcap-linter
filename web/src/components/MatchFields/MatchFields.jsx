@@ -82,11 +82,7 @@ class MatchFields extends Component {
       redcapFieldCandidates,
       removeFieldMatch,
     } = this.props;
-    let matchedFields = matchingHeaders.map(header => ({
-      'REDCap Field': header,
-      'Data Field': header,
-    }));
-    matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
+    let matchedFields = Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
       if (redcapField && redcapFieldToDataFieldMap[redcapField]) {
         filtered.push({
           'REDCap Field': redcapField,
@@ -94,7 +90,7 @@ class MatchFields extends Component {
         });
       }
       return filtered;
-    }, []));
+    }, []);
     matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
       if (redcapField && !redcapFieldToDataFieldMap[redcapField]) {
         filtered.push({

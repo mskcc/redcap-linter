@@ -47,9 +47,9 @@ def titleize(str):
 
 
 def get_from_data_dictionary(data_dictionary, field_name, col):
-    cell = list(data_dictionary.loc[data_dictionary['variable_field_name'] == field_name, col])
+    cell = list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])
     if len(cell) > 0:
-        return list(data_dictionary.loc[data_dictionary['variable_field_name'] == field_name, col])[0]
+        return list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])[0]
     else:
         return None
 

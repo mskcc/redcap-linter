@@ -28,11 +28,15 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { loading: true });
     }
     case POST_FORM_SUCCESS: {
-      const error = { error: '' };
+      let error = '';
       if (action.payload.data && action.payload.data.error) {
-        error.error = action.payload.data.error;
+        error = action.payload.data.error;
       }
-      return Object.assign({ loading: false, new: true, page: 'matchFields' }, action.payload.data, error);
+      let page = 'matchFields';
+      if (error) {
+        page = 'intro';
+      }
+      return Object.assign({ loading: false, new: true, page }, action.payload.data, error);
     }
     case POST_FORM_FAILURE: {
       return Object.assign({}, state, {
