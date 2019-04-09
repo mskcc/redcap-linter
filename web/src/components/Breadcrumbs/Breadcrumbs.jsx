@@ -157,7 +157,7 @@ class Breadcrumbs extends Component {
     }
     return (
       <div className="Breadcrumbs-navigation">
-        <Breadcrumb className="Breadcrumbs-links">
+        <Breadcrumb className="Breadcrumbs-links" separator=">">
           { breadcrumbs }
         </Breadcrumb>
         { download }
