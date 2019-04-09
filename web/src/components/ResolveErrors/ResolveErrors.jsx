@@ -41,6 +41,9 @@ class ResolveErrors extends Component {
       resolveColumn,
       resolveRow,
     } = this.props;
+    if (workingColumn || workingRow) {
+      return;
+    }
     if (!workingColumn && Object.keys(columnsInError).length > 0) {
       const nextSheetName = Object.keys(columnsInError)[0];
       const nextColumn = columnsInError[nextSheetName][0];
