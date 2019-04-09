@@ -3,9 +3,9 @@
 @import '../Utilities/mixins';
 
 .TextValidation-container {
-  width: 100%;
-	display: inline-block;
+  width: 95%;
   padding-top: 10px;
+  margin: auto;
 }
 
 .TextValidation-matchedChoices {
@@ -22,12 +22,14 @@
 
 .TextValidation-title {
   text-align: center;
-  font-size: 16px;
-  margin: 7px;
+  font-size: 15px;
+  margin-top: 4px;
 }
 
 .TextValidation-saveAndContinue {
   padding-top: 10px;
+  z-index: 10;
+  position: relative;
   float: right;
 }
 

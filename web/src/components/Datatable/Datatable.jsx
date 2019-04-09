@@ -191,11 +191,13 @@ class Datatable extends Component {
     }
 
     return (
-      <div className="Datatable-table">
+      <div>
         <div className="Datatable-searchBar">
           Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
         </div>
-        <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: columns.length * 100 }} />
+        <div className="Datatable-table">
+          <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: columns.length * 100 }} />
+        </div>
       </div>
     );
   }

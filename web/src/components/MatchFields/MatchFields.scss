@@ -1,8 +1,7 @@
 .MatchFields-container {
-  width: 75%;
-	float: right;
-  margin-right: 2.5%;
+  width: 95%;
   padding-top: 10px;
+  margin: auto;
 }
 
 .MatchFields-matchedFields {
@@ -22,11 +21,13 @@
 .MatchFields-title {
   text-align: center;
   font-size: 15px;
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .MatchFields-saveAndContinue {
   padding-top: 10px;
+  z-index: 10;
+  position: relative;
   float: right;
 }
 

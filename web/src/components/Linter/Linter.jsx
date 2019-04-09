@@ -7,6 +7,7 @@ import ResolveErrors from '../ResolveErrors/ResolveErrors';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
+import Form from '../Form/Form';
 import MatchFields from '../MatchFields/MatchFields';
 import { postForm } from '../../actions/RedcapLinterActions';
 
@@ -21,7 +22,10 @@ class Linter extends Component {
     let currentPage = '';
     console.log(this.props);
     if (page === 'intro') {
-      currentPage = <Intro />;
+      currentPage = (<div className="Linter-container">
+        <Form />
+        <Intro />
+      </div>);
     } else if (page === 'matchFields') {
       currentPage = <MatchFields />;
     } else if (page === 'lint') {

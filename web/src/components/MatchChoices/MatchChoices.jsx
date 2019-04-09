@@ -109,21 +109,24 @@ class MatchChoices extends Component {
     return (
       <div>
         <div className="MatchChoices-container">
-          <div className="MatchChoices-matchedChoices">
-            <div className="MatchChoices-title">Matched Choices</div>
-            <MatchedChoices
-              removeChoiceMatch={removeChoiceMatch}
-              tableData={matchedChoices}
-            />
+          <div>
+            <div className="MatchChoices-matchedChoices">
+              <div className="MatchChoices-title">Matched Choices</div>
+              <MatchedChoices
+                removeChoiceMatch={removeChoiceMatch}
+                tableData={matchedChoices}
+              />
+            </div>
+            <div className="MatchChoices-unmatchedChoices">
+              <div className="MatchChoices-title">Unmatched Choices</div>
+              <ChoiceMatcher />
+            </div>
+            <div style={{ clear: 'both' }} />
           </div>
-          <div className="MatchChoices-unmatchedChoices">
-            <div className="MatchChoices-title">Unmatched Choices</div>
-            <ChoiceMatcher />
+          <div className="MatchChoices-saveAndContinue">
+            <button type="button" onClick={this.saveChanges.bind(this)} className="MatchChoices-save">Save</button>
+            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
           </div>
-        </div>
-        <div className="MatchChoices-saveAndContinue">
-          <button type="button" onClick={this.saveChanges.bind(this)} className="MatchChoices-save">Save</button>
-          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
         </div>
       </div>
     );

@@ -93,21 +93,24 @@ class TextValidation extends Component {
     return (
       <div>
         <div className="TextValidation-container">
-          <div className="TextValidation-matchedChoices">
-            <div className="TextValidation-title">Corrected Values</div>
-            <ResolvedTextErrors
-              removeValueMatch={removeValueMatch}
-              tableData={correctedValues}
-            />
+          <div>
+            <div className="TextValidation-matchedChoices">
+              <div className="TextValidation-title">Corrected Values</div>
+              <ResolvedTextErrors
+                removeValueMatch={removeValueMatch}
+                tableData={correctedValues}
+              />
+            </div>
+            <div className="TextValidation-unmatchedChoices">
+              <div className="TextValidation-title">Values in Error</div>
+              <TextErrorResolver />
+            </div>
+            <div style={{ clear: 'both' }} />
           </div>
-          <div className="TextValidation-unmatchedChoices">
-            <div className="TextValidation-title">Values in Error</div>
-            <TextErrorResolver />
+          <div className="TextValidation-saveAndContinue">
+            <button type="button" onClick={this.saveChanges.bind(this)} className="TextValidation-save">Save</button>
+            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
           </div>
-        </div>
-        <div className="TextValidation-saveAndContinue">
-          <button type="button" onClick={this.saveChanges.bind(this)} className="TextValidation-save">Save</button>
-          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
         </div>
       </div>
     );

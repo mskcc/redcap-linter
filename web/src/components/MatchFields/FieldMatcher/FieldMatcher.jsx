@@ -25,8 +25,8 @@ class FieldMatcher extends Component {
         render: (text, record) => (this.renderCell(mode, record)),
       },
       {
-        title: 'Candidate',
-        key: 'Candidate',
+        title: `${mode} Candidate`,
+        key: `${mode} Candidate`,
         width: '250px',
         render: (text, record) => (this.renderCandidates(record)),
       },
@@ -134,8 +134,8 @@ class FieldMatcher extends Component {
       render: (text, record) => (this.renderCell(mode, record)),
     },
     {
-      title: 'Candidate',
-      key: 'Candidate',
+      title: `${mode} Candidate`,
+      key: `${mode} Candidate`,
       width: '250px',
       render: (text, record) => (this.renderCandidates(record)),
     },
@@ -362,7 +362,7 @@ class FieldMatcher extends Component {
           </div>
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Accept Matches</button>
         </div>
-        <Table size="small" columns={columns} dataSource={data} />
+        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
     );
   }

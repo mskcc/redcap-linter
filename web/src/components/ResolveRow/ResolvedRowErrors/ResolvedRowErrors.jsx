@@ -85,7 +85,7 @@ class ResolvedRowErrors extends Component {
             <b>Sheet</b>: { workingSheetName }
           </div>
         </div>
-        <Table size="small" columns={columns} dataSource={data} />
+        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
     );
   }

@@ -118,23 +118,26 @@ class ResolveRow extends Component {
     return (
       <div>
         <div className="ResolveRow-container">
-          <div className="ResolveRow-matchedChoices">
-            <div className="ResolveRow-title">Row Data</div>
-            <ResolvedRowErrors
-              fieldToValueMap={valueMap}
-              updateValue={updateValue}
-              tableData={tableData}
-              workingSheetName={workingSheetName}
-            />
+          <div>
+            <div className="ResolveRow-matchedChoices">
+              <div className="ResolveRow-title">Row Data</div>
+              <ResolvedRowErrors
+                fieldToValueMap={valueMap}
+                updateValue={updateValue}
+                tableData={tableData}
+                workingSheetName={workingSheetName}
+              />
+            </div>
+            <div className="ResolveRow-unmatchedChoices">
+              <div className="ResolveRow-title">Row Errors</div>
+              <RowResolver />
+            </div>
+            <div style={{ clear: 'both' }} />
           </div>
-          <div className="ResolveRow-unmatchedChoices">
-            <div className="ResolveRow-title">Row Errors</div>
-            <RowResolver />
+          <div className="ResolveRow-saveAndContinue">
+            <button type="button" onClick={this.saveChanges.bind(this)} className="ResolveRow-save">Save</button>
+            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
           </div>
-        </div>
-        <div className="ResolveRow-saveAndContinue">
-          <button type="button" onClick={this.saveChanges.bind(this)} className="ResolveRow-save">Save</button>
-          <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
         </div>
       </div>
     );

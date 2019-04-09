@@ -200,7 +200,7 @@ class TextErrorResolver extends Component {
           <div className="TextErrorResolver-tableLabel"><ErrorSelector /></div>
           <button type="button" disabled={disabled} onClick={this.handleCorrectAll.bind(this)} className="App-submitButton TextErrorResolver-correctAll">Correct All</button>
         </div>
-        <Table size="small" columns={columns} dataSource={data} />
+        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
     );
   }

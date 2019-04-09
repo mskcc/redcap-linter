@@ -3,9 +3,9 @@
 @import '../Utilities/mixins';
 
 .MatchChoices-container {
-  width: 100%;
-	display: inline-block;
+  width: 95%;
   padding-top: 10px;
+  margin: auto;
 }
 
 .MatchChoices-matchedChoices {
@@ -23,11 +23,13 @@
 .MatchChoices-title {
   text-align: center;
   font-size: 15px;
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .MatchChoices-saveAndContinue {
   padding-top: 10px;
+  z-index: 10;
+  position: relative;
   float: right;
 }
 

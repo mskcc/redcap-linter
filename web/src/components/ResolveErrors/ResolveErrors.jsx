@@ -99,9 +99,7 @@ class ResolveErrors extends Component {
     }
     return (
       <div className="ResolveErrors-container">
-        <div className="ResolveErrors-resolveError">
-          { content }
-        </div>
+        { content }
         <TabbedDatatable />
       </div>
     );

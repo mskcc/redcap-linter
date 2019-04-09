@@ -91,7 +91,7 @@ class MatchedChoices extends Component {
           Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
         </div>
-        <Table size="small" columns={columns} dataSource={data} />
+        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
     );
   }

@@ -262,7 +262,7 @@ class RowResolver extends Component {
           <div className="RowResolver-tableLabel"><ErrorSelector /></div>
           <button type="button" disabled={disabled} onClick={this.handleUpdateAll.bind(this)} className="App-submitButton RowResolver-updateAll">Update All</button>
         </div>
-        <Table size="small" columns={columns} dataSource={data} />
+        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
     );
   }

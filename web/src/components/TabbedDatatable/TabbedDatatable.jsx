@@ -149,7 +149,9 @@ class TabbedDatatable extends Component {
       activeKey: activeIndex,
       onChange: this.handleTabChange.bind(this)
     };
-    return <Tabs {...tabProps}>{ panes }</Tabs>;
+    return (<div className="TabbedDatatable-main">
+      <Tabs {...tabProps}>{ panes }</Tabs>
+    </div>);
   }
 }
 
