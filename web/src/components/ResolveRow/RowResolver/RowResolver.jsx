@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import ErrorSelector from '../../ErrorSelector/ErrorSelector';
 import { updateValue, filterRow } from '../../../actions/RedcapLinterActions';
 
 class RowResolver extends Component {
@@ -259,7 +258,6 @@ class RowResolver extends Component {
           <div className="RowResolver-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </div>
-          <div className="RowResolver-tableLabel"><ErrorSelector /></div>
           <button type="button" disabled={disabled} onClick={this.handleUpdateAll.bind(this)} className="App-submitButton RowResolver-updateAll">Update All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />

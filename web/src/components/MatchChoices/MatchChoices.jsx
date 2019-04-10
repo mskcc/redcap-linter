@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
+import ErrorSelector from '../ErrorSelector/ErrorSelector';
 import './MatchChoices.scss';
 import { resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
 
@@ -108,6 +109,10 @@ class MatchChoices extends Component {
 
     return (
       <div>
+        <div className="MatchChoices-column">
+          <b>Choose Column or Row to Resolve</b>
+          <ErrorSelector />
+        </div>
         <div className="MatchChoices-container">
           <div>
             <div className="MatchChoices-matchedChoices">
@@ -128,6 +133,7 @@ class MatchChoices extends Component {
             <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
           </div>
         </div>
+        <div style={{ clear: 'both' }} />
       </div>
     );
   }

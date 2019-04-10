@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
+import ErrorSelector from '../ErrorSelector/ErrorSelector';
 import './ResolveRow.scss';
 import { resolveRow, filterRow, updateValue } from '../../actions/RedcapLinterActions';
 
@@ -117,6 +118,10 @@ class ResolveRow extends Component {
 
     return (
       <div>
+        <div className="ResolveRow-column">
+          <b>Choose Column or Row to Resolve</b>
+          <ErrorSelector />
+        </div>
         <div className="ResolveRow-container">
           <div>
             <div className="ResolveRow-matchedChoices">
@@ -139,6 +144,7 @@ class ResolveRow extends Component {
             <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
           </div>
         </div>
+        <div style={{ clear: 'both' }} />
       </div>
     );
   }

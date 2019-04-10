@@ -126,26 +126,29 @@ class MatchFields extends Component {
     }
     return (
       <div>
-        <ProjectInfo />
-        <div className="MatchFields-container">
-          <div>
-            <div className="MatchFields-matchedFields">
-              <div className="MatchFields-title">Matched Fields</div>
-              <MatchedFields
-                removeFieldMatch={removeFieldMatch}
-                tableData={matchedFields}
-              />
+        <div>
+          <ProjectInfo />
+          <div className="MatchFields-container">
+            <div>
+              <div className="MatchFields-matchedFields">
+                <div className="MatchFields-title">Matched Fields</div>
+                <MatchedFields
+                  removeFieldMatch={removeFieldMatch}
+                  tableData={matchedFields}
+                />
+              </div>
+              <div className="MatchFields-unmatchedFields">
+                <div className="MatchFields-title">Unmatched Fields</div>
+                <FieldMatcher />
+              </div>
+              <div style={{ clear: 'both' }} />
             </div>
-            <div className="MatchFields-unmatchedFields">
-              <div className="MatchFields-title">Unmatched Fields</div>
-              <FieldMatcher />
+            <div className="MatchFields-saveAndContinue">
+              <button type="button" onClick={this.saveFields.bind(this)} className="App-actionButton">{ saveButtonText }</button>
+              <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ continueButtonText }</button>
             </div>
-            <div style={{ clear: 'both' }} />
           </div>
-          <div className="MatchFields-saveAndContinue">
-            <button type="button" onClick={this.saveFields.bind(this)} className="App-actionButton">{ saveButtonText }</button>
-            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ continueButtonText }</button>
-          </div>
+          <div style={{ clear: 'both' }} />
         </div>
         <div className="MatchFields-tabbedDatatable">
           <TabbedDatatable />

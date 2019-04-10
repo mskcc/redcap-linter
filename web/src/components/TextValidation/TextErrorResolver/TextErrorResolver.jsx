@@ -5,9 +5,7 @@ import { Table, Input } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import ErrorSelector from '../../ErrorSelector/ErrorSelector';
 
 import {
   correctValue,
@@ -197,7 +195,6 @@ class TextErrorResolver extends Component {
             |
             <span className="TextErrorResolver-textValidationRange"><b>Max</b>: { fieldErrors.textValidationMax || 'None' }</span>
           </div>
-          <div className="TextErrorResolver-tableLabel"><ErrorSelector /></div>
           <button type="button" disabled={disabled} onClick={this.handleCorrectAll.bind(this)} className="App-submitButton TextErrorResolver-correctAll">Correct All</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />

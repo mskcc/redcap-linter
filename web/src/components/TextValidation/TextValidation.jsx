@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
+import ErrorSelector from '../ErrorSelector/ErrorSelector';
 import './TextValidation.scss';
 import { resolveColumn, filterTable, removeValueMatch } from '../../actions/RedcapLinterActions';
 
@@ -92,6 +93,10 @@ class TextValidation extends Component {
 
     return (
       <div>
+        <div className="TextValidation-column">
+          <b>Choose Column or Row to Resolve</b>
+          <ErrorSelector />
+        </div>
         <div className="TextValidation-container">
           <div>
             <div className="TextValidation-matchedChoices">
@@ -112,6 +117,7 @@ class TextValidation extends Component {
             <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
           </div>
         </div>
+        <div style={{ clear: 'both' }} />
       </div>
     );
   }

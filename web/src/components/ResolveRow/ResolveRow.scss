@@ -3,9 +3,18 @@
 @import '../Utilities/mixins';
 
 .ResolveRow-container {
-  width: 95%;
+  width: 80%;
+	float: right;
+  margin-right: 2.5%;
   padding-top: 10px;
-  margin: auto;
+}
+
+.ResolveRow-column {
+  width: 12%;
+  margin-left: 2.7%;
+  display: inline-block;
+  float: left;
+  margin-top: 15px;
 }
 
 .ResolveRow-matchedChoices {

@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import ErrorSelector from '../../ErrorSelector/ErrorSelector';
 import { matchChoices } from '../../../actions/RedcapLinterActions';
 
 class ChoiceMatcher extends Component {
@@ -230,7 +229,6 @@ class ChoiceMatcher extends Component {
           <span className="ChoiceMatcher-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
-          <span className="ChoiceMatcher-tableLabel"><ErrorSelector /></span>
           <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Accept Matches</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
