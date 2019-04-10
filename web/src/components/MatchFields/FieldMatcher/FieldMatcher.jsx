@@ -29,14 +29,16 @@ class FieldMatcher extends Component {
         key: `${mode} Candidate`,
         width: '250px',
         render: (text, record) => (this.renderCandidates(record)),
-      },
-      {
-        title: 'Match',
-        key: 'Match',
-        render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
   }
+
+  // ,
+  // {
+  //   title: 'Match',
+  //   key: 'Match',
+  //   render: (text, record) => (this.renderMatchButton(record)),
+  // }
 
   handleMatchAll(e) {
     const {
@@ -138,14 +140,16 @@ class FieldMatcher extends Component {
       key: `${mode} Candidate`,
       width: '250px',
       render: (text, record) => (this.renderCandidates(record)),
-    },
-    {
-      title: 'Match',
-      key: 'Match',
-      render: (text, record) => (this.renderMatchButton(record)),
     }];
     this.setState({ mode, columns })
   }
+
+  // ,
+  // {
+  //   title: 'Match',
+  //   key: 'Match',
+  //   render: (text, record) => (this.renderMatchButton(record)),
+  // }
 
   renderCell(header, cellInfo) {
     const {
@@ -198,6 +202,11 @@ class FieldMatcher extends Component {
         value: value,
         label: value,
       };
+    } else if (value === null) {
+      selectedValue = {
+        value: '',
+        label: 'None',
+      };
     }
 
     let scores = [];
@@ -244,6 +253,7 @@ class FieldMatcher extends Component {
       menu: provided => ({
         // none of react-select's styles are passed to <Control />
         ...provided,
+        zIndex: 20,
         overflow: 'visible',
         minWidth: `${selectWidth}px`,
       }),

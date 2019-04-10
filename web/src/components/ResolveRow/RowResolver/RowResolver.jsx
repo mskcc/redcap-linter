@@ -170,6 +170,16 @@ class RowResolver extends Component {
           label: <span><b>{choice}</b> | <span style={{ fontWeight: 'lighter' }}>{ddField.choices_dict[choice]}</span></span>,
         })
       });
+      const selectStyles = {
+        control: provided => ({
+          ...provided,
+        }),
+        menu: provided => ({
+          // none of react-select's styles are passed to <Control />
+          ...provided,
+          zIndex: 20,
+        }),
+      };
       return (
         <Select
           options={options}
@@ -177,6 +187,7 @@ class RowResolver extends Component {
           onFocus={e => this.onFocus(e)}
           onBlur={e => this.onBlur(e)}
           onChange={e => this.handleSelectChange(fieldName, e)}
+          styles={selectStyles}
           placeholder="Select..."
         />
       );

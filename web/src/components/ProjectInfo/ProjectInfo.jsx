@@ -5,7 +5,6 @@ import { Input, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { postProjectInfo } from '../../actions/RedcapLinterActions';
 
 class ProjectInfo extends Component {
   constructor(props) {
@@ -32,27 +31,6 @@ class ProjectInfo extends Component {
       return { loading: nextProps.loading };
     }
     return null;
-  }
-
-  onSubmit() {
-    let errorText = '';
-    const { form } = this.state;
-    const { submitProjectInfo } = this.props;
-    if (!form.token && !form.dataDictionary) {
-      if (!errorText) { errorText += '<ul>'; }
-      errorText += '<li>Either token and environment or Data-Dictionary is required.</li>';
-    }
-    if (!form.dataFile) {
-      if (!errorText) { errorText += '<ul>'; }
-      errorText += '<li>Datafile is required.</li>';
-    }
-    if (errorText) {
-      errorText += '</ul>';
-      this.setState({ errorText });
-      return;
-    }
-    this.setState({ errorText, loading: true });
-    submitProjectInfo(form);
   }
 
   handleOnChangeProjectInfo(field, e) {
@@ -86,28 +64,28 @@ class ProjectInfo extends Component {
     let project = '';
     let warning = '';
     if (!error) {
-      project += '<ul>';
+      project += '<div>';
       if (projectInfo.project_id) {
-        project += `<li><b>Project ID</b>: ${projectInfo.project_id}</li>`;
+        project += `<b>Project ID</b>: ${projectInfo.project_id}<br />`;
       }
       if (projectInfo.project_title) {
-        project += `<li><b>Project Title</b>: ${projectInfo.project_title}</li>`;
+        project += `<b>Project Title</b>: ${projectInfo.project_title}<br />`;
       }
       if (ddData && ddData[0]) {
-        project += `<li><b>RecordID Field</b>: ${ddData[0].field_name}</li>`;
+        project += `<b>RecordID Field</b>: ${ddData[0].field_name}<br />`;
       }
       if (projectInfo.repeatable_instruments && projectInfo.repeatable_instruments.length > 0) {
-        project += `<li><b>Repeatable Instruments</b>: ${projectInfo.repeatable_instruments.join(', ')}</li>`;
+        project += `<b>Repeatable Instruments</b>: ${projectInfo.repeatable_instruments.join(', ')}<br />`;
       }
       if (projectInfo.custom_record_label) {
-        project += `<li><b>Custom Record Label</b>: ${projectInfo.custom_record_label}</li>`;
+        project += `<b>Custom Record Label</b>: ${projectInfo.custom_record_label}<br />`;
       }
       if (projectInfo.secondary_unique_field) {
-        project += `<li><b>Secondary Unique Field</b>: ${projectInfo.secondary_unique_field}</li>`;
+        project += `<b>Secondary Unique Field</b>: ${projectInfo.secondary_unique_field}<br />`;
       }
-      project += '</ul>';
+      project += '</div>';
       if (malformedSheets && malformedSheets.length > 0) {
-        warning = `<ul><li><b>Sheets without matches to REDCap</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</li></ul>`;
+        warning = `<div><b>Sheets without matches to REDCap</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</div>`;
       }
     }
 
@@ -127,7 +105,6 @@ class ProjectInfo extends Component {
 }
 
 ProjectInfo.propTypes = {
-  submitProjectInfo: PropTypes.func.isRequired,
   projectInfo: PropTypes.object,
   error: PropTypes.string,
 };
@@ -143,7 +120,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ submitProjectInfo: postProjectInfo }, dispatch);
+  return bindActionCreators({ }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectInfo);

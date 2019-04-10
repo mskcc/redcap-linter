@@ -131,6 +131,7 @@ def resolve_column():
         records[sheet] = df
 
     columns_in_error = json.loads(form.get('columnsInError'))
+    rows_in_error = json.loads(form.get('rowsInError'))
     project_info = json.loads(form.get('projectInfo'))
 
     # TODO work on case of no more errors
@@ -151,6 +152,13 @@ def resolve_column():
                     next_column = cols_in_error[0]
                 else:
                     next_column = cols_in_error[cols_in_error.index(working_column)+1]
+
+    next_row = None
+    if not next_column:
+        for sheet in rows_in_error:
+            if len(rows_in_error[sheet]) > 0:
+                next_sheet_name = sheet
+                next_row = rows_in_error[sheet][0]
 
     # TODO only remove if errors are resolved
     # if working_sheet_name:
@@ -236,6 +244,8 @@ def resolve_column():
         results['workingColumn'] = next_column
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = field_errors
+        if next_row:
+            results['workingRow'] = next_row
 
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -248,7 +258,7 @@ def resolve_row():
     csv_headers = json.loads(form.get('csvHeaders'))
     # Working column is the column being saved
     action = json.loads(form.get('action') or '""')
-    next_row = json.loads(form.get('nextRow') or '0')
+    next_row = json.loads(form.get('nextRow') or '')
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_row = json.loads(form.get('workingRow') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
@@ -277,6 +287,7 @@ def resolve_row():
                 df.iloc[working_row, df.columns.get_loc(field)] = value
         records[sheet] = df
 
+    columns_in_error = json.loads(form.get('columnsInError'))
     rows_in_error = json.loads(form.get('rowsInError'))
     project_info = json.loads(form.get('projectInfo'))
 
@@ -298,6 +309,64 @@ def resolve_row():
                     next_row = sheet_rows_in_error[0]
                 else:
                     next_row = sheet_rows_in_error[sheet_rows_in_error.index(working_row)+1]
+
+    next_column = None
+    if next_row == '':
+        for sheet in columns_in_error:
+            if len(columns_in_error[sheet]) > 0:
+                next_sheet_name = sheet
+                next_column = columns_in_error[sheet][0]
+
+    field_errors = {}
+    if next_column:
+        dd_field = [f for f in dd if f.field_name == next_column][0]
+        field_errors['fieldType'] = dd_field.field_type
+        field_errors['required'] = dd_field.required
+        if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+            current_list = list(records[next_sheet_name][next_column])
+            if dd_field.field_type in ['yesno', 'truefalse']:
+                current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
+                field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+                field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+            elif dd_field.field_type in ['radio', 'dropdown']:
+                current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
+                field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+                field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+            elif dd_field.field_type in ['checkbox']:
+                field_errors['matchedChoices'] = set()
+                field_errors['unmatchedChoices'] = set()
+                permissible_values = map(str.lower, map(str, dd_field.choices_dict.keys()))
+                for item in current_list:
+                    if not item:
+                        continue
+                    checkbox_items = [i.strip() for i in item.split(',')]
+                    # At least 1 item not in the Permissible Values
+                    if True in [str(i).lower() not in permissible_values for i in checkbox_items]:
+                        field_errors['unmatchedChoices'].add(item)
+                    else:
+                        field_errors['matchedChoices'].add(item)
+                field_errors['matchedChoices'] = list(field_errors['matchedChoices'])
+                field_errors['unmatchedChoices'] = list(field_errors['unmatchedChoices'])
+            choice_candidates = {}
+            for f1 in field_errors['unmatchedChoices']:
+                for f2 in dd_field.choices_dict:
+                    if not choice_candidates.get(f1):
+                        choice_candidates[f1] = []
+                    # TODO include form name in this if column name repeats?
+                    choice_candidates[f1].append({
+                        'candidate': f2,
+                        'choiceValue': dd_field.choices_dict[f2],
+                        'score': fuzz.ratio(f1, f2)
+                    })
+            field_errors['choiceCandidates'] = choice_candidates
+        if dd_field.field_type in ['text', 'notes']:
+            current_list = list(records[next_sheet_name][next_column])
+            validations = linter.validate_text_type(current_list, dd_field)
+            textErrors = [val for val, valid in zip(current_list, validations) if val and valid is False]
+            field_errors['textErrors']        = textErrors
+            field_errors['textValidation']    = dd_field.text_validation
+            field_errors['textValidationMin'] = dd_field.text_min
+            field_errors['textValidationMax'] = dd_field.text_max
 
     # TODO only remove if errors are resolved
     # if working_sheet_name:
@@ -329,6 +398,9 @@ def resolve_row():
         results['workingRow'] = next_row
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = {}
+        if next_column:
+            results['workingColumn'] = next_column
+            results['fieldErrors'] = field_errors
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -522,6 +594,7 @@ def post_form():
                 repeatable_instruments = redcap_api.fetch_repeatable_instruments(token)
                 project_info['repeatable_instruments'] = [utils.titleize(i['form_name']) for i in repeatable_instruments]
         except Exception as e:
+            logging.warning(e)
             results = {'error': "Error: {0}".format(e)}
             response = flask.jsonify(results)
             response.headers.add('Access-Control-Allow-Origin', '*')
@@ -665,6 +738,7 @@ def post_form():
         try:
             json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         except Exception as e:
+            logging.warning(e)
             results = {
                 'error': str(e)
             }

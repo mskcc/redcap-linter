@@ -79,44 +79,47 @@ class Breadcrumbs extends Component {
     //   </div>
     // </button>
 
-    const downloadButton = (
-      <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
-        <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
-          <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
-          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
-          <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
-          <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData || {})} />
-          <input key="cellsWithErrors" name="cellsWithErrors" type="hidden" value={JSON.stringify(cellsWithErrors || {})} />
-          <input key="recordFieldsNotInRedcap" name="recordFieldsNotInRedcap" type="hidden" value={JSON.stringify(recordFieldsNotInRedcap || {})} />
-          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
-        </form>
-        <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
-          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
-          <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
-          <input key="originalToCorrectedValueMap" name="originalToCorrectedValueMap" type="hidden" value={JSON.stringify(originalToCorrectedValueMap)} />
-          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
-        </form>
-        <Menu className="Breadcrumbs-menu" mode="horizontal" style={{ width: 120 }}>
-          <SubMenu key="actions" title={<span><Icon type="down" style={{ fontSize: '10px' }} /> Actions</span>}>
-            <Menu.Item key="downloadMappings"><span><Icon type="download" /></span>
-              <Button htmlType="submit" form="downloadMappingsForm" value="Submit" className="Breadcrumbs-button">
-                Download Mappings
-              </Button>
-            </Menu.Item>
-            <Menu.Item key="downloadProgress"><span><Icon type="download" /></span>
-              <Button htmlType="submit" form="downloadForm" value="Submit" className="Breadcrumbs-button">
-                Download Progress
-              </Button>
-            </Menu.Item>
-            <Menu.Item key="finishResolving"><span><Icon type="check" /></span>
-              <Button htmlType="submit" onClick={e => this.goTo('finish', e)} value="Submit" className="Breadcrumbs-button">
-                Finish Resolving
-              </Button>
-            </Menu.Item>
-          </SubMenu>
-        </Menu>
-      </div>
-    );
+    let downloadButton = '';
+    if (page === 'finish') {
+      downloadButton = (
+        <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
+          <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
+            <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
+            <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+            <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
+            <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData || {})} />
+            <input key="cellsWithErrors" name="cellsWithErrors" type="hidden" value={JSON.stringify(cellsWithErrors || {})} />
+            <input key="recordFieldsNotInRedcap" name="recordFieldsNotInRedcap" type="hidden" value={JSON.stringify(recordFieldsNotInRedcap || {})} />
+            <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
+          </form>
+          <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
+            <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+            <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
+            <input key="originalToCorrectedValueMap" name="originalToCorrectedValueMap" type="hidden" value={JSON.stringify(originalToCorrectedValueMap)} />
+            <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
+          </form>
+          <Menu className="Breadcrumbs-menu" mode="horizontal" style={{ width: 120 }}>
+            <SubMenu key="actions" title={<span><Icon type="down" style={{ fontSize: '10px' }} /> Actions</span>}>
+              <Menu.Item key="downloadMappings"><span><Icon type="download" /></span>
+                <Button htmlType="submit" form="downloadMappingsForm" value="Submit" className="Breadcrumbs-button">
+                  Download Mappings
+                </Button>
+              </Menu.Item>
+              <Menu.Item key="downloadProgress"><span><Icon type="download" /></span>
+                <Button htmlType="submit" form="downloadForm" value="Submit" className="Breadcrumbs-button">
+                  Download Progress
+                </Button>
+              </Menu.Item>
+              <Menu.Item key="finishResolving"><span><Icon type="check" /></span>
+                <Button htmlType="submit" onClick={e => this.goTo('finish', e)} value="Submit" className="Breadcrumbs-button">
+                  Finish Resolving
+                </Button>
+              </Menu.Item>
+            </SubMenu>
+          </Menu>
+        </div>
+      );
+    }
 
     const breadcrumbs = [];
 

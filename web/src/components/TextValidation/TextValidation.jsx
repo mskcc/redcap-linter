@@ -24,6 +24,7 @@ class TextValidation extends Component {
       workingSheetName,
       csvHeaders,
       columnsInError,
+      rowsInError,
       resolveColumn,
       filterTable,
     } = this.props;
@@ -35,6 +36,7 @@ class TextValidation extends Component {
       workingSheetName,
       ddData,
       columnsInError,
+      rowsInError,
       csvHeaders,
       action: 'save',
     };
@@ -93,10 +95,7 @@ class TextValidation extends Component {
 
     return (
       <div>
-        <div className="TextValidation-column">
-          <b>Choose Column or Row to Resolve</b>
-          <ErrorSelector />
-        </div>
+        <ErrorSelector />
         <div className="TextValidation-container">
           <div>
             <div className="TextValidation-matchedChoices">

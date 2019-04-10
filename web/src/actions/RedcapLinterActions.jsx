@@ -333,6 +333,7 @@ export function resolveColumn(payload) {
     data.append('workingColumn', payload.workingColumn ? JSON.stringify(payload.workingColumn) : '');
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
+    data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', payload.action ? JSON.stringify(payload.action) : '');
     // data.append('sheetName', JSON.stringify(payload.sheetName));
 
@@ -372,10 +373,11 @@ export function resolveRow(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
-    data.append('nextRow', JSON.stringify(payload.nextRow || 0));
+    data.append('nextRow', JSON.stringify(payload.nextRow || ''));
     data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
-    data.append('workingRow', payload.workingRow ? JSON.stringify(payload.workingRow) : 0);
+    data.append('workingRow', payload.workingRow ? JSON.stringify(payload.workingRow) : '');
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
+    data.append('columnsInError', JSON.stringify(payload.columnsInError));
     data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', payload.action ? JSON.stringify(payload.action) : '');
 

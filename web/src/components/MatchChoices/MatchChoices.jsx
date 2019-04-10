@@ -50,6 +50,7 @@ class MatchChoices extends Component {
       ddData,
       csvHeaders,
       columnsInError,
+      rowsInError,
       resolveColumn,
     } = this.props;
     const payload = {
@@ -59,6 +60,7 @@ class MatchChoices extends Component {
       workingColumn,
       workingSheetName,
       columnsInError,
+      rowsInError,
       ddData,
       csvHeaders,
       action: 'continue'
@@ -109,10 +111,7 @@ class MatchChoices extends Component {
 
     return (
       <div>
-        <div className="MatchChoices-column">
-          <b>Choose Column or Row to Resolve</b>
-          <ErrorSelector />
-        </div>
+        <ErrorSelector />
         <div className="MatchChoices-container">
           <div>
             <div className="MatchChoices-matchedChoices">

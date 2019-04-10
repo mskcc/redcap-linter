@@ -5,7 +5,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
-import { resolveColumn, resolveRow } from '../../actions/RedcapLinterActions';
+import { Menu, Icon, Button } from 'antd';
+import { resolveColumn, resolveRow, navigateTo } from '../../actions/RedcapLinterActions';
 
 class ErrorSelector extends Component {
   constructor(props) {
@@ -57,6 +58,13 @@ class ErrorSelector extends Component {
     }
   }
 
+  goTo(page) {
+    const {
+      navigateTo,
+    } = this.props;
+    navigateTo(page);
+  }
+
   render() {
     const {
       dataFieldToChoiceMap,
@@ -67,6 +75,14 @@ class ErrorSelector extends Component {
       workingColumn,
       workingRow,
       columnsInError,
+      page,
+      jsonData,
+      ddData,
+      redcapFieldToDataFieldMap,
+      csvHeaders,
+      cellsWithErrors,
+      recordFieldsNotInRedcap,
+      dataFileName,
     } = this.props;
 
     const options = [];
@@ -174,15 +190,67 @@ class ErrorSelector extends Component {
       },
     };
 
+    const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_progress`;
+
+    const downloadMappingsLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_mappings`;
+
+    const downloadButton = (
+      <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
+        <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
+          <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
+          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+          <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
+          <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData || {})} />
+          <input key="cellsWithErrors" name="cellsWithErrors" type="hidden" value={JSON.stringify(cellsWithErrors || {})} />
+          <input key="recordFieldsNotInRedcap" name="recordFieldsNotInRedcap" type="hidden" value={JSON.stringify(recordFieldsNotInRedcap || {})} />
+          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
+        </form>
+        <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
+          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+          <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
+          <input key="originalToCorrectedValueMap" name="originalToCorrectedValueMap" type="hidden" value={JSON.stringify(originalToCorrectedValueMap)} />
+          <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
+        </form>
+        <Menu className="ErrorSelector-menu" mode="vertical">
+          <Menu.Item key="downloadMappings"><span><Icon type="download" /></span>
+            <Button htmlType="submit" form="downloadMappingsForm" value="Submit" className="Breadcrumbs-button">
+              Download Mappings
+            </Button>
+          </Menu.Item>
+          <Menu.Item key="downloadProgress"><span><Icon type="download" /></span>
+            <Button htmlType="submit" form="downloadForm" value="Submit" className="Breadcrumbs-button">
+              Download Progress
+            </Button>
+          </Menu.Item>
+          <Menu.Item key="finishResolving"><span><Icon type="check" /></span>
+            <Button htmlType="submit" onClick={e => this.goTo('finish', e)} value="Submit" className="Breadcrumbs-button">
+              Finish Resolving
+            </Button>
+          </Menu.Item>
+        </Menu>
+      </div>
+    );
+
+    let errorSelector = '';
+    if (page === 'lint') {
+      errorSelector = (<div>
+        <b>Choose Column or Row</b>
+        <Select
+          className="ErrorSelector-elevate"
+          options={options}
+          isSearchable
+          value={selectedValue}
+          styles={selectStyles}
+          onChange={this.changeResolve.bind(this)}
+        />
+      </div>);
+    }
+
     return (
-      <Select
-        className="ErrorSelector-elevate"
-        options={options}
-        isSearchable
-        value={selectedValue}
-        styles={selectStyles}
-        onChange={this.changeResolve.bind(this)}
-      />
+      <div className="ErrorSelector-column">
+        { errorSelector }
+        { downloadButton }
+      </div>
     );
   }
 }
@@ -191,11 +259,15 @@ ErrorSelector.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
   originalToCorrectedValueMap: PropTypes.object,
+  columnsInError: PropTypes.object,
+  rowsInError: PropTypes.object,
   fieldToValueMap: PropTypes.object,
 };
 
 ErrorSelector.defaultProps = {
   fieldErrors: {},
+  columnsInError: {},
+  rowsInError: {},
   dataFieldToChoiceMap: {},
   originalToCorrectedValueMap: {},
   fieldToValueMap: {},
@@ -206,7 +278,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, resolveRow }, dispatch);
+  return bindActionCreators({ resolveColumn, resolveRow, navigateTo }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ErrorSelector);

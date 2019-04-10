@@ -47,12 +47,12 @@ class RedcapField(object):
             'field_name': field_json.get('field_name') or field_json.get('Variable / Field Name'),
             'field_label': field_json.get('field_label') or field_json.get('Field Label'),
             'field_type': field_json.get('field_type') or field_json.get('Field Type'),
-            'text_validation': field_json.get('text_validation') or field_json.get('Text Validation Type OR Show Slider Number'),
-            'text_min': field_json.get('text_min') or field_json.get('Text Validation Min'),
-            'text_max': field_json.get('text_max') or field_json.get('Text Validation Max'),
-            'choices': field_json.get('choices') or field_json.get('Choices, Calculations, OR Slider Labels'),
+            'text_validation': field_json.get('text_validation') or field_json.get('Text Validation Type OR Show Slider Number') or field_json.get('text_validation_type_or_show_slider_number'),
+            'text_min': field_json.get('text_min') or field_json.get('Text Validation Min') or field_json.get('text_validation_min'),
+            'text_max': field_json.get('text_max') or field_json.get('Text Validation Max') or field_json.get('text_validation_max'),
+            'choices': field_json.get('choices') or field_json.get('Choices, Calculations, OR Slider Labels') or field_json.get('select_choices_or_calculations'),
             'form_name': field_json.get('form_name') or field_json.get('Form Name'),
-            'required': field_json.get('required') or field_json.get('Required Field?') in ['y', 'Y'],
+            'required': field_json.get('required') or field_json.get('Required Field?') in ['y', 'Y'] or field_json.get('required_field'),
             'choices_dict': field_json.get('choices_dict')
         }
 

@@ -26,14 +26,16 @@ class ChoiceMatcher extends Component {
         key: 'Candidate',
         width: '250px',
         render: (text, record) => (this.renderCandidates(record)),
-      },
-      {
-        title: 'Match',
-        key: 'Match',
-        render: (text, record) => (this.renderMatchButton(record)),
       }],
     };
   }
+
+  // ,
+  // {
+  //   title: 'Match',
+  //   key: 'Match',
+  //   render: (text, record) => (this.renderMatchButton(record)),
+  // }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const {
@@ -129,6 +131,11 @@ class ChoiceMatcher extends Component {
         value: value,
         label: value,
       };
+    } else if (value === null) {
+      selectedValue = {
+        value: '',
+        label: 'None',
+      };
     } else if (ddField.field_type === 'checkbox' && !value) {
       const checkboxItems = fieldToMatch.split(',').map(item => item.trim());
       const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
@@ -156,11 +163,23 @@ class ChoiceMatcher extends Component {
     if (fieldErrors.fieldType === 'checkbox') {
       isMulti = true;
     }
+    const selectStyles = {
+      control: provided => ({
+        ...provided,
+      }),
+      menu: provided => ({
+        // none of react-select's styles are passed to <Control />
+        ...provided,
+        zIndex: 20,
+      }),
+    };
+
     return (
       <Select
         options={options}
         isSearchable
         isMulti={isMulti}
+        styles={selectStyles}
         value={selectedValue}
         onChange={e => this.handleChange(fieldToMatch, e)}
         placeholder="Select..."

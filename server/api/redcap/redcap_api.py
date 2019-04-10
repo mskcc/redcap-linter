@@ -1,5 +1,6 @@
 import requests
 import yaml
+import logging
 from definitions import ROOT_DIR
 
 class RedcapApi(object):
@@ -34,7 +35,7 @@ class RedcapApi(object):
             'returnFormat': self.format
         }
         r = requests.post(self.base_url, data=payload)
-        print(r.text)
+        logging.warning(r.text)
         if r.status_code != 200:
             raise Exception("Failed to retrieve repeatable instruments. REDCap responded with status code {0}".format(r.status_code))
         return r.json()

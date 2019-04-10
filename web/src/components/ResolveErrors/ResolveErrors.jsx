@@ -8,7 +8,6 @@ import { Spin } from 'antd';
 import MatchChoices from '../MatchChoices/MatchChoices';
 import TextValidation from '../TextValidation/TextValidation';
 import ResolveRow from '../ResolveRow/ResolveRow';
-import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
 import { resolveColumn, resolveRow, navigateTo } from '../../actions/RedcapLinterActions';
@@ -52,6 +51,7 @@ class ResolveErrors extends Component {
         projectInfo,
         ddData,
         csvHeaders,
+        rowsInError,
         columnsInError,
         nextSheetName,
         nextColumn,
@@ -66,6 +66,7 @@ class ResolveErrors extends Component {
       const payload = {
         jsonData,
         projectInfo,
+        columnsInError,
         rowsInError,
         ddData,
         csvHeaders,

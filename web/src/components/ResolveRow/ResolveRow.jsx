@@ -50,6 +50,7 @@ class ResolveRow extends Component {
       projectInfo,
       ddData,
       csvHeaders,
+      columnsInError,
       rowsInError,
       resolveRow,
     } = this.props;
@@ -59,6 +60,7 @@ class ResolveRow extends Component {
       projectInfo,
       workingRow,
       workingSheetName,
+      columnsInError,
       rowsInError,
       ddData,
       csvHeaders,
@@ -81,7 +83,7 @@ class ResolveRow extends Component {
       ddData,
     } = this.props;
 
-    if (workingRow === -1) {
+    if (workingRow === -1 || workingRow === '') {
       return null;
     }
 
@@ -118,10 +120,7 @@ class ResolveRow extends Component {
 
     return (
       <div>
-        <div className="ResolveRow-column">
-          <b>Choose Column or Row to Resolve</b>
-          <ErrorSelector />
-        </div>
+        <ErrorSelector />
         <div className="ResolveRow-container">
           <div>
             <div className="ResolveRow-matchedChoices">
