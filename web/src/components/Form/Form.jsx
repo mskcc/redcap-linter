@@ -89,34 +89,8 @@ class Form extends Component {
     if (loading) {
       buttonText = <Spin />;
     }
-    let project = '';
-    let warning = '';
     if (error) {
       errorText = `<ul><li>${error}</li></ul>`;
-    } else {
-      project += '<ul>';
-      if (projectInfo.project_id) {
-        project += `<li><b>Project ID</b>: ${projectInfo.project_id}</li>`;
-      }
-      if (projectInfo.project_title) {
-        project += `<li><b>Project Title</b>: ${projectInfo.project_title}</li>`;
-      }
-      if (ddData && ddData[0]) {
-        project += `<li><b>RecordID Field</b>: ${ddData[0].field_name}</li>`;
-      }
-      if (projectInfo.repeatable_instruments && projectInfo.repeatable_instruments.length > 0) {
-        project += `<li><b>Repeatable Instruments</b>: ${projectInfo.repeatable_instruments.join(', ')}</li>`;
-      }
-      if (projectInfo.custom_record_label) {
-        project += `<li><b>Custom Record Label</b>: ${projectInfo.custom_record_label}</li>`;
-      }
-      if (projectInfo.secondary_unique_field) {
-        project += `<li><b>Secondary Unique Field</b>: ${projectInfo.secondary_unique_field}</li>`;
-      }
-      project += '</ul>';
-      if (malformedSheets && malformedSheets.length > 0) {
-        warning = `<ul><li><b>Sheets without matches to REDCap</b>: ${malformedSheets.join(', ')}<br /><b>Note</b>: Check to make sure the headers appear on the first row of the sheet.</li></ul>`;
-      }
     }
 
     return (
@@ -233,14 +207,6 @@ class Form extends Component {
         <div className="Form-submitButtonDiv">
           <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">{ buttonText }</button>
         </div>
-        <div
-          className="Form-projectInfo"
-          dangerouslySetInnerHTML={{ __html: project }}
-        />
-        <div
-          className="Form-malformedSheets"
-          dangerouslySetInnerHTML={{ __html: warning }}
-        />
         <div
           className="Form-errorText"
           dangerouslySetInnerHTML={{ __html: errorText }}

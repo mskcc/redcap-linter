@@ -1,0 +1,34 @@
+.emphasis {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.ProjectInfo-container {
+  width: 12%;
+  margin-left: 2.7%;
+  display: inline-block;
+  float: left;
+}
+
+.ProjectInfo-submitButtonDiv {
+	text-align: center;
+}
+
+.ProjectInfo-errorText {
+	color: red;
+	padding-top: 5px;
+}
+
+.ProjectInfo-malformedSheets {
+	color: #CC4400;
+}
+
+.ProjectInfo-projectInfo {
+	padding-top: 10px;
+}
+
+.ProjectInfo-label {
+	font-weight: 600;
+	margin-left: 7px;
+}
