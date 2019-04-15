@@ -40,7 +40,7 @@ class FieldMatcher extends Component {
   //   render: (text, record) => (this.renderMatchButton(record)),
   // }
 
-  handleMatchAll(e) {
+  acceptMatches(e) {
     const {
       fieldMap,
     } = this.state;
@@ -89,7 +89,9 @@ class FieldMatcher extends Component {
     matchFields(payload);
   }
 
-  handleChange(fieldToMatch, e) {
+  // This function is terrible, fix it
+  handleChange(fieldToMatch, sheetToMatch, e, action) {
+    // TODO Incorporate sheet in this
     const {
       highlightColumns,
     } = this.props;
@@ -97,19 +99,41 @@ class FieldMatcher extends Component {
       fieldMap,
       mode,
     } = this.state;
+    if (action && action.removedValue) {
+      const {
+        field,
+        sheets,
+      } = action.removedValue.value;
+      if (fieldMap[sheets[0]] && fieldMap[sheets[0]][fieldToMatch]) {
+        delete fieldMap[sheets[0]][fieldToMatch];
+      }
+    }
     if (mode === 'REDCap Field') {
-      fieldMap[fieldToMatch] = e.value;
+      if (e.length > 0) {
+        e.forEach((option) => {
+          const sheet = option.value.sheets[0];
+          if (!fieldMap[sheet]) {
+            fieldMap[sheet] = {};
+          }
+          fieldMap[sheet][fieldToMatch] = option.value.field;
+        });
+      }
+      // fieldMap[fieldToMatch] = e.value;
     } else if (mode === 'Data Field') {
+      if (!fieldMap[sheetToMatch]) {
+        fieldMap[sheetToMatch] = {};
+      }
+
       let previouslyMatched = '';
-      for (const redcapField in fieldMap) {
-        if (fieldMap[redcapField] === fieldToMatch) {
+      Object.keys(fieldMap[sheetToMatch]).forEach((redcapField) => {
+        if (fieldMap[sheetToMatch][redcapField] === fieldToMatch) {
           previouslyMatched = redcapField;
         }
-      }
+      });
       if (previouslyMatched) {
-        delete fieldMap[previouslyMatched];
+        delete fieldMap[sheetToMatch][previouslyMatched];
       }
-      fieldMap[e.value] = fieldToMatch;
+      fieldMap[sheetToMatch][e.value] = fieldToMatch;
     }
     const selectedColumns = Object.values(fieldMap).reduce((filtered, dataField) => {
       if (dataField) {
@@ -154,7 +178,6 @@ class FieldMatcher extends Component {
   renderCell(header, cellInfo) {
     const {
       ddData,
-      dataFieldToSheets,
     } = this.props;
     const {
       mode,
@@ -164,7 +187,7 @@ class FieldMatcher extends Component {
       const ddField = ddData.find(field => field.field_name === cellInfo[header]);
       cellData = <span><b>{cellInfo[mode]}</b> | {ddField.form_name}</span>;
     } else if (mode === 'Data Field') {
-      cellData = <span><b>{cellInfo[mode]}</b> | {dataFieldToSheets[cellInfo[mode]].toString()}</span>;
+      cellData = <span><b>{cellInfo[mode]}</b> | {cellInfo['Sheets']}</span>;
     }
     return (
       <Cell
@@ -179,35 +202,66 @@ class FieldMatcher extends Component {
       redcapFieldCandidates,
       dataFieldCandidates,
     } = this.props;
+    // console.log(this.props);
     const {
       fieldMap,
       mode,
     } = this.state;
+    // console.log(this.state);
+    // console.log(cellInfo);
     const fieldToMatch = cellInfo[mode];
+    let sheetToMatch = '';
+    let selectedValue = '';
+    let isMulti = false;
 
     let value = '';
     if (mode === 'REDCap Field') {
+      isMulti = true;
       value = fieldMap[fieldToMatch];
+      Object.keys(fieldMap).forEach((sheet) => {
+        value = fieldMap[sheet][fieldToMatch];
+        if (value) {
+          if (!selectedValue) {
+            selectedValue = [];
+          }
+          selectedValue.push({
+            value: {
+              field: value,
+              sheets: [sheet],
+            },
+            label: <span><b>{value}</b> | <span style={{ fontWeight: 'lighter' }}>{sheet}</span></span>,
+          });
+        }
+      });
     } else if (mode === 'Data Field') {
+      sheetToMatch = cellInfo['Sheets'];
+
+      // Reverse the map
       const dataFieldToRedcapFieldMap = {};
-      for (const redcapField in fieldMap) {
-        dataFieldToRedcapFieldMap[fieldMap[redcapField]] = redcapField;
+      if (fieldMap[sheetToMatch]) {
+        Object.keys(fieldMap[sheetToMatch]).forEach((redcapField) => {
+          dataFieldToRedcapFieldMap[fieldMap[sheetToMatch][redcapField]] = redcapField;
+        })
+
+        value = dataFieldToRedcapFieldMap[fieldToMatch];
+
+        if (value) {
+          selectedValue = {
+            value: value,
+            label: value,
+          };
+        }
       }
-      value = dataFieldToRedcapFieldMap[fieldToMatch];
     }
 
-    let selectedValue = '';
-    if (value) {
-      selectedValue = {
-        value: value,
-        label: value,
-      };
-    } else if (value === null) {
+    if (value === null) {
       selectedValue = {
         value: '',
         label: 'None',
       };
     }
+
+    // console.log(selectedValue)
 
     let scores = [];
     let options = [];
@@ -218,7 +272,10 @@ class FieldMatcher extends Component {
       options = scores.reduce((filtered, score) => {
         if (!mappedDataFieldValues.includes(score.candidate)) {
           filtered.push({
-            value: score.candidate,
+            value: {
+              field: score.candidate,
+              sheets: score.sheets,
+            },
             label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.sheets.toString()}</span></span>,
           });
         }
@@ -262,9 +319,10 @@ class FieldMatcher extends Component {
       <Select
         options={options}
         isSearchable
+        isMulti={isMulti}
         value={selectedValue}
         style={{ minWidth: '200px' }}
-        onChange={e => this.handleChange(fieldToMatch, e)}
+        onChange={(e, action) => this.handleChange(fieldToMatch, sheetToMatch, e, action)}
         styles={selectStyles}
         placeholder="Select..."
       />
@@ -276,13 +334,16 @@ class FieldMatcher extends Component {
       fieldMap,
       mode
     } = this.state;
+    // console.log(cellInfo);
     const fieldToMatch = cellInfo[mode];
+    let sheetToMatch = '';
     let disabled = true;
     if (mode === 'REDCap Field') {
       if (fieldMap[fieldToMatch]) {
         disabled = false;
       }
     } else if (mode === 'Data Field') {
+      sheetToMatch = cellInfo['Sheets'];
       const dataFieldToRedcapFieldMap = {};
       for (const redcapField in fieldMap) {
         dataFieldToRedcapFieldMap[fieldMap[redcapField]] = redcapField;
@@ -332,10 +393,12 @@ class FieldMatcher extends Component {
         // TODO Handle multiple forms
         if (f) {
           const sheets = dataFieldToSheets[f];
-          filtered.push({
-            'Data Field': f,
-            'Sheets': sheets.toString(),
-          });
+          sheets.forEach((sheet) => {
+            filtered.push({
+              'Data Field': f,
+              'Sheets': sheet,
+            });
+          })
         }
         return filtered;
       }, []);
@@ -370,7 +433,7 @@ class FieldMatcher extends Component {
             </button>
             { dataField }
           </div>
-          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton FieldMatcher-matchAll">Accept Matches</button>
+          <button type="button" disabled={disabled} onClick={this.acceptMatches.bind(this)} className="App-submitButton FieldMatcher-matchAll">Accept Matches</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>

@@ -646,10 +646,13 @@ def post_form():
     redcap_field_to_data_field_dict = {}
 
     # TODO matches the variable on all sheets, do variables need to be sheet specific?
-    for header in all_csv_headers:
-        normalized_header = utils.parameterize(header)
-        if normalized_header in all_field_names:
-            redcap_field_to_data_field_dict[normalized_header] = header
+    for sheet in csv_headers:
+        if not redcap_field_to_data_field_dict.get(sheet):
+            redcap_field_to_data_field_dict[sheet] = {}
+        for header in csv_headers[sheet]:
+            normalized_header = utils.parameterize(header)
+            if normalized_header in all_field_names:
+                redcap_field_to_data_field_dict[sheet][normalized_header] = header
 
     normalized_headers = utils.parameterize_list(all_csv_headers)
     unmatched_redcap_fields = [f for f in all_field_names if f not in normalized_headers]
@@ -662,25 +665,25 @@ def post_form():
                 if not redcap_field_candidates.get(f1):
                     redcap_field_candidates[f1] = []
                 existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
-                if len(existing_candidate) > 0:
-                    existing_candidate[0]['sheets'].append(sheet)
-                else:
-                    redcap_field_candidates[f1].append({
-                        'candidate': f2,
-                        'sheets': [sheet],
-                        'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f2))
-                    })
+                # if len(existing_candidate) > 0:
+                #     existing_candidate[0]['sheets'].append(sheet)
+                # else:
+                redcap_field_candidates[f1].append({
+                    'candidate': f2,
+                    'sheets': [sheet],
+                    'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f2))
+                })
 
+    # Data Field should include sheet name here too
     data_field_to_sheets = {}
     for sheet in csv_headers:
         for f1 in csv_headers[sheet]:
-            if not data_field_candidates.get(f1):
-                data_field_candidates[f1] = []
-            else:
-                continue
             if not data_field_to_sheets.get(f1):
                 data_field_to_sheets[f1] = []
             data_field_to_sheets[f1].append(sheet)
+            if data_field_candidates.get(f1):
+                continue
+            data_field_candidates[f1] = []
             for f2 in all_field_names:
                 dd_field = [f for f in dd_data if f['field_name'] == f2][0]
                 data_field_candidates[f1].append({

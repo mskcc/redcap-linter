@@ -18,6 +18,11 @@ class MatchedFields extends Component {
         title: 'Data Field',
         key: 'Data Field',
         render: (text, record) => (this.renderCell('Data Field', record)),
+      },
+      {
+        title: 'Sheet',
+        key: 'Sheet',
+        render: (text, record) => (this.renderCell('Sheet', record)),
       }],
     };
   }
@@ -35,7 +40,7 @@ class MatchedFields extends Component {
       className += ' MatchedFields-cellError';
     }
     let cancelButton = '';
-    if (header === 'Data Field') {
+    if (header === 'Sheet') {
       cancelButton = (
         <div className="MatchedFields-cancel">
           <a onClick={e => this.removeFieldMatch(cellInfo, e)}>

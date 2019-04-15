@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
   LOADING_START,
   POST_FORM_SUCCESS,
@@ -179,17 +180,22 @@ export default function (state = {}, action) {
       if (state.unmatchedDataFields) {
         unmatchedDataFields = state.unmatchedDataFields.slice();
       }
-      for (const redcapField in action.payload) {
-        let idx = unmatchedRedcapFields.indexOf(redcapField);
-        if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
-        idx = unmatchedDataFields.indexOf(action.payload[redcapField]);
-        if (idx !== -1) unmatchedDataFields.splice(idx, 1);
-      }
+      Object.keys(action.payload).forEach((sheet) => {
+        if (action.payload[sheet]) {
+          Object.keys(action.payload[sheet]).forEach((redcapField) => {
+            let idx = unmatchedRedcapFields.indexOf(redcapField);
+            if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
+            idx = unmatchedDataFields.indexOf(action.payload[sheet][redcapField]);
+            if (idx !== -1) unmatchedDataFields.splice(idx, 1);
+          });
+        }
+      });
+
       const noMatchData = redcapFieldToDataFieldMap[''] || [];
       if (action.payload['']) {
-        noMatchData.push(action.payload[''])
+        noMatchData.push(action.payload['']);
       }
-      redcapFieldToDataFieldMap = Object.assign(redcapFieldToDataFieldMap, action.payload)
+      redcapFieldToDataFieldMap = _.merge(redcapFieldToDataFieldMap, action.payload);
       redcapFieldToDataFieldMap[''] = noMatchData;
       return Object.assign({}, state, { redcapFieldToDataFieldMap, unmatchedRedcapFields, unmatchedDataFields });
     }

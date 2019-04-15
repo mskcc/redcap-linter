@@ -195,7 +195,7 @@ class ErrorSelector extends Component {
     const downloadMappingsLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_mappings`;
 
     const downloadButton = (
-      <div key="downloadProgressButton" className="Breadcrumbs-downloadButton">
+      <div key="downloadProgressButton">
         <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
           <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
@@ -233,7 +233,7 @@ class ErrorSelector extends Component {
 
     let errorSelector = '';
     if (page === 'lint') {
-      errorSelector = (<div>
+      errorSelector = (<div className="ErrorSelector-selector">
         <b>Choose Column or Row</b>
         <Select
           className="ErrorSelector-elevate"
@@ -248,8 +248,8 @@ class ErrorSelector extends Component {
 
     return (
       <div className="ErrorSelector-column">
-        { errorSelector }
         { downloadButton }
+        { errorSelector }
       </div>
     );
   }
