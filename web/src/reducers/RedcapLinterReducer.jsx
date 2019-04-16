@@ -176,17 +176,17 @@ export default function (state = {}, action) {
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
       }
-      let unmatchedDataFields = [];
-      if (state.unmatchedDataFields) {
-        unmatchedDataFields = state.unmatchedDataFields.slice();
-      }
+      const unmatchedDataFields = state.unmatchedDataFields;
       Object.keys(action.payload).forEach((sheet) => {
+        if (state.unmatchedDataFields[sheet]) {
+          unmatchedDataFields[sheet] = state.unmatchedDataFields[sheet].slice();
+        }
         if (action.payload[sheet]) {
           Object.keys(action.payload[sheet]).forEach((redcapField) => {
             let idx = unmatchedRedcapFields.indexOf(redcapField);
             if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
-            idx = unmatchedDataFields.indexOf(action.payload[sheet][redcapField]);
-            if (idx !== -1) unmatchedDataFields.splice(idx, 1);
+            idx = unmatchedDataFields[sheet].indexOf(action.payload[sheet][redcapField]);
+            if (idx !== -1) unmatchedDataFields[sheet].splice(idx, 1);
           });
         }
       });
@@ -202,21 +202,24 @@ export default function (state = {}, action) {
     case REMOVE_FIELD_MATCH: {
       const redcapFieldToDataFieldMap = state.redcapFieldToDataFieldMap || {};
       let unmatchedRedcapFields = [];
+      // TODO unmatchedDataFields should be by sheet
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
       }
-      let unmatchedDataFields = [];
-      if (state.unmatchedDataFields) {
-        unmatchedDataFields = state.unmatchedDataFields.slice();
+      const sheet = action.payload.sheet;
+      const unmatchedDataFields = state.unmatchedDataFields;
+      if (state.unmatchedDataFields[sheet]) {
+        unmatchedDataFields[sheet] = state.unmatchedDataFields[sheet].slice();
       }
-      if (!unmatchedDataFields.includes(action.payload.dataField)) {
-        unmatchedDataFields.unshift(action.payload.dataField);
+      if (!unmatchedDataFields[sheet].includes(action.payload.dataField)) {
+        unmatchedDataFields[sheet].unshift(action.payload.dataField);
       }
+
       if (action.payload.redcapField) {
         if (!unmatchedRedcapFields.includes(action.payload.redcapField)) {
           unmatchedRedcapFields.unshift(action.payload.redcapField);
         }
-        delete redcapFieldToDataFieldMap[action.payload.redcapField];
+        delete redcapFieldToDataFieldMap[sheet][action.payload.redcapField];
       } else {
         const noMatchData = redcapFieldToDataFieldMap[action.payload.redcapField];
         const idx = noMatchData.indexOf(action.payload.dataField);

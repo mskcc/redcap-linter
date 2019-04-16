@@ -135,14 +135,17 @@ class FieldMatcher extends Component {
       }
       fieldMap[sheetToMatch][e.value] = fieldToMatch;
     }
-    const selectedColumns = Object.values(fieldMap).reduce((filtered, dataField) => {
-      if (dataField) {
-        if (Array.isArray(dataField)) {
-          console.log('pushAll');
-        } else {
-          filtered.push(dataField);
+    // This should be sheet specific
+    const selectedColumns = Object.keys(fieldMap).reduce((filtered, sheet) => {
+      Object.values(fieldMap[sheet]).forEach((dataField) => {
+        if (dataField) {
+          if (Array.isArray(dataField)) {
+            console.log('pushAll');
+          } else {
+            filtered.push(dataField);
+          }
         }
-      }
+      });
       return filtered;
     }, []);
     highlightColumns({ selectedColumns });
@@ -389,17 +392,14 @@ class FieldMatcher extends Component {
         return filtered;
       }, []);
     } else if (mode === 'Data Field') {
-      tableData = unmatchedDataFields.reduce((filtered, f) => {
+      tableData = Object.keys(unmatchedDataFields).reduce((filtered, sheet) => {
         // TODO Handle multiple forms
-        if (f) {
-          const sheets = dataFieldToSheets[f];
-          sheets.forEach((sheet) => {
-            filtered.push({
-              'Data Field': f,
-              'Sheets': sheet,
-            });
-          })
-        }
+        unmatchedDataFields[sheet].forEach((dataField) => {
+          filtered.push({
+            'Data Field': dataField,
+            'Sheets': sheet,
+          });
+        })
         return filtered;
       }, []);
     }

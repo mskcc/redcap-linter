@@ -29,10 +29,13 @@ def save_fields():
     date_cols = json.loads(form.get('dateColumns'))
     # data field -> REDCap field
     # TODO Delete columns that are indicated as no match
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v and isinstance(v, collections.Hashable)}
+    # TODO Implement using new structure for redcap_field_to_data_field_dict
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
+        matched_field_dict = {}
+        if redcap_field_to_data_field_dict.get(sheet):
+            matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.get(sheet).items() if v and isinstance(v, collections.Hashable)}
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         df = pd.DataFrame(json_data[sheet])
         df.replace('nan', '', inplace=True)
@@ -416,7 +419,6 @@ def download_progress():
     record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
 
     # data field -> REDCap field
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v and isinstance(v, collections.Hashable)}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
@@ -429,6 +431,9 @@ def download_progress():
     empty_format = writer.book.add_format({'bg_color': '#FFE300'}) # Yellow
     missing_column_format = writer.book.add_format({'bg_color': '#E5153E'}) # Red
     for sheet in json_data:
+        matched_field_dict = {}
+        if redcap_field_to_data_field_dict.get(sheet):
+            matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.get(sheet).items() if v and isinstance(v, collections.Hashable)}
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         error_df = pd.DataFrame(cells_with_errors[sheet])
         df = pd.DataFrame(json_data[sheet])
@@ -644,19 +649,27 @@ def post_form():
     all_csv_headers = list(set(all_csv_headers))
 
     redcap_field_to_data_field_dict = {}
+    unmatched_data_fields = {}
+    normalized_headers = utils.parameterize_list(all_csv_headers)
 
     # TODO matches the variable on all sheets, do variables need to be sheet specific?
     for sheet in csv_headers:
         if not redcap_field_to_data_field_dict.get(sheet):
             redcap_field_to_data_field_dict[sheet] = {}
+        if not unmatched_data_fields.get(sheet):
+            unmatched_data_fields[sheet] = []
         for header in csv_headers[sheet]:
             normalized_header = utils.parameterize(header)
             if normalized_header in all_field_names:
                 redcap_field_to_data_field_dict[sheet][normalized_header] = header
+            else:
+                unmatched_data_fields[sheet].append(header)
 
-    normalized_headers = utils.parameterize_list(all_csv_headers)
+
     unmatched_redcap_fields = [f for f in all_field_names if f not in normalized_headers]
-    unmatched_data_fields = [header for header, normalized_header in zip(all_csv_headers, normalized_headers) if normalized_header not in all_field_names]
+    # TODO break this down by sheet
+
+    # unmatched_data_fields = [header for header, normalized_header in zip(all_csv_headers, normalized_headers) if normalized_header not in all_field_names]
 
     for f1 in all_field_names:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]

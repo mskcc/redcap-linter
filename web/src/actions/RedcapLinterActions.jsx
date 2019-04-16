@@ -120,12 +120,8 @@ export function removeFieldMatchSuccess(payload) {
   };
 }
 
-export function removeFieldMatch(redcapField, dataField) {
+export function removeFieldMatch(payload) {
   return function action(dispatch) {
-    const payload = {
-      redcapField,
-      dataField,
-    };
     return dispatch(removeFieldMatchSuccess(payload));
   };
 }

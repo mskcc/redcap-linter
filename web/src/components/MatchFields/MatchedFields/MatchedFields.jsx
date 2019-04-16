@@ -28,10 +28,16 @@ class MatchedFields extends Component {
   }
 
   removeFieldMatch(cellInfo) {
+    console.log(cellInfo)
     const {
       removeFieldMatch,
     } = this.props;
-    removeFieldMatch(cellInfo['REDCap Field'], cellInfo['Data Field']);
+    const payload = {
+      redcapField: cellInfo['REDCap Field'],
+      dataField: cellInfo['Data Field'],
+      sheet: cellInfo['Sheet'],
+    };
+    removeFieldMatch(payload);
   }
 
   renderCell(header, cellInfo) {
