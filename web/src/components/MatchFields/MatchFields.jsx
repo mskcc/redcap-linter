@@ -82,6 +82,7 @@ class MatchFields extends Component {
       redcapFieldToDataFieldMap,
       unmatchedRedcapFields,
       redcapFieldCandidates,
+      noMatchRedcapFields,
       removeFieldMatch,
     } = this.props;
     let matchedFields = Object.keys(redcapFieldToDataFieldMap).reduce((filtered, sheet) => {
@@ -108,11 +109,11 @@ class MatchFields extends Component {
       });
       return filtered;
     }, []));
-    if (redcapFieldToDataFieldMap['']) {
-      matchedFields = matchedFields.concat(redcapFieldToDataFieldMap[''].map((dataField) => {
+    if (noMatchRedcapFields) {
+      matchedFields = matchedFields.concat(noMatchRedcapFields.map((redcapField) => {
         return {
-          'REDCap Field': '',
-          'Data Field': dataField,
+          'REDCap Field': redcapField,
+          'Data Field': '',
           'Sheet': '',
         }
       }));
@@ -170,6 +171,7 @@ class MatchFields extends Component {
 MatchFields.propTypes = {
   matchingHeaders: PropTypes.array,
   unmatchedRedcapFields: PropTypes.array,
+  noMatchRedcapFields: PropTypes.array,
   redcapFieldCandidates: PropTypes.object,
   redcapFieldToDataFieldMap: PropTypes.object,
 };
@@ -177,6 +179,7 @@ MatchFields.propTypes = {
 MatchFields.defaultProps = {
   matchingHeaders: [],
   unmatchedRedcapFields: [],
+  noMatchRedcapFields: [],
   redcapFieldCandidates: {},
   redcapFieldToDataFieldMap: {},
 };

@@ -688,12 +688,8 @@ def post_form():
                 })
 
     # Data Field should include sheet name here too
-    data_field_to_sheets = {}
     for sheet in csv_headers:
         for f1 in csv_headers[sheet]:
-            if not data_field_to_sheets.get(f1):
-                data_field_to_sheets[f1] = []
-            data_field_to_sheets[f1].append(sheet)
             if data_field_candidates.get(f1):
                 continue
             data_field_candidates[f1] = []
@@ -775,7 +771,6 @@ def post_form():
         'redcapFieldToDataFieldMap': redcap_field_to_data_field_dict,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
-        'dataFieldToSheets':       data_field_to_sheets,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name

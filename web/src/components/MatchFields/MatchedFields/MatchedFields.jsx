@@ -28,7 +28,6 @@ class MatchedFields extends Component {
   }
 
   removeFieldMatch(cellInfo) {
-    console.log(cellInfo)
     const {
       removeFieldMatch,
     } = this.props;

@@ -69,12 +69,13 @@ class Datatable extends Component {
       tableErrors,
       editable,
       selectedColumns,
+      sheetName,
     } = this.props;
     const {
       filterErrors,
     } = this.state;
     let className = '';
-    if (selectedColumns && selectedColumns.includes(header)) {
+    if (selectedColumns && selectedColumns[sheetName] && selectedColumns[sheetName].includes(header)) {
       className += ' Datatable-highlight';
     }
     // console.log(this.state);
@@ -125,6 +126,7 @@ class Datatable extends Component {
       selectedColumns,
       tableFieldsNotInRedcap,
       sheetInError,
+      sheetName,
     } = this.props;
     const { search } = this.state;
 
@@ -140,7 +142,7 @@ class Datatable extends Component {
           headerClassName = 'Datatable-headerError';
           className += ' Datatable-cellError';
         }
-        if (selectedColumns && selectedColumns.includes(header)) {
+        if (selectedColumns && selectedColumns[sheetName] && selectedColumns[sheetName].includes(header)) {
           className += ' Datatable-highlight';
         }
         const column = {
@@ -208,7 +210,7 @@ Datatable.propTypes = {
   tableData: PropTypes.array,
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
-  selectedColumns: PropTypes.array,
+  selectedColumns: PropTypes.object,
   sheetName: PropTypes.string,
   sheetInError: PropTypes.bool,
   editable: PropTypes.bool,
@@ -218,7 +220,7 @@ Datatable.defaultProps = {
   tableData: [],
   tableErrors: [],
   tableFieldsNotInRedcap: [],
-  selectedColumns: [],
+  selectedColumns: {},
   sheetName: '',
   editable: true,
   sheetInError: false,
