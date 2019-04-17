@@ -24,18 +24,20 @@ app.logger.setLevel(logging.INFO)
 @app.route('/save_fields', methods=['GET', 'POST', 'OPTIONS'])
 def save_fields():
     form  = request.form.to_dict()
-    redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     date_cols = json.loads(form.get('dateColumns'))
     # data field -> REDCap field
     # TODO Delete columns that are indicated as no match
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v and isinstance(v, collections.Hashable)}
+    # TODO Implement using new structure for data_field_to_redcap_field_map
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
-        csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
+        matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
+        csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet] if c not in matched_field_dict or matched_field_dict.get(c)]
+        fields_to_drop = [data_field for data_field in matched_field_dict.keys() if not matched_field_dict.get(data_field)]
         df = pd.DataFrame(json_data[sheet])
-        df.replace('nan', '', inplace=True)
+        df.fillna('', inplace=True)
         df = df.rename(index=str, columns=matched_field_dict)
         df = df[csv_headers[sheet]]
         records[sheet] = df
@@ -409,14 +411,13 @@ def resolve_row():
 def download_progress():
     form  = request.form.to_dict()
     datafile_name = form.get('dataFileName')
-    redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
     cells_with_errors = json.loads(form.get('cellsWithErrors'))
     record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
 
     # data field -> REDCap field
-    matched_field_dict = {v: k for k, v in redcap_field_to_data_field_dict.items() if v and isinstance(v, collections.Hashable)}
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
@@ -429,11 +430,16 @@ def download_progress():
     empty_format = writer.book.add_format({'bg_color': '#FFE300'}) # Yellow
     missing_column_format = writer.book.add_format({'bg_color': '#E5153E'}) # Red
     for sheet in json_data:
+        matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
+        # if data_field_to_redcap_field_map.get(sheet):
+        #     matched_field_dict = {v: k for k, v in data_field_to_redcap_field_map.get(sheet).items() if v and isinstance(v, collections.Hashable)}
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         error_df = pd.DataFrame(cells_with_errors[sheet])
         df = pd.DataFrame(json_data[sheet])
-        df.replace('nan', '', inplace=True)
-        df.rename(index=str, columns=matched_field_dict, inplace=True)
+        df.fillna('', inplace=True)
+        df.rename(columns=matched_field_dict, inplace=True)
+        error_df.rename(columns=matched_field_dict, inplace=True)
+        # error_df.rename(index=str, columns=matched_field_dict, inplace=True)
         df = df[csv_headers[sheet]]
         error_df = error_df[csv_headers[sheet]]
         df.to_excel(writer, sheet_name=sheet, index=False)
@@ -470,7 +476,7 @@ def download_progress():
 def download_mappings():
     form  = request.form.to_dict()
     datafile_name = form.get('dataFileName')
-    redcap_field_to_data_field_dict = json.loads(form.get('redcapFieldToDataFieldMap'))
+    data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
 
@@ -482,11 +488,11 @@ def download_mappings():
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
     wb  = writer.book
-    # df = pd.DataFrame({'REDCap Field': redcap_field_to_data_field_dict.keys(),
-    #               'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in redcap_field_to_data_field_dict.values()]
+    # df = pd.DataFrame({'REDCap Field': data_field_to_redcap_field_map.keys(),
+    #               'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in data_field_to_redcap_field_map.values()]
     #               })
 
-    df = pd.DataFrame({'redcapFieldToDataFieldMap': [json.dumps(redcap_field_to_data_field_dict)],
+    df = pd.DataFrame({'dataFieldToRedcapFieldMap': [json.dumps(data_field_to_redcap_field_map)],
                         'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)],
                         'originalToCorrectedValueMap': [json.dumps(original_to_correct_value_map)]})
 
@@ -555,7 +561,7 @@ def post_form():
     datafile_name = form.get('dataFileName')
     mappings_file_name = None
     mappings = None
-    redcap_field_to_data_field_dict = None
+    data_field_to_redcap_field_map = None
     data_field_to_choice_map = None
     original_to_correct_value_map = None
 
@@ -563,8 +569,8 @@ def post_form():
         mappings_file_name = form.get('mappingsFileName')
         mappings =  pd.read_excel(request.files['mappingsFile'], sheet_name="Sheet1")
 
-        if len(list(mappings["redcapFieldToDataFieldMap"])) > 0:
-            redcap_field_to_data_field_dict = json.loads(list(mappings["redcapFieldToDataFieldMap"])[0])
+        if len(list(mappings["dataFieldToRedcapFieldMap"])) > 0:
+            data_field_to_redcap_field_map = json.loads(list(mappings["dataFieldToRedcapFieldMap"])[0])
         if len(list(mappings["dataFieldToChoiceMap"])) > 0:
             data_field_to_choice_map = json.loads(list(mappings["dataFieldToChoiceMap"])[0])
         if len(list(mappings["originalToCorrectedValueMap"])) > 0:
@@ -643,17 +649,28 @@ def post_form():
 
     all_csv_headers = list(set(all_csv_headers))
 
-    redcap_field_to_data_field_dict = {}
+    data_field_to_redcap_field_map = {}
+    unmatched_data_fields = {}
+    normalized_headers = utils.parameterize_list(all_csv_headers)
 
     # TODO matches the variable on all sheets, do variables need to be sheet specific?
-    for header in all_csv_headers:
-        normalized_header = utils.parameterize(header)
-        if normalized_header in all_field_names:
-            redcap_field_to_data_field_dict[normalized_header] = header
+    for sheet in csv_headers:
+        if not data_field_to_redcap_field_map.get(sheet):
+            data_field_to_redcap_field_map[sheet] = {}
+        if not unmatched_data_fields.get(sheet):
+            unmatched_data_fields[sheet] = []
+        for header in csv_headers[sheet]:
+            normalized_header = utils.parameterize(header)
+            if normalized_header in all_field_names:
+                data_field_to_redcap_field_map[sheet][header] = normalized_header
+            else:
+                unmatched_data_fields[sheet].append(header)
 
-    normalized_headers = utils.parameterize_list(all_csv_headers)
+
     unmatched_redcap_fields = [f for f in all_field_names if f not in normalized_headers]
-    unmatched_data_fields = [header for header, normalized_header in zip(all_csv_headers, normalized_headers) if normalized_header not in all_field_names]
+    # TODO break this down by sheet
+
+    # unmatched_data_fields = [header for header, normalized_header in zip(all_csv_headers, normalized_headers) if normalized_header not in all_field_names]
 
     for f1 in all_field_names:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]
@@ -662,25 +679,21 @@ def post_form():
                 if not redcap_field_candidates.get(f1):
                     redcap_field_candidates[f1] = []
                 existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
-                if len(existing_candidate) > 0:
-                    existing_candidate[0]['sheets'].append(sheet)
-                else:
-                    redcap_field_candidates[f1].append({
-                        'candidate': f2,
-                        'sheets': [sheet],
-                        'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f2))
-                    })
+                # if len(existing_candidate) > 0:
+                #     existing_candidate[0]['sheets'].append(sheet)
+                # else:
+                redcap_field_candidates[f1].append({
+                    'candidate': f2,
+                    'sheets': [sheet],
+                    'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f2))
+                })
 
-    data_field_to_sheets = {}
+    # Data Field should include sheet name here too
     for sheet in csv_headers:
         for f1 in csv_headers[sheet]:
-            if not data_field_candidates.get(f1):
-                data_field_candidates[f1] = []
-            else:
+            if data_field_candidates.get(f1):
                 continue
-            if not data_field_to_sheets.get(f1):
-                data_field_to_sheets[f1] = []
-            data_field_to_sheets[f1].append(sheet)
+            data_field_candidates[f1] = []
             for f2 in all_field_names:
                 dd_field = [f for f in dd_data if f['field_name'] == f2][0]
                 data_field_candidates[f1].append({
@@ -756,16 +769,15 @@ def post_form():
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': fields_not_in_redcap,
         'projectInfo':             project_info,
-        'redcapFieldToDataFieldMap': redcap_field_to_data_field_dict,
+        'dataFieldToRedcapFieldMap': data_field_to_redcap_field_map,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
-        'dataFieldToSheets':       data_field_to_sheets,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name
     }
-    if redcap_field_to_data_field_dict:
-        results['redcapFieldToDataFieldMap'] = redcap_field_to_data_field_dict
+    if data_field_to_redcap_field_map:
+        results['dataFieldToRedcapFieldMap'] = data_field_to_redcap_field_map
     if data_field_to_choice_map:
         results['dataFieldToChoiceMap'] = data_field_to_choice_map
     if original_to_correct_value_map:

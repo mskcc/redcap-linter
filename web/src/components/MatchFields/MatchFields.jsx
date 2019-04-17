@@ -33,7 +33,7 @@ class MatchFields extends Component {
   saveFields(e) {
     const {
       jsonData,
-      redcapFieldToDataFieldMap,
+      dataFieldToRedcapFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -42,7 +42,7 @@ class MatchFields extends Component {
     } = this.props;
     const payload = {
       jsonData,
-      redcapFieldToDataFieldMap,
+      dataFieldToRedcapFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -55,7 +55,7 @@ class MatchFields extends Component {
   saveAndContinue(e) {
     const {
       jsonData,
-      redcapFieldToDataFieldMap,
+      dataFieldToRedcapFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -64,7 +64,7 @@ class MatchFields extends Component {
     } = this.props;
     const payload = {
       jsonData,
-      redcapFieldToDataFieldMap,
+      dataFieldToRedcapFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -79,34 +79,42 @@ class MatchFields extends Component {
     const {
       ddData,
       matchingHeaders,
-      redcapFieldToDataFieldMap,
+      dataFieldToRedcapFieldMap,
       unmatchedRedcapFields,
       redcapFieldCandidates,
+      noMatchRedcapFields,
       removeFieldMatch,
     } = this.props;
-    let matchedFields = Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
-      if (redcapField && redcapFieldToDataFieldMap[redcapField]) {
-        filtered.push({
-          'REDCap Field': redcapField,
-          'Data Field': redcapFieldToDataFieldMap[redcapField],
-        });
-      }
+    let matchedFields = Object.keys(dataFieldToRedcapFieldMap).reduce((filtered, sheet) => {
+      Object.keys(dataFieldToRedcapFieldMap[sheet]).forEach((dataField) => {
+        if (dataField && dataFieldToRedcapFieldMap[sheet][dataField]) {
+          filtered.push({
+            'REDCap Field': dataFieldToRedcapFieldMap[sheet][dataField],
+            'Data Field': dataField,
+            'Sheet': sheet,
+          });
+        }
+      });
       return filtered;
     }, []);
-    matchedFields = matchedFields.concat(Object.keys(redcapFieldToDataFieldMap).reduce((filtered, redcapField) => {
-      if (redcapField && !redcapFieldToDataFieldMap[redcapField]) {
-        filtered.push({
-          'REDCap Field': redcapField,
-          'Data Field': redcapFieldToDataFieldMap[redcapField],
-        });
-      }
+    matchedFields = matchedFields.concat(Object.keys(dataFieldToRedcapFieldMap).reduce((filtered, sheet) => {
+      Object.keys(dataFieldToRedcapFieldMap[sheet]).forEach((dataField) => {
+        if (dataField && !dataFieldToRedcapFieldMap[sheet][dataField]) {
+          filtered.push({
+            'REDCap Field': dataFieldToRedcapFieldMap[sheet][dataField],
+            'Data Field': dataField,
+            'Sheet': sheet,
+          });
+        }
+      });
       return filtered;
     }, []));
-    if (redcapFieldToDataFieldMap['']) {
-      matchedFields = matchedFields.concat(redcapFieldToDataFieldMap[''].map((dataField) => {
+    if (noMatchRedcapFields) {
+      matchedFields = matchedFields.concat(noMatchRedcapFields.map((redcapField) => {
         return {
-          'REDCap Field': '',
-          'Data Field': dataField,
+          'REDCap Field': redcapField,
+          'Data Field': '',
+          'Sheet': '',
         }
       }));
     }
@@ -163,15 +171,17 @@ class MatchFields extends Component {
 MatchFields.propTypes = {
   matchingHeaders: PropTypes.array,
   unmatchedRedcapFields: PropTypes.array,
+  noMatchRedcapFields: PropTypes.array,
   redcapFieldCandidates: PropTypes.object,
-  redcapFieldToDataFieldMap: PropTypes.object,
+  dataFieldToRedcapFieldMap: PropTypes.object,
 };
 
 MatchFields.defaultProps = {
   matchingHeaders: [],
   unmatchedRedcapFields: [],
+  noMatchRedcapFields: [],
   redcapFieldCandidates: {},
-  redcapFieldToDataFieldMap: {},
+  dataFieldToRedcapFieldMap: {},
 };
 
 function mapStateToProps(state) {

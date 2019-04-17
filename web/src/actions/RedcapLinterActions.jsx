@@ -120,12 +120,8 @@ export function removeFieldMatchSuccess(payload) {
   };
 }
 
-export function removeFieldMatch(redcapField, dataField) {
+export function removeFieldMatch(payload) {
   return function action(dispatch) {
-    const payload = {
-      redcapField,
-      dataField,
-    };
     return dispatch(removeFieldMatchSuccess(payload));
   };
 }
@@ -148,7 +144,7 @@ export function saveFields(payload) {
   return function action(dispatch) {
     const data = new FormData();
     data.append('jsonData', JSON.stringify(payload.jsonData));
-    data.append('redcapFieldToDataFieldMap', JSON.stringify(payload.redcapFieldToDataFieldMap));
+    data.append('dataFieldToRedcapFieldMap', JSON.stringify(payload.dataFieldToRedcapFieldMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('dateColumns', JSON.stringify(payload.dateColumns));

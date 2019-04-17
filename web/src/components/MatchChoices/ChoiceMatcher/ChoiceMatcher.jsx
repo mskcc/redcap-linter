@@ -48,7 +48,7 @@ class ChoiceMatcher extends Component {
     return null;
   }
 
-  handleMatchAll(e) {
+  acceptMatches(e) {
     const {
       choiceMap,
     } = this.state;
@@ -248,7 +248,7 @@ class ChoiceMatcher extends Component {
           <span className="ChoiceMatcher-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
-          <button type="button" disabled={disabled} onClick={this.handleMatchAll.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Accept Matches</button>
+          <button type="button" disabled={disabled} onClick={this.acceptMatches.bind(this)} className="App-submitButton ChoiceMatcher-matchAll">Accept Matches</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
