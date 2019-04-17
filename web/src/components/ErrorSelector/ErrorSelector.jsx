@@ -78,7 +78,7 @@ class ErrorSelector extends Component {
       page,
       jsonData,
       ddData,
-      redcapFieldToDataFieldMap,
+      dataFieldToRedcapFieldMap,
       csvHeaders,
       cellsWithErrors,
       recordFieldsNotInRedcap,
@@ -198,7 +198,7 @@ class ErrorSelector extends Component {
       <div key="downloadProgressButton">
         <form id="downloadForm" action={downloadLink} className="Breadcrumbs-hidden" method="POST">
           <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData || {})} />
-          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+          <input key="dataFieldToRedcapFieldMap" name="dataFieldToRedcapFieldMap" type="hidden" value={JSON.stringify(dataFieldToRedcapFieldMap)} />
           <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders || {})} />
           <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData || {})} />
           <input key="cellsWithErrors" name="cellsWithErrors" type="hidden" value={JSON.stringify(cellsWithErrors || {})} />
@@ -206,7 +206,7 @@ class ErrorSelector extends Component {
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
         </form>
         <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
-          <input key="redcapFieldToDataFieldMap" name="redcapFieldToDataFieldMap" type="hidden" value={JSON.stringify(redcapFieldToDataFieldMap)} />
+          <input key="dataFieldToRedcapFieldMap" name="dataFieldToRedcapFieldMap" type="hidden" value={JSON.stringify(dataFieldToRedcapFieldMap)} />
           <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
           <input key="originalToCorrectedValueMap" name="originalToCorrectedValueMap" type="hidden" value={JSON.stringify(originalToCorrectedValueMap)} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
