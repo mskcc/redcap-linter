@@ -602,7 +602,6 @@ def post_form():
     redcap_field_candidates = {}
     data_field_candidates = {}
     csv_headers = {}
-    selected_columns = {}
     fields_not_in_redcap = {}
     duplicate_fields = {}
 
@@ -639,10 +638,13 @@ def post_form():
             else:
                 unmatched_data_fields[sheet].append(header)
 
+    selected_columns = {}
+
     # TODO Reconcile this with dataFieldToRedcapFieldMap
     matched_redcap_fields = []
     matched_redcap_fields += no_match_redcap_fields
     for sheet_name, field_map in data_field_to_redcap_field_map.items():
+        selected_columns[sheet_name] = field_map.keys()
         matched_redcap_fields += field_map.values()
     unmatched_redcap_fields = [f for f in all_field_names if f not in matched_redcap_fields]
     for f1 in all_field_names:
@@ -730,6 +732,7 @@ def post_form():
         'projectInfo':             project_info,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
+        'selectedColumns':         selected_columns,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name
