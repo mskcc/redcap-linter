@@ -1,0 +1,22 @@
+@import '../Utilities/color';
+
+.ActionMenu-elevate {
+	z-index: 10;
+}
+
+.ActionMenu-column {
+  width: 12%;
+  margin-left: 2%;
+  display: inline-block;
+  float: left;
+  margin-top: 3px;
+}
+
+.ActionMenu-menu {
+	margin-top: 2px;
+	text-align: left;
+}
+
+.ActionMenu-selector {
+	margin-top: 20px;
+}

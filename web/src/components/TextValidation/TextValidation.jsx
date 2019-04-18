@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
-import ErrorSelector from '../ErrorSelector/ErrorSelector';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import './TextValidation.scss';
 import { resolveColumn, filterTable, removeValueMatch } from '../../actions/RedcapLinterActions';
 
@@ -95,7 +95,7 @@ class TextValidation extends Component {
 
     return (
       <div>
-        <ErrorSelector />
+        <ActionMenu />
         <div className="TextValidation-container">
           <div>
             <div className="TextValidation-matchedChoices">

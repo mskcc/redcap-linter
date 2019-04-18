@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
-import ErrorSelector from '../ErrorSelector/ErrorSelector';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchChoices.scss';
 import { resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
 
@@ -111,7 +111,7 @@ class MatchChoices extends Component {
 
     return (
       <div>
-        <ErrorSelector />
+        <ActionMenu />
         <div className="MatchChoices-container">
           <div>
             <div className="MatchChoices-matchedChoices">

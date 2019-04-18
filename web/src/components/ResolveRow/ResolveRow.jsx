@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
-import ErrorSelector from '../ErrorSelector/ErrorSelector';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import './ResolveRow.scss';
 import { resolveRow, filterRow, updateValue } from '../../actions/RedcapLinterActions';
 
@@ -120,7 +120,7 @@ class ResolveRow extends Component {
 
     return (
       <div>
-        <ErrorSelector />
+        <ActionMenu />
         <div className="ResolveRow-container">
           <div>
             <div className="ResolveRow-matchedChoices">

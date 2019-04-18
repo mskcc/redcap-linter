@@ -7,7 +7,7 @@ import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import ProjectInfo from '../ProjectInfo/ProjectInfo';
-import ErrorSelector from '../ErrorSelector/ErrorSelector';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchFields.scss';
 import { saveFields, removeFieldMatch } from '../../actions/RedcapLinterActions';
 
@@ -136,7 +136,7 @@ class MatchFields extends Component {
     return (
       <div>
         <div>
-          <ErrorSelector />
+          <ActionMenu />
           <ProjectInfo />
           <div className="MatchFields-container">
             <div>

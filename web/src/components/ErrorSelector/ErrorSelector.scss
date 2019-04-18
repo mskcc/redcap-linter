@@ -2,14 +2,18 @@
 
 .ErrorSelector-elevate {
 	z-index: 10;
+	float: right;
+	margin-right: 10px;
+	width: 200px;
+	margin-left: 10px;
 }
 
 .ErrorSelector-column {
-  width: 12%;
-  margin-left: 2%;
-  display: inline-block;
-  float: left;
-  margin-top: 3px;
+	margin-top: 15px;
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin-right: 100px;
 }
 
 .ErrorSelector-menu {
@@ -18,5 +22,11 @@
 }
 
 .ErrorSelector-selector {
-	margin-top: 20px;
+	margin-top: 0px;
+}
+
+.ErrorSelector-label {
+	display: inline-block;
+	margin-top: 5px;
+	color: white;
 }
