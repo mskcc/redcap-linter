@@ -602,6 +602,7 @@ def post_form():
     redcap_field_candidates = {}
     data_field_candidates = {}
     csv_headers = {}
+    selected_columns = {}
     fields_not_in_redcap = {}
     duplicate_fields = {}
 
@@ -623,7 +624,6 @@ def post_form():
     all_csv_headers = list(set(all_csv_headers))
 
     unmatched_data_fields = {}
-    normalized_headers = utils.parameterize_list(all_csv_headers)
 
     for sheet in csv_headers:
         if not data_field_to_redcap_field_map.get(sheet):
@@ -632,13 +632,19 @@ def post_form():
             unmatched_data_fields[sheet] = []
         for header in csv_headers[sheet]:
             normalized_header = utils.parameterize(header)
+            if data_field_to_redcap_field_map[sheet].get(header):
+                continue
             if normalized_header in all_field_names:
                 data_field_to_redcap_field_map[sheet][header] = normalized_header
             else:
                 unmatched_data_fields[sheet].append(header)
 
-
-    unmatched_redcap_fields = [f for f in all_field_names if f not in normalized_headers]
+    # TODO Reconcile this with dataFieldToRedcapFieldMap
+    matched_redcap_fields = []
+    matched_redcap_fields += no_match_redcap_fields
+    for sheet_name, field_map in data_field_to_redcap_field_map.items():
+        matched_redcap_fields += field_map.values()
+    unmatched_redcap_fields = [f for f in all_field_names if f not in matched_redcap_fields]
     for f1 in all_field_names:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]
         for sheet in csv_headers:
