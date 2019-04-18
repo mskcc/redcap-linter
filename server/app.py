@@ -27,9 +27,6 @@ def save_fields():
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     date_cols = json.loads(form.get('dateColumns'))
-    # data field -> REDCap field
-    # TODO Delete columns that are indicated as no match
-    # TODO Implement using new structure for data_field_to_redcap_field_map
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
@@ -125,10 +122,6 @@ def resolve_column():
                 if isinstance(new_value, list):
                     new_value = ', '.join([str(i) for i in new_value])
                 new_list.append(new_value)
-            # if dd_field.text_validation == 'integer':
-            #     new_list = [int(i) if i else i for i in new_list]
-            # elif dd_field.text_validation == 'number_2dp':
-            #     new_list = [float(i) if i else i for i in new_list]
             df[working_column] = new_list
         records[sheet] = df
 
@@ -136,9 +129,6 @@ def resolve_column():
     rows_in_error = json.loads(form.get('rowsInError'))
     project_info = json.loads(form.get('projectInfo'))
 
-    # TODO work on case of no more errors
-
-    # TODO Suggest column changes and simplify this
     next_sheet = False
     for sheet in columns_in_error:
         if next_sheet:
@@ -161,14 +151,6 @@ def resolve_column():
             if len(rows_in_error[sheet]) > 0:
                 next_sheet_name = sheet
                 next_row = rows_in_error[sheet][0]
-
-    # TODO only remove if errors are resolved
-    # if working_sheet_name:
-    #     error_cols = columns_in_error[working_sheet_name]
-    #     if working_column in error_cols:
-    #         error_cols.remove(working_column)
-    #         if not error_cols:
-    #             del columns_in_error[working_sheet_name]
 
     field_errors = {}
     if next_column:
@@ -256,7 +238,6 @@ def resolve_column():
 @app.route('/resolve_row', methods=['GET', 'POST', 'OPTIONS'])
 def resolve_row():
     form  = request.form.to_dict()
-    # TODO Take in form param to navigate to any unresolved columns
     csv_headers = json.loads(form.get('csvHeaders'))
     # Working column is the column being saved
     action = json.loads(form.get('action') or '""')
@@ -293,9 +274,6 @@ def resolve_row():
     rows_in_error = json.loads(form.get('rowsInError'))
     project_info = json.loads(form.get('projectInfo'))
 
-    # TODO work on case of no more errors
-
-    # TODO Suggest column changes and simplify this
     next_sheet = False
     for sheet in rows_in_error:
         if next_sheet:
@@ -354,7 +332,6 @@ def resolve_row():
                 for f2 in dd_field.choices_dict:
                     if not choice_candidates.get(f1):
                         choice_candidates[f1] = []
-                    # TODO include form name in this if column name repeats?
                     choice_candidates[f1].append({
                         'candidate': f2,
                         'choiceValue': dd_field.choices_dict[f2],
@@ -369,14 +346,6 @@ def resolve_row():
             field_errors['textValidation']    = dd_field.text_validation
             field_errors['textValidationMin'] = dd_field.text_min
             field_errors['textValidationMax'] = dd_field.text_max
-
-    # TODO only remove if errors are resolved
-    # if working_sheet_name:
-    #     error_cols = columns_in_error[working_sheet_name]
-    #     if working_column in error_cols:
-    #         error_cols.remove(working_column)
-    #         if not error_cols:
-    #             del columns_in_error[working_sheet_name]
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
@@ -417,7 +386,6 @@ def download_progress():
     cells_with_errors = json.loads(form.get('cellsWithErrors'))
     record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
 
-    # data field -> REDCap field
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Edited.xlsx'
@@ -431,15 +399,12 @@ def download_progress():
     missing_column_format = writer.book.add_format({'bg_color': '#E5153E'}) # Red
     for sheet in json_data:
         matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
-        # if data_field_to_redcap_field_map.get(sheet):
-        #     matched_field_dict = {v: k for k, v in data_field_to_redcap_field_map.get(sheet).items() if v and isinstance(v, collections.Hashable)}
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         error_df = pd.DataFrame(cells_with_errors[sheet])
         df = pd.DataFrame(json_data[sheet])
         df.fillna('', inplace=True)
         df.rename(columns=matched_field_dict, inplace=True)
         error_df.rename(columns=matched_field_dict, inplace=True)
-        # error_df.rename(index=str, columns=matched_field_dict, inplace=True)
         df = df[csv_headers[sheet]]
         error_df = error_df[csv_headers[sheet]]
         df.to_excel(writer, sheet_name=sheet, index=False)
@@ -479,6 +444,7 @@ def download_mappings():
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
+    no_match_redcap_fields = json.loads(form.get('noMatchRedcapFields'))
 
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
@@ -488,13 +454,11 @@ def download_mappings():
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
     wb  = writer.book
-    # df = pd.DataFrame({'REDCap Field': data_field_to_redcap_field_map.keys(),
-    #               'Data Field': [v if not isinstance(v, list) else ', '.join(v) for v in data_field_to_redcap_field_map.values()]
-    #               })
 
     df = pd.DataFrame({'dataFieldToRedcapFieldMap': [json.dumps(data_field_to_redcap_field_map)],
                         'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)],
-                        'originalToCorrectedValueMap': [json.dumps(original_to_correct_value_map)]})
+                        'originalToCorrectedValueMap': [json.dumps(original_to_correct_value_map)],
+                        'noMatchRedcapFields': [json.dumps(no_match_redcap_fields)]})
 
     df.to_excel(writer, index=False)
     writer.close()
@@ -552,8 +516,6 @@ def post_form():
                     records[sheet][column_header] = current_list
             break
 
-    # for key in records:
-    #     records.get(key).replace('nan', '', inplace=True)
     form  = request.form.to_dict()
     token = form.get('token')
     env   = form.get('environment')
@@ -561,9 +523,10 @@ def post_form():
     datafile_name = form.get('dataFileName')
     mappings_file_name = None
     mappings = None
-    data_field_to_redcap_field_map = None
-    data_field_to_choice_map = None
-    original_to_correct_value_map = None
+    data_field_to_redcap_field_map = {}
+    data_field_to_choice_map = {}
+    original_to_correct_value_map = {}
+    no_match_redcap_fields = []
 
     if 'mappingsFile' in request.files:
         mappings_file_name = form.get('mappingsFileName')
@@ -575,6 +538,8 @@ def post_form():
             data_field_to_choice_map = json.loads(list(mappings["dataFieldToChoiceMap"])[0])
         if len(list(mappings["originalToCorrectedValueMap"])) > 0:
             original_to_correct_value_map = json.loads(list(mappings["originalToCorrectedValueMap"])[0])
+        if len(list(mappings["noMatchRedcapFields"])) > 0:
+            no_match_redcap_fields = json.loads(list(mappings["noMatchRedcapFields"])[0])
 
     project_info = {
         'custom_record_label': '',
@@ -638,22 +603,28 @@ def post_form():
     data_field_candidates = {}
     csv_headers = {}
     fields_not_in_redcap = {}
+    duplicate_fields = {}
 
     for sheet_name, sheet in records.items():
+        duplicate_fields[sheet_name] = {}
         # Remove empty rows
         sheet.dropna(axis=0, how='all', inplace=True)
         csv_headers[sheet_name] = list(sheet.columns)
         csv_headers[sheet_name] = [item for item in csv_headers[sheet_name] if 'Unnamed' not in item]
+        for header in csv_headers[sheet_name]:
+            if not duplicate_fields[sheet_name].get(header):
+                duplicate_fields[sheet_name][header] = 1
+            else:
+                duplicate_fields[sheet_name][header] += 1
+        duplicate_fields[sheet_name] = {k:v for k,v in duplicate_fields[sheet_name].iteritems() if v > 1}
         normalized_headers = utils.parameterize_list(csv_headers[sheet_name])
         fields_not_in_redcap[sheet_name] = [header for header, normalized_header in zip(csv_headers[sheet_name], normalized_headers) if normalized_header not in all_field_names]
 
     all_csv_headers = list(set(all_csv_headers))
 
-    data_field_to_redcap_field_map = {}
     unmatched_data_fields = {}
     normalized_headers = utils.parameterize_list(all_csv_headers)
 
-    # TODO matches the variable on all sheets, do variables need to be sheet specific?
     for sheet in csv_headers:
         if not data_field_to_redcap_field_map.get(sheet):
             data_field_to_redcap_field_map[sheet] = {}
@@ -668,27 +639,19 @@ def post_form():
 
 
     unmatched_redcap_fields = [f for f in all_field_names if f not in normalized_headers]
-    # TODO break this down by sheet
-
-    # unmatched_data_fields = [header for header, normalized_header in zip(all_csv_headers, normalized_headers) if normalized_header not in all_field_names]
-
     for f1 in all_field_names:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]
         for sheet in csv_headers:
             for f2 in csv_headers[sheet]:
                 if not redcap_field_candidates.get(f1):
                     redcap_field_candidates[f1] = []
-                existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
-                # if len(existing_candidate) > 0:
-                #     existing_candidate[0]['sheets'].append(sheet)
-                # else:
+                # existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
                 redcap_field_candidates[f1].append({
                     'candidate': f2,
                     'sheets': [sheet],
                     'score': max(fuzz.token_set_ratio(f1, f2), fuzz.token_set_ratio(dd_field['field_label'], f2))
                 })
 
-    # Data Field should include sheet name here too
     for sheet in csv_headers:
         for f1 in csv_headers[sheet]:
             if data_field_candidates.get(f1):
@@ -703,20 +666,9 @@ def post_form():
                 })
 
     malformed_sheets = []
-    # for sheet_name, sheet in records.items():
-    #     for col in utils.parameterize_list(list(sheet.columns)):
-    #         if 'unnamed' in col:
-    #             malformed_sheets.append(sheet_name)
-    #             break
+    all_errors       = []
+    recordid_field   = dd[0]
 
-    # for sheet_name in malformed_sheets:
-    #     del records[sheet_name]
-
-    # TODO Make the code below a separate endpoint for after the headers are matched.
-
-    all_errors                  = []
-    # sheets_not_in_redcap        = []
-    recordid_field              = dd[0]
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
     for sheet_name in records.keys():
@@ -766,10 +718,10 @@ def post_form():
         'ddData':                  dd_data,
         'ddDataRaw':               dd_data_raw,
         'dateColumns':             date_cols,
+        'duplicateFields':         duplicate_fields,
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': fields_not_in_redcap,
         'projectInfo':             project_info,
-        'dataFieldToRedcapFieldMap': data_field_to_redcap_field_map,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
@@ -782,6 +734,9 @@ def post_form():
         results['dataFieldToChoiceMap'] = data_field_to_choice_map
     if original_to_correct_value_map:
         results['originalToCorrectedValueMap'] = original_to_correct_value_map
+    if no_match_redcap_fields:
+        results['noMatchRedcapFields'] = no_match_redcap_fields
+
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

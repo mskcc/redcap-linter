@@ -79,6 +79,7 @@ class ErrorSelector extends Component {
       jsonData,
       ddData,
       dataFieldToRedcapFieldMap,
+      noMatchRedcapFields,
       csvHeaders,
       cellsWithErrors,
       recordFieldsNotInRedcap,
@@ -207,6 +208,7 @@ class ErrorSelector extends Component {
         </form>
         <form id="downloadMappingsForm" action={downloadMappingsLink} className="Breadcrumbs-hidden" method="POST">
           <input key="dataFieldToRedcapFieldMap" name="dataFieldToRedcapFieldMap" type="hidden" value={JSON.stringify(dataFieldToRedcapFieldMap)} />
+          <input key="noMatchRedcapFields" name="noMatchRedcapFields" type="hidden" value={JSON.stringify(noMatchRedcapFields)} />
           <input key="dataFieldToChoiceMap" name="dataFieldToChoiceMap" type="hidden" value={JSON.stringify(dataFieldToChoiceMap)} />
           <input key="originalToCorrectedValueMap" name="originalToCorrectedValueMap" type="hidden" value={JSON.stringify(originalToCorrectedValueMap)} />
           <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName || ''} />
@@ -258,6 +260,7 @@ class ErrorSelector extends Component {
 ErrorSelector.propTypes = {
   fieldErrors: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
+  noMatchRedcapFields: PropTypes.array,
   originalToCorrectedValueMap: PropTypes.object,
   columnsInError: PropTypes.object,
   rowsInError: PropTypes.object,
@@ -269,6 +272,7 @@ ErrorSelector.defaultProps = {
   columnsInError: {},
   rowsInError: {},
   dataFieldToChoiceMap: {},
+  noMatchRedcapFields: [],
   originalToCorrectedValueMap: {},
   fieldToValueMap: {},
 };

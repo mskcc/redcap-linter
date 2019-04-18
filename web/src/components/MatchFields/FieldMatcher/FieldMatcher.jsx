@@ -101,21 +101,10 @@ class FieldMatcher extends Component {
           }
         });
       }
-      // fieldMap[fieldToMatch] = e.value;
     } else if (mode === 'Data Field') {
       if (!fieldMap[sheetToMatch]) {
         fieldMap[sheetToMatch] = {};
       }
-
-      // let previouslyMatched = '';
-      // Object.keys(fieldMap[sheetToMatch]).forEach((dataField) => {
-      //   if (dataField === fieldToMatch) {
-      //     previouslyMatched = fieldMap[sheetToMatch][fieldToMatch];
-      //   }
-      // });
-      // if (previouslyMatched) {
-      //   delete fieldMap[sheetToMatch][previouslyMatched];
-      // }
       fieldMap[sheetToMatch][fieldToMatch] = e.value;
     }
     // This should be sheet specific
@@ -216,8 +205,6 @@ class FieldMatcher extends Component {
           }
         });
       }
-
-      console.log(value)
     } else if (mode === 'Data Field') {
       sheetToMatch = cellInfo['Sheets'];
       if (fieldMap[sheetToMatch]) {
@@ -238,8 +225,6 @@ class FieldMatcher extends Component {
         label: 'None',
       };
     }
-
-    // console.log(selectedValue)
 
     let scores = [];
     let options = [];
