@@ -54,6 +54,7 @@ class TextValidation extends Component {
       ddData,
       csvHeaders,
       columnsInError,
+      rowsInError,
       resolveColumn,
       filterTable,
     } = this.props;
@@ -64,6 +65,7 @@ class TextValidation extends Component {
       workingColumn,
       workingSheetName,
       columnsInError,
+      rowsInError,
       ddData,
       csvHeaders,
       action: 'continue',

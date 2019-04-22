@@ -50,6 +50,7 @@ class TabbedDatatable extends Component {
       recordFieldsNotInRedcap,
       dataFieldToRedcapFieldMap,
       matchedFieldMap,
+      fieldsSaved,
       allErrors,
       sheetsNotInRedcap,
       workingSheetName,
@@ -107,6 +108,7 @@ class TabbedDatatable extends Component {
               tableFilter={tableFilter}
               dataFieldToRedcapFieldMap={dataFieldToRedcapFieldMap}
               matchedFieldMap={matchedFieldMap}
+              fieldsSaved={fieldsSaved}
               selectedRowNum={selectedRowNum}
               filterColumn={filterColumn}
               tableErrors={tableErrors}
@@ -168,6 +170,7 @@ TabbedDatatable.propTypes = {
   sheetsNotInRedcap: PropTypes.array,
   dataFieldToRedcapFieldMap: PropTypes.object,
   matchedFieldMap: PropTypes.object,
+  fieldsSaved: PropTypes.bool,
 };
 
 TabbedDatatable.defaultProps = {
@@ -180,6 +183,7 @@ TabbedDatatable.defaultProps = {
   sheetsNotInRedcap: [],
   dataFieldToRedcapFieldMap: {},
   matchedFieldMap: {},
+  fieldsSaved: false,
 };
 
 function mapStateToProps(state) {

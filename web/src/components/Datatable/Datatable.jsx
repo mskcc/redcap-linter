@@ -125,6 +125,7 @@ class Datatable extends Component {
       selectedRowNum,
       dataFieldToRedcapFieldMap,
       matchedFieldMap,
+      fieldsSaved,
       tableFieldsNotInRedcap,
       sheetInError,
       sheetName,
@@ -143,7 +144,7 @@ class Datatable extends Component {
           headerClassName = 'Datatable-headerError';
           className += ' Datatable-cellError';
         }
-        if (dataFieldToRedcapFieldMap[sheetName] && dataFieldToRedcapFieldMap[sheetName][header]) {
+        if (!fieldsSaved && dataFieldToRedcapFieldMap[sheetName] && dataFieldToRedcapFieldMap[sheetName][header]) {
           className += ' Datatable-highlight';
         } else if (matchedFieldMap[sheetName] && matchedFieldMap[sheetName][header]) {
           className += ' Datatable-highlight';
@@ -214,10 +215,10 @@ Datatable.propTypes = {
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
   dataFieldToRedcapFieldMap: PropTypes.object,
-  matchedFieldMap: PropTypes.object,
   sheetName: PropTypes.string,
   sheetInError: PropTypes.bool,
   editable: PropTypes.bool,
+  fieldsSaved: PropTypes.bool,
 };
 
 Datatable.defaultProps = {
@@ -225,7 +226,6 @@ Datatable.defaultProps = {
   tableErrors: [],
   tableFieldsNotInRedcap: [],
   dataFieldToRedcapFieldMap: {},
-  matchedFieldMap: {},
   sheetName: '',
   editable: true,
   sheetInError: false,

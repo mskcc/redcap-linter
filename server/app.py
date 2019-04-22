@@ -73,7 +73,6 @@ def save_fields():
 
     results = {
         'jsonData':                   json_data,
-        'matchedFieldMap':            matched_field_map,
         'rowsInError':                rows_in_error,
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
@@ -81,6 +80,7 @@ def save_fields():
         'repeatedRecordids':          repeated_recordids,
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
+        'fieldsSaved':                True,
         'encodedRecordsHeaders':      encoded_records_headers,
     }
     response = flask.jsonify(results)

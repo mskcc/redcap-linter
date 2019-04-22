@@ -71,7 +71,11 @@ export default function (state = {}, action) {
       });
     }
     case HIGHLIGHT_COLUMNS: {
-      return Object.assign({}, state, action.payload);
+      let matchedFieldMap = state.matchedFieldMap || {};
+      // This is awful, figure out a fix
+      const toggle = state.toggle || false;
+      matchedFieldMap = _.merge(matchedFieldMap, action.payload.matchedFieldMap);
+      return Object.assign({}, state, { matchedFieldMap, toggle: !toggle });
     }
     case RESOLVE_COLUMN_SUCCESS: {
       return Object.assign({}, state, { workingRow: '' }, action.payload.data);

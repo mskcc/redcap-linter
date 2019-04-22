@@ -23,6 +23,7 @@ class MatchChoices extends Component {
       workingColumn,
       workingSheetName,
       columnsInError,
+      rowsInError,
       csvHeaders,
       resolveColumn,
     } = this.props;
@@ -33,6 +34,7 @@ class MatchChoices extends Component {
       workingColumn,
       workingSheetName,
       columnsInError,
+      rowsInError,
       ddData,
       csvHeaders,
       action: 'save'

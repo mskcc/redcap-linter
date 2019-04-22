@@ -107,7 +107,7 @@ class FieldMatcher extends Component {
       matchedFieldMap[sheetToMatch][fieldToMatch] = e.value;
     }
     highlightColumns({ matchedFieldMap });
-    this.setState({ matchedFieldMap, noMatchRedcapFields });
+    this.setState({ noMatchRedcapFields });
   }
 
   acceptMatches(e) {
@@ -216,9 +216,9 @@ class FieldMatcher extends Component {
     if (mode === 'REDCap Field') {
       scores = redcapFieldCandidates[fieldToMatch];
       scores = scores.sort((a, b) => b.score - a.score);
-      const mappedDataFieldValues = Object.keys(matchedFieldMap);
       options = scores.reduce((filtered, score) => {
-        if (!mappedDataFieldValues.includes(score.candidate)) {
+        const sheet = score.sheets[0];
+        if (!(matchedFieldMap[sheet] && matchedFieldMap[sheet][score.candidate])) {
           filtered.push({
             value: {
               field: score.candidate,
