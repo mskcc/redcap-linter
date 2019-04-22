@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Spin } from 'antd';
+import { Spin, Modal } from 'antd';
 import PropTypes from 'prop-types';
 import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
@@ -17,6 +17,7 @@ class MatchFields extends Component {
     this.state = {
       loadingSave: false,
       loadingContinue: false,
+      showModal: false,
     };
   }
 
@@ -30,10 +31,23 @@ class MatchFields extends Component {
     return null;
   }
 
+  handleOk(e) {
+    this.saveAndContinue(e)
+    this.setState({ showModal: false });
+  }
+
+  handleCancel(e) {
+    console.log(e);
+    this.setState({
+      showModal: false,
+    });
+  }
+
   saveFields(e) {
     const {
       jsonData,
       dataFieldToRedcapFieldMap,
+      matchedFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -43,6 +57,7 @@ class MatchFields extends Component {
     const payload = {
       jsonData,
       dataFieldToRedcapFieldMap,
+      matchedFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -56,15 +71,32 @@ class MatchFields extends Component {
     const {
       jsonData,
       dataFieldToRedcapFieldMap,
+      matchedFieldMap,
       projectInfo,
       ddData,
       dateColumns,
       csvHeaders,
       saveFields,
     } = this.props;
+    let hasUnsavedFields = false;
+    Object.keys(matchedFieldMap).forEach((sheet) => {
+      const selectedFields = Object.keys(matchedFieldMap[sheet]);
+      if (selectedFields) {
+        selectedFields.forEach((field) => {
+          if (dataFieldToRedcapFieldMap[sheet] && !dataFieldToRedcapFieldMap[sheet][field]) {
+            hasUnsavedFields = true;
+          }
+        });
+      }
+    });
+    if (hasUnsavedFields) {
+      this.setState({ showModal: true });
+      return;
+    }
     const payload = {
       jsonData,
       dataFieldToRedcapFieldMap,
+      matchedFieldMap,
       projectInfo,
       ddData,
       dateColumns,
@@ -82,6 +114,7 @@ class MatchFields extends Component {
       dataFieldToRedcapFieldMap,
       unmatchedRedcapFields,
       redcapFieldCandidates,
+      matchedFieldMap,
       noMatchRedcapFields,
       removeFieldMatch,
     } = this.props;
@@ -119,9 +152,22 @@ class MatchFields extends Component {
       }));
     }
 
+    let hasUnsavedFields = false;
+    Object.keys(matchedFieldMap).forEach((sheet) => {
+      const selectedFields = Object.keys(matchedFieldMap[sheet]);
+      if (selectedFields) {
+        selectedFields.forEach((field) => {
+          if (dataFieldToRedcapFieldMap[sheet] && !dataFieldToRedcapFieldMap[sheet][field]) {
+            hasUnsavedFields = true;
+          }
+        });
+      }
+    });
+
     const {
       loadingSave,
       loadingContinue,
+      showModal
     } = this.state;
 
     let saveButtonText = 'Save';
@@ -133,6 +179,7 @@ class MatchFields extends Component {
     if (loadingContinue) {
       continueButtonText = <Spin />;
     }
+    let fieldMatcher = <FieldMatcher showModal={showModal} />;
     return (
       <div>
         <div>
@@ -149,7 +196,7 @@ class MatchFields extends Component {
               </div>
               <div className="MatchFields-unmatchedFields">
                 <div className="MatchFields-title">Unmatched Fields</div>
-                <FieldMatcher />
+                { fieldMatcher }
               </div>
               <div style={{ clear: 'both' }} />
             </div>
@@ -157,6 +204,17 @@ class MatchFields extends Component {
               <button type="button" onClick={this.saveFields.bind(this)} className="App-actionButton">{ saveButtonText }</button>
               <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ continueButtonText }</button>
             </div>
+            <Modal
+              title="Confirm Fields"
+              width={800}
+              visible={this.state.showModal}
+              onOk={this.handleOk.bind(this)}
+              okButtonProps={{ disabled: hasUnsavedFields }}
+              onCancel={this.handleCancel.bind(this)}
+            >
+              <p>You have unaccepted matches. Would you like to Accept or Reject these matches?</p>
+              { fieldMatcher }
+            </Modal>
           </div>
           <div style={{ clear: 'both' }} />
         </div>
@@ -174,6 +232,7 @@ MatchFields.propTypes = {
   noMatchRedcapFields: PropTypes.array,
   redcapFieldCandidates: PropTypes.object,
   dataFieldToRedcapFieldMap: PropTypes.object,
+  matchedFieldMap: PropTypes.object,
 };
 
 MatchFields.defaultProps = {
@@ -182,6 +241,7 @@ MatchFields.defaultProps = {
   noMatchRedcapFields: [],
   redcapFieldCandidates: {},
   dataFieldToRedcapFieldMap: {},
+  matchedFieldMap: {},
 };
 
 function mapStateToProps(state) {

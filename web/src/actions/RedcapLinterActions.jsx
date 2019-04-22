@@ -145,6 +145,7 @@ export function saveFields(payload) {
     const data = new FormData();
     data.append('jsonData', JSON.stringify(payload.jsonData));
     data.append('dataFieldToRedcapFieldMap', JSON.stringify(payload.dataFieldToRedcapFieldMap));
+    data.append('matchedFieldMap', JSON.stringify(payload.matchedFieldMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('dateColumns', JSON.stringify(payload.dateColumns));

@@ -21,16 +21,21 @@ from openpyxl import load_workbook
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+# TODO Remove from Selected Columns once saved
 @app.route('/save_fields', methods=['GET', 'POST', 'OPTIONS'])
 def save_fields():
     form  = request.form.to_dict()
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
+    matched_field_map = json.loads(form.get('matchedFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
     date_cols = json.loads(form.get('dateColumns'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
     for sheet in json_data:
         matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
+        # for data_field in matched_field_dict.keys():
+        #     if selected_columns.get(sheet) and data_field in selected_columns.get(sheet):
+        #         selected_columns.get(sheet).remove(data_field)
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet] if c not in matched_field_dict or matched_field_dict.get(c)]
         fields_to_drop = [data_field for data_field in matched_field_dict.keys() if not matched_field_dict.get(data_field)]
         df = pd.DataFrame(json_data[sheet])
@@ -68,6 +73,7 @@ def save_fields():
 
     results = {
         'jsonData':                   json_data,
+        'matchedFieldMap':            matched_field_map,
         'rowsInError':                rows_in_error,
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
@@ -732,7 +738,6 @@ def post_form():
         'projectInfo':             project_info,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
-        'selectedColumns':         selected_columns,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name

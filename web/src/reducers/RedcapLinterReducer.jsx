@@ -47,8 +47,7 @@ export default function (state = {}, action) {
     case SAVE_FIELDS_SUCCESS: {
       let nextPage = {};
       if (action.payload && action.payload.page) {
-        const selectedColumns = [];
-        nextPage = { page: action.payload.page, new: false, selectedColumns };
+        nextPage = { page: action.payload.page, new: false };
       }
       return Object.assign({}, state, { loading: false }, nextPage, action.payload.data);
     }

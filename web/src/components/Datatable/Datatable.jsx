@@ -68,14 +68,14 @@ class Datatable extends Component {
     const {
       tableErrors,
       editable,
-      selectedColumns,
+      matchedFieldMap,
       sheetName,
     } = this.props;
     const {
       filterErrors,
     } = this.state;
     let className = '';
-    if (selectedColumns && selectedColumns[sheetName] && selectedColumns[sheetName].includes(header)) {
+    if (matchedFieldMap[sheetName] && matchedFieldMap[sheetName][header]) {
       className += ' Datatable-highlight';
     }
     // console.log(this.state);
@@ -123,7 +123,8 @@ class Datatable extends Component {
       filterColumn,
       tableFilter,
       selectedRowNum,
-      selectedColumns,
+      dataFieldToRedcapFieldMap,
+      matchedFieldMap,
       tableFieldsNotInRedcap,
       sheetInError,
       sheetName,
@@ -142,7 +143,9 @@ class Datatable extends Component {
           headerClassName = 'Datatable-headerError';
           className += ' Datatable-cellError';
         }
-        if (selectedColumns && selectedColumns[sheetName] && selectedColumns[sheetName].includes(header)) {
+        if (dataFieldToRedcapFieldMap[sheetName] && dataFieldToRedcapFieldMap[sheetName][header]) {
+          className += ' Datatable-highlight';
+        } else if (matchedFieldMap[sheetName] && matchedFieldMap[sheetName][header]) {
           className += ' Datatable-highlight';
         }
         const column = {
@@ -210,7 +213,8 @@ Datatable.propTypes = {
   tableData: PropTypes.array,
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
-  selectedColumns: PropTypes.object,
+  dataFieldToRedcapFieldMap: PropTypes.object,
+  matchedFieldMap: PropTypes.object,
   sheetName: PropTypes.string,
   sheetInError: PropTypes.bool,
   editable: PropTypes.bool,
@@ -220,7 +224,8 @@ Datatable.defaultProps = {
   tableData: [],
   tableErrors: [],
   tableFieldsNotInRedcap: [],
-  selectedColumns: {},
+  dataFieldToRedcapFieldMap: {},
+  matchedFieldMap: {},
   sheetName: '',
   editable: true,
   sheetInError: false,
