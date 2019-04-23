@@ -118,7 +118,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         repeatable = form_name in project_info['repeatable_instruments']
         for redcap_field in matching_fields[form_name]:
             current_list = list(records[redcap_field.field_name])
-            current_list = [i.strip() if isinstance(i, basestring) else i for i in current_list]
+            current_list = [i.strip() if isinstance(i, str) else i for i in current_list]
 
             if redcap_field.field_name != recordid_field.field_name or recordid_field.field_name != 'recordid':
                 for idx, item in enumerate(current_list):

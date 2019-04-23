@@ -18,6 +18,8 @@ services:
       - ./server:/home/app-user/app/server
     environment:
       - FLASK_APP=server/app.py
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
 
   redcap-linter-client:
     container_name: redcap-linter-client

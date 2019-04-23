@@ -495,7 +495,7 @@ def download_output():
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    for sheet, df in output_records.iteritems():
+    for sheet, df in output_records.items():
         df.to_excel(writer, sheet_name=sheet, index=False)
     writer.close()
     output.seek(0)
@@ -623,7 +623,7 @@ def post_form():
                 duplicate_fields[sheet_name][header] = 1
             else:
                 duplicate_fields[sheet_name][header] += 1
-        duplicate_fields[sheet_name] = {k:v for k,v in duplicate_fields[sheet_name].iteritems() if v > 1}
+        duplicate_fields[sheet_name] = {k:v for k,v in duplicate_fields[sheet_name].items() if v > 1}
         normalized_headers = utils.parameterize_list(csv_headers[sheet_name])
         fields_not_in_redcap[sheet_name] = [header for header, normalized_header in zip(csv_headers[sheet_name], normalized_headers) if normalized_header not in all_field_names]
 
