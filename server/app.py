@@ -17,6 +17,7 @@ from api.redcap.redcap_api import RedcapApi
 from linter import linter
 from utils import utils
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -507,10 +508,10 @@ def post_form():
     date_cols = []
     records_with_format = load_workbook(request.files['dataFile'])
     for sheet in records_with_format.sheetnames:
-        for row in records_with_format[sheet].iter_rows(row_offset=1):
+        for row in records_with_format[sheet].iter_rows(min_row=2):
             for cell in row:
                 # MRN
-                column_header = records_with_format[sheet][cell.column + '1'].value
+                column_header = records_with_format[sheet][get_column_letter(cell.column) + '1'].value
                 if column_header in list(records[sheet].columns) and cell.number_format == '00000000':
                     current_list = list(records[sheet][column_header])
                     current_list = [str(i).rjust(8, '0') if isinstance(i, int) else i for i in current_list]

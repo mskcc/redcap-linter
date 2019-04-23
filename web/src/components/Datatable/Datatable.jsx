@@ -71,6 +71,7 @@ class Datatable extends Component {
       matchedFieldMap,
       sheetName,
     } = this.props;
+
     const {
       filterErrors,
     } = this.state;
@@ -146,7 +147,9 @@ class Datatable extends Component {
         }
         if (!fieldsSaved && dataFieldToRedcapFieldMap[sheetName] && dataFieldToRedcapFieldMap[sheetName][header]) {
           className += ' Datatable-highlight';
-        } else if (matchedFieldMap[sheetName] && matchedFieldMap[sheetName][header]) {
+        }
+
+        if (matchedFieldMap[sheetName] && matchedFieldMap[sheetName][header]) {
           className += ' Datatable-highlight';
         }
         const column = {
@@ -215,6 +218,7 @@ Datatable.propTypes = {
   tableErrors: PropTypes.array,
   tableFieldsNotInRedcap: PropTypes.array,
   dataFieldToRedcapFieldMap: PropTypes.object,
+  matchedFieldMap: PropTypes.object,
   sheetName: PropTypes.string,
   sheetInError: PropTypes.bool,
   editable: PropTypes.bool,
@@ -226,6 +230,7 @@ Datatable.defaultProps = {
   tableErrors: [],
   tableFieldsNotInRedcap: [],
   dataFieldToRedcapFieldMap: {},
+  matchedFieldMap: {},
   sheetName: '',
   editable: true,
   sheetInError: false,
