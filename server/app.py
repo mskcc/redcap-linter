@@ -526,10 +526,10 @@ def post_form():
     form  = request.form.to_dict()
     token = form.get('token')
     env   = form.get('environment')
-    ri    = form.get('repeatableInstruments')
     datafile_name = form.get('dataFileName')
     mappings_file_name = None
     mappings = None
+    form_names = set()
     data_field_to_redcap_field_map = {}
     data_field_to_choice_map = {}
     original_to_correct_value_map = {}
@@ -556,9 +556,6 @@ def post_form():
         'next_record_name': 1
     }
 
-    if ri:
-        project_info['repeatable_instruments'] = [utils.titleize(instrument) for instrument in ri.split(',')]
-
     redcap_api = RedcapApi(env)
 
     data_dictionary = None
@@ -570,7 +567,7 @@ def post_form():
             project_info['next_record_name'] = redcap_api.generate_next_record_name(token)
             if project_info['has_repeating_instruments_or_events'] == 1:
                 repeatable_instruments = redcap_api.fetch_repeatable_instruments(token)
-                project_info['repeatable_instruments'] = [utils.titleize(i['form_name']) for i in repeatable_instruments]
+                project_info['repeatable_instruments'] = [i['form_name'] for i in repeatable_instruments]
         except Exception as e:
             logging.warning(e)
             results = {'error': "Error: {0}".format(e)}
@@ -591,7 +588,7 @@ def post_form():
     dd_data     = {}
     dd_data_raw = {}
     if data_dictionary is not None:
-        dd_headers = data_dictionary[0].keys()
+        dd_headers = list(data_dictionary[0].keys())
         dd_data_raw = data_dictionary
     else:
         dd_headers = list(dd_df.columns)
@@ -599,6 +596,11 @@ def post_form():
 
     dd_data = [field.__dict__ for field in dd]
     dd_data[0]['required'] = True
+
+    for dd_field in dd:
+        form_names.add(dd_field.form_name)
+
+    form_names = list(form_names)
 
     for sheet_name, sheet in records.items():
         all_csv_headers += list(sheet.columns)
@@ -732,6 +734,7 @@ def post_form():
         'ddHeaders':               dd_headers,
         'ddData':                  dd_data,
         'ddDataRaw':               dd_data_raw,
+        'formNames':               form_names,
         'dateColumns':             date_cols,
         'duplicateFields':         duplicate_fields,
         'malformedSheets':         malformed_sheets,

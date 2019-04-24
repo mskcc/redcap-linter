@@ -21,6 +21,7 @@ import {
   CORRECT_VALUE,
   REMOVE_VALUE_MATCH,
   UPDATE_VALUE,
+  CHANGE_REPEATABLE_INSTRUMENTS,
 } from '../actions/RedcapLinterActions';
 
 export default function (state = {}, action) {
@@ -110,6 +111,12 @@ export default function (state = {}, action) {
       //   }
       // });
       return Object.assign({}, state, { fieldToValueMap });
+    }
+    case CHANGE_REPEATABLE_INSTRUMENTS: {
+      const projectInfo = state.projectInfo || {};
+      const toggle = state.toggle || false;
+      projectInfo.repeatable_instruments = action.payload.repeatableInstruments;
+      return Object.assign({}, state, { projectInfo, toggle: !toggle });
     }
     case CORRECT_VALUE: {
       const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
@@ -236,7 +243,7 @@ export default function (state = {}, action) {
         }
 
         if (sheet) {
-          delete dataFieldToRedcapFieldMap[sheet][action.payload.redcapField];
+          delete dataFieldToRedcapFieldMap[sheet][action.payload.dataField];
         }
       }
       return Object.assign({}, state, { dataFieldToRedcapFieldMap, unmatchedRedcapFields, unmatchedDataFields, noMatchRedcapFields });

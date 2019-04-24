@@ -64,39 +64,47 @@ class FieldMatcher extends Component {
       noMatchRedcapFields,
       mode,
     } = this.state;
-    if (action && action.removedValue) {
-      const {
-        field,
-        sheets,
-      } = action.removedValue.value;
-      const sheetMap = matchedFieldMap[sheets[0]];
-      if (sheetMap && _.invert(sheetMap)[fieldToMatch]) {
-        const dataField = _.invert(sheetMap)[fieldToMatch];
-        delete sheetMap[dataField];
-      }
-    }
     if (mode === 'REDCap Field') {
-      let selectedOptions = e;
-      // Comes in as singular if it was selected as None then re-selected
-      if (!Array.isArray(selectedOptions)) {
-        selectedOptions = [selectedOptions];
-      }
-      if (selectedOptions.length > 0) {
-        selectedOptions.forEach((option) => {
-          // None
-          if (option.value === null) {
-            // TODO noMatchFields
-            noMatchRedcapFields.push(fieldToMatch);
-          } else {
-            const sheet = option.value.sheets[0];
-            if (!matchedFieldMap[sheet]) {
-              matchedFieldMap[sheet] = {};
-            }
-            if (noMatchRedcapFields.includes(fieldToMatch)) {
-              const idx = noMatchRedcapFields.indexOf(fieldToMatch);
-              if (idx !== -1) noMatchRedcapFields.splice(idx, 1);
-            }
-            matchedFieldMap[sheet][option.value.field] = fieldToMatch;
+      if (action.action === 'remove-value') {
+        const selectedOption = action.removedValue;
+        const field = selectedOption.value;
+        const sheets = selectedOption.sheets;
+        const sheetMap = matchedFieldMap[sheets[0]];
+        if (sheetMap && sheetMap[field]) {
+          delete sheetMap[field];
+        }
+      } else if (action.action === 'select-option' || action.action === 'deselect-option') {
+        let selectedOption = action.option
+        if (!action.option) {
+          selectedOption = e;
+        }
+        const field = selectedOption.value;
+        if (field === null) {
+          // TODO noMatchFields
+          noMatchRedcapFields.push(fieldToMatch);
+        } else {
+          const sheets = selectedOption.sheets;
+          const sheetMap = matchedFieldMap[sheets[0]];
+          let previouslyMatched = null;
+          if (sheetMap && _.invert(sheetMap)[fieldToMatch]) {
+            previouslyMatched = _.invert(sheetMap)[fieldToMatch];
+            delete sheetMap[previouslyMatched];
+          }
+          const sheet = selectedOption.sheets[0];
+          if (!matchedFieldMap[sheet]) {
+            matchedFieldMap[sheet] = {};
+          }
+          if (noMatchRedcapFields.includes(fieldToMatch)) {
+            const idx = noMatchRedcapFields.indexOf(fieldToMatch);
+            if (idx !== -1) noMatchRedcapFields.splice(idx, 1);
+          }
+          matchedFieldMap[sheet][field] = fieldToMatch;
+        }
+      } else if (action.action === 'clear') {
+        Object.keys(matchedFieldMap).forEach((sheet) => {
+          const previouslyMatched = _.invert(matchedFieldMap[sheet])[fieldToMatch];
+          if (previouslyMatched) {
+            delete matchedFieldMap[sheet][previouslyMatched];
           }
         });
       }
@@ -181,11 +189,9 @@ class FieldMatcher extends Component {
               selectedValue = [];
             }
             selectedValue.push({
-              value: {
-                field: value,
-                sheets: [sheet],
-              },
+              value: value,
               label: <span><b>{value}</b> | <span style={{ fontWeight: 'lighter' }}>{sheet}</span></span>,
+              sheets: [sheet],
             });
           }
         });
@@ -219,12 +225,11 @@ class FieldMatcher extends Component {
       options = scores.reduce((filtered, score) => {
         const sheet = score.sheets[0];
         if (!(matchedFieldMap[sheet] && matchedFieldMap[sheet][score.candidate])) {
+          // Figure out how to make this searchable
           filtered.push({
-            value: {
-              field: score.candidate,
-              sheets: score.sheets,
-            },
+            value: score.candidate,
             label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.sheets.toString()}</span></span>,
+            sheets: score.sheets,
           });
         }
         return filtered;
@@ -270,6 +275,7 @@ class FieldMatcher extends Component {
     return (
       <Select
         options={options}
+        hideSelectedOptions={false}
         isSearchable
         isMulti={isMulti}
         value={selectedValue}

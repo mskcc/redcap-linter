@@ -93,6 +93,20 @@ class Form extends Component {
       errorText = `<ul><li>${error}</li></ul>`;
     }
 
+    // <fieldset className="App-fieldset">
+    //   <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">
+    //     <span className="Form-label">Repeatable Instruments</span>
+    //     <Input
+    //       className="App-fieldsetInput"
+    //       id="repeatableInstruments"
+    //       type="text"
+    //       placeholder="Ex. Pathology, Imaging, etc."
+    //       value={form.repeatableInstruments}
+    //       onChange={this.handleOnChangeForm.bind(this, 'repeatableInstruments')}
+    //     />
+    //   </label>
+    // </fieldset>
+
     return (
       <div className="App-fieldsetColumn">
         <fieldset className="App-fieldset">
@@ -157,19 +171,6 @@ class Form extends Component {
               accept=".csv,.xls,.xlsx"
               value={form.dataDictionaryName}
               onChange={this.handleSelectedFile.bind(this, 'dataDictionary')}
-            />
-          </label>
-        </fieldset>
-        <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">
-            <span className="Form-label">Repeatable Instruments</span>
-            <Input
-              className="App-fieldsetInput"
-              id="repeatableInstruments"
-              type="text"
-              placeholder="Ex. Pathology, Imaging, etc."
-              value={form.repeatableInstruments}
-              onChange={this.handleOnChangeForm.bind(this, 'repeatableInstruments')}
             />
           </label>
         </fieldset>

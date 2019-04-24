@@ -9,7 +9,7 @@
 }
 
 .ErrorSelector-column {
-	margin-top: 15px;
+	margin-top: 5px;
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -22,11 +22,21 @@
 }
 
 .ErrorSelector-selector {
-	margin-top: 0px;
+	margin-top: -3px;
+}
+
+.ErrorSelector-select {
+	display: inline-block;
+}
+
+.ErrorSelector-sheetName {
+	color: white;
+	margin-left: 10px;
 }
 
 .ErrorSelector-label {
 	display: inline-block;
-	margin-top: 5px;
+	float: left;
+	margin-top: 20px;
 	color: white;
 }

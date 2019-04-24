@@ -37,6 +37,8 @@ export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
 
 export const UPDATE_VALUE = 'UPDATE_VALUE';
 
+export const CHANGE_REPEATABLE_INSTRUMENTS = 'CHANGE_REPEATABLE_INSTRUMENTS';
+
 
 export function loadingStart() {
   return {
@@ -240,6 +242,19 @@ export function updateValueSuccess(payload) {
 export function updateValue(payload) {
   return function action(dispatch) {
     return dispatch(updateValueSuccess(payload));
+  };
+}
+
+export function changeRepeatableInstrumentsSuccess(payload) {
+  return {
+    type: CHANGE_REPEATABLE_INSTRUMENTS,
+    payload,
+  };
+}
+
+export function changeRepeatableInstruments(payload) {
+  return function action(dispatch) {
+    return dispatch(changeRepeatableInstrumentsSuccess(payload));
   };
 }
 

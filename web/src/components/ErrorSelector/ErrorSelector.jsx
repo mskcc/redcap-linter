@@ -189,14 +189,19 @@ class ErrorSelector extends Component {
         <div className="ErrorSelector-label">
           <b>Choose Column or Row</b>
         </div>
-        <Select
-          className="ErrorSelector-elevate"
-          options={options}
-          isSearchable
-          value={selectedValue}
-          styles={selectStyles}
-          onChange={this.changeResolve.bind(this)}
-        />
+        <div className="ErrorSelector-select">
+          <div className="ErrorSelector-sheetName">
+            { workingSheetName }
+          </div>
+          <Select
+            className="ErrorSelector-elevate"
+            options={options}
+            isSearchable
+            value={selectedValue}
+            styles={selectStyles}
+            onChange={this.changeResolve.bind(this)}
+          />
+        </div>
       </div>);
     }
 
