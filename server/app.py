@@ -613,15 +613,15 @@ def post_form():
 
     dd_data = [field.__dict__ for field in dd]
 
-    recordid_field = 'recordid'
-    if not project_info.get('record_autonumbering_enabled'):
-        recordid_field = dd_data[0].field_name
-
     for dd_field in dd:
         if not form_name_to_dd_fields.get(dd_field.form_name):
             form_name_to_dd_fields[dd_field.form_name] = []
         form_name_to_dd_fields.get(dd_field.form_name).append(dd_field.field_name)
         form_names.add(dd_field.form_name)
+
+    recordid_field = 'recordid'
+    if not project_info.get('record_autonumbering_enabled'):
+        recordid_field = dd[0].field_name
 
     form_names = list(form_names)
 
