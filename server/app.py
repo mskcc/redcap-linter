@@ -62,15 +62,16 @@ def save_fields():
 
     json_data   = {}
     output_records = {}
-    encoded_records_headers = {}
 
+    # logging.warning(encoded_records)
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
     for sheet_name in encoded_records:
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
-        encoded_records_headers[sheet_name] = list(encoded_records[sheet_name].columns)
+        output_records[sheet_name] = {}
+        for form_name in encoded_records[sheet_name]:
+            output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
 
     results = {
         'jsonData':                   json_data,
@@ -82,7 +83,6 @@ def save_fields():
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
         'fieldsSaved':                True,
-        'encodedRecordsHeaders':      encoded_records_headers,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -210,13 +210,17 @@ def resolve_column():
             field_errors['textValidationMin'] = dd_field.text_min
             field_errors['textValidationMax'] = dd_field.text_max
 
+    # TODO Add encoded records to the response
+
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
+    encoded_records = datafile_errors['encoded_records']
 
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
     json_data   = {}
+    output_records = {}
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -224,12 +228,18 @@ def resolve_column():
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
+    for sheet_name in encoded_records:
+        output_records[sheet_name] = {}
+        for form_name in encoded_records[sheet_name]:
+            output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
+
     results = {
         'jsonData':        json_data,
         'cellsWithErrors': cells_with_errors,
         'columnsInError':  columns_in_error,
         'allErrors':       all_errors,
-        'rowsInError':       rows_in_error,
+        'rowsInError':     rows_in_error,
+        'encodedRecords':  output_records,
     }
     if action == 'continue':
         results['workingColumn'] = next_column
@@ -357,20 +367,28 @@ def resolve_row():
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
+    encoded_records = datafile_errors['encoded_records']
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     json_data   = {}
+    output_records = {}
 
     for sheetName, sheet in records.items():
         json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+
+    for sheet_name in encoded_records:
+        output_records[sheet_name] = {}
+        for form_name in encoded_records[sheet_name]:
+            output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
 
     results = {
         'jsonData':         json_data,
         'allErrors':        all_errors,
         'rowsInError':      rows_in_error,
         'cellsWithErrors':  cells_with_errors,
+        'encodedRecords':   output_records,
     }
     if action == 'continue':
         results['workingRow'] = next_row
@@ -530,6 +548,7 @@ def post_form():
     mappings_file_name = None
     mappings = None
     form_names = set()
+    form_name_to_dd_fields = {}
     data_field_to_redcap_field_map = {}
     data_field_to_choice_map = {}
     original_to_correct_value_map = {}
@@ -598,6 +617,9 @@ def post_form():
     dd_data[0]['required'] = True
 
     for dd_field in dd:
+        if not form_name_to_dd_fields.get(dd_field.form_name):
+            form_name_to_dd_fields[dd_field.form_name] = []
+        form_name_to_dd_fields.get(dd_field.form_name).append(dd_field.field_name)
         form_names.add(dd_field.form_name)
 
     form_names = list(form_names)
@@ -739,6 +761,7 @@ def post_form():
         'duplicateFields':         duplicate_fields,
         'malformedSheets':         malformed_sheets,
         'recordFieldsNotInRedcap': fields_not_in_redcap,
+        'formNameToDdFields':      form_name_to_dd_fields,
         'projectInfo':             project_info,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,

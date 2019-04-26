@@ -19,24 +19,60 @@ class EncodedRecords extends Component {
   render() {
     const {
       encodedRecords,
-      encodedRecordsHeaders,
+      formNameToDdFields,
+      ddData,
     } = this.props;
+
+    const tabProps = {
+      className: 'EncodedRecords-tabs',
+      animated: false,
+    };
+
     const sheets = Object.keys(encodedRecords);
     const panes = [];
     if (sheets && sheets.length > 0) {
       for (let i = 0; i < sheets.length; i++) {
         const sheetName = sheets[i];
 
-        const tData = encodedRecords[sheetName];
-        const headers = encodedRecordsHeaders[sheetName];
+        const innerPanes = [];
+
+        const recordidField = ddData[0].field_name;
+
+        Object.keys(encodedRecords[sheetName]).forEach((formName) => {
+          const tData = encodedRecords[sheetName][formName];
+          const formFields = formNameToDdFields[formName];
+          const headers = [];
+          if (tData && tData.length > 0) {
+            const encodedHeaders = Object.keys(tData[0]);
+            formFields.forEach((field) => {
+              if (encodedHeaders.includes(field) && field !== recordidField) {
+                headers.push(field);
+              }
+            });
+
+            // Change this later to account for repeatable instruments, this prepends with recordid field
+            encodedHeaders.forEach((header) => {
+              if (!formFields.includes(header) && header !== recordidField) {
+                headers.unshift(header);
+              }
+            });
+
+            headers.unshift(recordidField);
+          }
+          innerPanes.push(
+            <TabPane tab={formName} key={innerPanes.length.toString()}>
+              <Datatable
+                sheetName={`${formName}`}
+                headers={headers}
+                tableData={tData}
+              />
+            </TabPane>
+          );
+        });
 
         panes.push(
           <TabPane tab={sheetName} key={panes.length.toString()}>
-            <Datatable
-              sheetName={`${sheetName}`}
-              headers={headers}
-              tableData={tData}
-            />
+            <Tabs {...tabProps}>{ innerPanes }</Tabs>
           </TabPane>
         );
       }
@@ -47,10 +83,7 @@ class EncodedRecords extends Component {
         </TabPane>
       );
     }
-    const tabProps = {
-      className: 'EncodedRecords-tabs',
-      animated: false,
-    };
+
     return <Tabs {...tabProps}>{ panes }</Tabs>;
   }
 }
@@ -58,11 +91,15 @@ class EncodedRecords extends Component {
 EncodedRecords.propTypes = {
   encodedRecords: PropTypes.object,
   encodedRecordsHeaders: PropTypes.object,
+  formNameToDdFields: PropTypes.object,
+  ddData: PropTypes.array,
 };
 
 EncodedRecords.defaultProps = {
   encodedRecords: {},
   encodedRecordsHeaders: {},
+  formNameToDdFields: {},
+  ddData: [],
 };
 
 function mapStateToProps(state) {
