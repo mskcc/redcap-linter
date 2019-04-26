@@ -38,7 +38,11 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     total_error_count = 0
 
-    recordid_field = data_dictionary[0]
+    recordid_field = None
+    if project_info.get('record_autonumbering_enabled') == 1:
+        recordid_field = RedcapField(field_name='recordid', field_type='text')
+    else:
+        recordid_field = data_dictionary[0]
     form_fields = data_dictionary
 
     # TODO Generate output records from this, add on for each additional form.
@@ -140,10 +144,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 for idx, valid in enumerate(validations):
                     if valid is False and idx not in rows_in_error:
                         rows_in_error.append(idx)
-                # if redcap_field.field_name != recordid_field.field_name:
-                #     output_records[redcap_field.field_name] = pd.Series([f if v else None for f, v in zip(formatted_values, validations)])
-                    # if redcap_field.required:
-                    #     rows_to_remove += [row_num for row_num, val in enumerate(current_list) if not val]
             elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
                 choices_dict = redcap_field.choices_dict
 
@@ -163,7 +163,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                         has_error = None
                         if redcap_field.required:
                             has_error = True
-                            # rows_to_remove.append(row_num)
                         errors.append(has_error)
                     else:
                         if is_encoded:
@@ -180,12 +179,9 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if redcap_field.field_type == 'checkbox':
                     for key, value in choices_dict.items():
                         checked_list = [1 if key == d else 0 for d in current_list]
-                        # output_records["{0}__{1}".format(redcap_field.field_name, value)] = pd.Series(checked_list)
-                    # output_records.drop(redcap_field.field_name, 1, inplace=True)
                 else:
                     current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
                     replaced_choices = [choices_dict.get(item) or None for item in current_list]
-                    # output_records[redcap_field.field_name] = pd.Series(replaced_choices)
             else:
                 raise Exception('Unrecognized field_type: {0}'.format(redcap_field.field_type))
 
@@ -193,8 +189,13 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     instrument_errors = instrument_errors if total_error_count > 0 else None
 
+    # TODO Account for autonumbering
+
     repeat_instance_dict = {}
     if recordid_field.field_name in list(records.columns):
+        record_inst = 1
+        if project_info.get('record_autonumbering_enabled') == 1:
+            record_inst = project_info.get('next_record_name')
         for index, row in records.iterrows():
             if int(index) in rows_in_error:
                 continue
@@ -204,6 +205,9 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 repeat_instance_dict[row[recordid_field.field_name]] += 1
             for form_name in matching_fields:
                 encoded_row = {}
+                if project_info.get('record_autonumbering_enabled') == 1:
+                    encoded_row['recordid'] = record_inst
+                    record_inst += 1
                 if form_name in project_info.get('repeatable_instruments'):
                     encoded_row['redcap_repeat_instrument'] = form_name
                     encoded_row['redcap_repeat_instance'] = repeat_instance_dict.get(row[recordid_field.field_name])
@@ -213,6 +217,24 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     else:
                         encoded_row[matching_field.field_name] = row[matching_field.field_name]
                 output_records[form_name] = output_records[form_name].append(encoded_row, ignore_index=True)
+
+    if project_info.get('record_autonumbering_enabled') == 1:
+        record_inst = project_info.get('next_record_name')
+        for index, row in records.iterrows():
+            if int(index) in rows_in_error:
+                continue
+            for form_name in matching_fields:
+                encoded_row = {'recordid': record_inst}
+                # Cannot do repeatable instruments if autonumbered
+                if form_name in project_info.get('repeatable_instruments'):
+                    continue
+                for matching_field in matching_fields[form_name]:
+                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+                        encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                    else:
+                        encoded_row[matching_field.field_name] = row[matching_field.field_name]
+                output_records[form_name] = output_records[form_name].append(encoded_row, ignore_index=True)
+            record_inst += 1
 
 
     # rows_to_remove = list(set(rows_to_remove))
@@ -226,7 +248,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     return {
         'encoded_records': output_records,
         'instrument_errors': instrument_errors,
-        'repeated_recordids': repeated_recordids,
         'rows_in_error': rows_in_error,
         'all_errors': all_errors,
     }
@@ -240,7 +261,6 @@ def lint_datafile(data_dictionary, records, project_info):
     original_records = {}
     cells_with_errors = {}
     rows_in_error = {}
-    repeated_recordids = {}
     encoded_records = {}
 
     all_errors = []
@@ -264,8 +284,6 @@ def lint_datafile(data_dictionary, records, project_info):
 
             if len(results['rows_in_error']) > 0:
                 rows_in_error[sheet_name] = results['rows_in_error']
-            if len(results['repeated_recordids']) > 0:
-                repeated_recordids[sheet_name] = results['repeated_recordids']
             errors = results['instrument_errors']
             if errors is not None:
                 cells_with_errors[sheet_name] = errors
@@ -274,7 +292,6 @@ def lint_datafile(data_dictionary, records, project_info):
         'encoded_records': encoded_records,
         'cells_with_errors': cells_with_errors,
         'rows_in_error': rows_in_error,
-        'repeated_recordids': repeated_recordids,
         'linting_errors': all_errors
     }
 

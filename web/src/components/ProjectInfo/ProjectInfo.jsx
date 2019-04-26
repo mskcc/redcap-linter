@@ -75,6 +75,7 @@ class ProjectInfo extends Component {
       error,
       projectInfo,
       ddData,
+      recordidField,
       malformedSheets,
       formNames,
     } = this.props;
@@ -90,8 +91,8 @@ class ProjectInfo extends Component {
       if (projectInfo.project_title) {
         project += `<b>Project Title</b>: ${projectInfo.project_title}<br />`;
       }
-      if (ddData && ddData[0]) {
-        project += `<b>RecordID Field</b>: ${ddData[0].field_name}<br />`;
+      if (recordidField) {
+        project += `<b>RecordID Field</b>: ${recordidField}<br />`;
       }
       if (projectInfo.custom_record_label) {
         project += `<b>Custom Record Label</b>: ${projectInfo.custom_record_label}<br />`;
@@ -157,10 +158,12 @@ class ProjectInfo extends Component {
 ProjectInfo.propTypes = {
   projectInfo: PropTypes.object,
   error: PropTypes.string,
+  recordidField: PropTypes.string,
 };
 
 ProjectInfo.defaultProps = {
   error: '',
+  recordidField: '',
   projectInfo: {},
 };
 

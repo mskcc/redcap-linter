@@ -53,7 +53,6 @@ def save_fields():
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
-    repeated_recordids = datafile_errors['repeated_recordids']
     encoded_records = datafile_errors['encoded_records']
 
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
@@ -79,7 +78,6 @@ def save_fields():
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
-        'repeatedRecordids':          repeated_recordids,
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
         'fieldsSaved':                True,
@@ -614,7 +612,10 @@ def post_form():
         dd_data_raw = json.loads(dd_df.to_json(orient='records', date_format='iso'))
 
     dd_data = [field.__dict__ for field in dd]
-    dd_data[0]['required'] = True
+
+    recordid_field = 'recordid'
+    if not project_info.get('record_autonumbering_enabled'):
+        recordid_field = dd_data[0].field_name
 
     for dd_field in dd:
         if not form_name_to_dd_fields.get(dd_field.form_name):
@@ -706,7 +707,6 @@ def post_form():
 
     malformed_sheets = []
     all_errors       = []
-    recordid_field   = dd[0]
 
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
@@ -727,14 +727,6 @@ def post_form():
             all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(sheet_name, str(sheet_fields_not_in_redcap)))
         if redcap_fields_not_in_data:
             all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(sheet_name, str(redcap_fields_not_in_data)))
-
-    recordid_instrument = recordid_field.form_name
-    recordid_instrument_records = records.get(recordid_instrument) or records.get(recordid_instrument.title())
-    if recordid_instrument_records is None:
-        error_msg = ("Record ID Instrument `{0}` not found in datafile. "
-                     "Please make sure sheets are named with the same instrument (form) name as it appears in "
-                     "REDCap or the Data Dictionary.").format(recordid_instrument)
-        all_errors.append(error_msg)
 
     json_data   = {}
 
@@ -763,6 +755,7 @@ def post_form():
         'recordFieldsNotInRedcap': fields_not_in_redcap,
         'formNameToDdFields':      form_name_to_dd_fields,
         'projectInfo':             project_info,
+        'recordidField':           recordid_field,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
         'unmatchedRedcapFields':   unmatched_redcap_fields,

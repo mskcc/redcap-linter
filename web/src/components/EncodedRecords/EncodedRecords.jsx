@@ -21,6 +21,8 @@ class EncodedRecords extends Component {
       encodedRecords,
       formNameToDdFields,
       ddData,
+      projectInfo,
+      recordidField,
     } = this.props;
 
     const tabProps = {
@@ -35,8 +37,6 @@ class EncodedRecords extends Component {
         const sheetName = sheets[i];
 
         const innerPanes = [];
-
-        const recordidField = ddData[0].field_name;
 
         Object.keys(encodedRecords[sheetName]).forEach((formName) => {
           const tData = encodedRecords[sheetName][formName];
@@ -92,14 +92,18 @@ EncodedRecords.propTypes = {
   encodedRecords: PropTypes.object,
   encodedRecordsHeaders: PropTypes.object,
   formNameToDdFields: PropTypes.object,
+  projectInfo: PropTypes.object,
   ddData: PropTypes.array,
+  recordidField: PropTypes.string,
 };
 
 EncodedRecords.defaultProps = {
   encodedRecords: {},
   encodedRecordsHeaders: {},
   formNameToDdFields: {},
+  projectInfo: {},
   ddData: [],
+  recordidField: '',
 };
 
 function mapStateToProps(state) {
