@@ -29,6 +29,7 @@ def save_fields():
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     matched_field_map = json.loads(form.get('matchedFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
+    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     date_cols = json.loads(form.get('dateColumns'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
     records = {}
@@ -68,6 +69,8 @@ def save_fields():
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
     for sheet_name in encoded_records:
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
         output_records[sheet_name] = {}
         for form_name in encoded_records[sheet_name]:
             output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
@@ -97,6 +100,7 @@ def resolve_column():
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_column = json.loads(form.get('workingColumn') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
+    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
@@ -227,6 +231,8 @@ def resolve_column():
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     for sheet_name in encoded_records:
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
         output_records[sheet_name] = {}
         for form_name in encoded_records[sheet_name]:
             output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
@@ -260,6 +266,7 @@ def resolve_row():
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_row = json.loads(form.get('workingRow') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
+    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     field_to_value_map = json.loads(form.get('fieldToValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
@@ -377,6 +384,9 @@ def resolve_row():
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     for sheet_name in encoded_records:
+        logging.warning(malformed_sheets)
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
         output_records[sheet_name] = {}
         for form_name in encoded_records[sheet_name]:
             output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
@@ -716,7 +726,7 @@ def post_form():
         redcap_field_names = [f.field_name for f in dd]
 
         matching_fields = [f for f in sheet.columns if f in redcap_field_names]
-        if not matching_fields:
+        if not matching_fields and not data_field_to_redcap_field_map.get(sheet_name):
             malformed_sheets.append(sheet_name)
 
         redcap_fields_not_in_data = [f for f in redcap_field_names if f not in sheet.columns]

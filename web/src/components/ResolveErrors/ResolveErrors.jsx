@@ -35,6 +35,7 @@ class ResolveErrors extends Component {
       csvHeaders,
       workingColumn,
       workingRow,
+      malformedSheets,
       columnsInError,
       rowsInError,
       resolveColumn,
@@ -49,6 +50,7 @@ class ResolveErrors extends Component {
       const payload = {
         jsonData,
         projectInfo,
+        malformedSheets,
         ddData,
         csvHeaders,
         rowsInError,
@@ -67,6 +69,7 @@ class ResolveErrors extends Component {
         jsonData,
         projectInfo,
         columnsInError,
+        malformedSheets,
         rowsInError,
         ddData,
         csvHeaders,

@@ -149,6 +149,7 @@ export function saveFields(payload) {
     data.append('dataFieldToRedcapFieldMap', JSON.stringify(payload.dataFieldToRedcapFieldMap));
     data.append('matchedFieldMap', JSON.stringify(payload.matchedFieldMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('dateColumns', JSON.stringify(payload.dateColumns));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
@@ -340,6 +341,7 @@ export function resolveColumn(payload) {
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('dataFieldToChoiceMap', JSON.stringify(payload.dataFieldToChoiceMap || {}));
     data.append('originalToCorrectedValueMap', JSON.stringify(payload.originalToCorrectedValueMap || {}));
+    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append('nextColumn', payload.nextColumn ? JSON.stringify(payload.nextColumn) : '');
     data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
     data.append('workingColumn', payload.workingColumn ? JSON.stringify(payload.workingColumn) : '');
@@ -385,6 +387,7 @@ export function resolveRow(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
+    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append('nextRow', JSON.stringify(payload.nextRow || ''));
     data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
     data.append('workingRow', payload.workingRow ? JSON.stringify(payload.workingRow) : '');
