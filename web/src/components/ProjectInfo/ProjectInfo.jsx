@@ -94,6 +94,11 @@ class ProjectInfo extends Component {
       if (recordidField) {
         project += `<b>RecordID Field</b>: ${recordidField}<br />`;
       }
+      if (projectInfo.record_autonumbering_enabled === 1) {
+        project += '<b>Record Autonumbering</b>: true<br />';
+      } else {
+        project += '<b>Record Autonumbering</b>: false<br />';
+      }
       if (projectInfo.custom_record_label) {
         project += `<b>Custom Record Label</b>: ${projectInfo.custom_record_label}<br />`;
       }

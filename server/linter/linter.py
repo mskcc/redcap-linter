@@ -285,8 +285,7 @@ def lint_datafile(data_dictionary, records, project_info):
 def encode_datafile(data_dictionary, records, project_info):
     encoded_records = {}
 
-    for sheet_name in records.keys():
-        sheet = records.get(sheet_name)
+    for sheet_name, sheet in records.items():
         if sheet is not None:
             results = lint_sheet(data_dictionary, project_info, sheet_name, sheet)
             encoded_records[sheet_name] = results['encoded_records']

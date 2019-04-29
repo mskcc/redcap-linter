@@ -18,6 +18,7 @@ from linter import linter
 from utils import utils
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
+import textwrap
 
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -504,6 +505,7 @@ def download_output():
     datafile_name = form.get('dataFileName')
     csv_headers = json.loads(form.get('csvHeaders'))
     project_info = json.loads(form.get('projectInfo'))
+    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
@@ -519,10 +521,15 @@ def download_output():
 
     output_records = linter.encode_datafile(dd, records, project_info)
 
+    # TODO Merge the different sheets
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    for sheet, df in output_records.items():
-        df.to_excel(writer, sheet_name=sheet, index=False)
+    for sheet, form in output_records.items():
+        if sheet in malformed_sheets:
+            continue
+        for form_name, df in output_records[sheet].items():
+            tab_name = textwrap.shorten('{0} - {1}'.format(form_name, sheet), width=31, placeholder="...")
+            df.to_excel(writer, sheet_name=tab_name, index=False)
     writer.close()
     output.seek(0)
     return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)

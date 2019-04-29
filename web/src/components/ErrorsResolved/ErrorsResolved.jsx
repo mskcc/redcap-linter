@@ -3,13 +3,20 @@ import './ErrorsResolved.scss';
 import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import Select from 'react-select';
 import EncodedRecords from '../EncodedRecords/EncodedRecords';
 import DownloadIcon from '../DownloadIcon/DownloadIcon';
 
 class ErrorsResolved extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {
+      selectedValue: '',
+    };
+  }
+
+  handleChange(e) {
+    console.log(e)
   }
 
   render() {
@@ -17,9 +24,40 @@ class ErrorsResolved extends Component {
       jsonData,
       projectInfo,
       dataFileName,
+      dataFieldToRedcapFieldMap,
       ddData,
       csvHeaders,
+      malformedSheets,
     } = this.props;
+
+    const {
+      selectedValue,
+    } = this.state;
+
+    // TODO For Autonumbering projects with Repeatable Instruments create a dropdown to choose a field for each sheet to repeat on
+    let repeatableFieldDropdown = null;
+    if (projectInfo.record_autonumbering_enabled === 1 && projectInfo.repeatable_instruments && projectInfo.repeatable_instruments.length > 0) {
+      const options = [];
+
+      Object.keys(dataFieldToRedcapFieldMap).forEach((sheet) => {
+        Object.values(dataFieldToRedcapFieldMap[sheet]).forEach((redcapField) => {
+          options.push({
+            value: redcapField,
+            label: redcapField,
+          })
+        });
+      });
+      repeatableFieldDropdown = (<div className="ErrorsResolved-repeatField">
+        <b>Select a column to repeat on</b>:
+        <Select
+          options={options}
+          isSearchable
+          value={selectedValue}
+          onChange={e => this.handleChange(e)}
+          placeholder="Select..."
+        />
+      </div>);
+    }
 
     const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_output`;
 
@@ -42,8 +80,10 @@ class ErrorsResolved extends Component {
             <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData)} />
             <input key="csvHeaders" name="csvHeaders" type="hidden" value={JSON.stringify(csvHeaders)} />
             <input key="projectInfo" name="projectInfo" type="hidden" value={JSON.stringify(projectInfo)} />
+            <input key="malformedSheets" name="malformedSheets" type="hidden" value={JSON.stringify(malformedSheets)} />
             <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
           </form>
+          { repeatableFieldDropdown }
           <button type="submit" form="downloadOutput" className="App-actionButton ErrorsResolved-download" value="Submit">
             <div className="ErrorsResolved-downloadIcon">
               <DownloadIcon />
