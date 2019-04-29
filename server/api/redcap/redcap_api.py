@@ -69,6 +69,24 @@ class RedcapApi(object):
             raise Exception("Failed to retrieve data dictionary. REDCap responded with status code {0}".format(r.status_code))
         return r.json()
 
+    def export_records(self, token, records):
+        payload = {
+            'token': token,
+            'content': 'record',
+            'format': self.format,
+            'type': 'flat',
+            'rawOrLabel': 'raw',
+            'rawOrLabelHeaders': 'raw',
+            'exportCheckboxLabel': False,
+            'exportSurveyFields': False,
+            'exportDataAccessGroups': False,
+            'returnFormat': self.format
+        }
+        r = requests.post(self.base_url, data=payload)
+        if r.status_code != 200:
+            raise Exception("Failed to retrieve data dictionary. REDCap responded with status code {0}".format(r.status_code))
+        return r.json()
+
     def generate_next_record_name(self, token):
         payload = {
             'token': token,

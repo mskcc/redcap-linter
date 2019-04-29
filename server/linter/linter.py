@@ -36,6 +36,8 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     all_errors = []
     rows_in_error = []
 
+    encoded_fields = {}
+
     total_error_count = 0
 
     recordid_field = None
@@ -82,7 +84,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         repeat_instance_dict = {}  # Dict from recordid to repeat instance number, auto-increment from 1
 
         next_record_name = project_info['next_record_name']
-        repeatable = form_name in project_info['repeatable_instruments']
         unique_record_ids = []
         if recordid_field.field_name in records.columns:
             redcap_repeat_instance = []
@@ -102,37 +103,17 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if repeat_instance_dict[recordid] > 1:
                     repeated_recordids.append(recordid)
 
-            # if repeatable:
-            #     output_records[recordid_field.field_name] = pd.Series(list(records[recordid_field.field_name]))
-            #     output_records['redcap_repeat_instrument'] = pd.Series([form_name] * len(list(records[recordid_field.field_name])))
-            #     output_records['redcap_repeat_instance'] = pd.Series(redcap_repeat_instance)
-            # else:
-                # TODO Figure out how to handle merging logic
-                # if not unique_record_ids:
-                # recordid_list = list(range(next_record_name, next_record_name + len(records.index)+1))
-                # output_records[recordid_field.field_name] = pd.Series(recordid_list)
-                    # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(unique_record_ids))
-                    # output_records['redcap_repeat_instance'] = pd.Series([None] * len(unique_record_ids))
-                # else:
-                    # TODO Only do this for non repeatable instruments
-                    # output_records[recordid_field.field_name] = pd.Series(unique_record_ids)
-                    # output_records['redcap_repeat_instrument'] = pd.Series([None] * len(recordid_list))
-                    # output_records['redcap_repeat_instance'] = pd.Series([None] * len(recordid_list))
-        # else:
-        #     output_records[recordid_field.field_name] = pd.Series(list(range(next_record_name, next_record_name + len(records.index)+1)))
-
     for form_name in matching_fields:
-        repeatable = form_name in project_info['repeatable_instruments']
+        encoded_fields[form_name] = []
         for redcap_field in matching_fields[form_name]:
             current_list = list(records[redcap_field.field_name])
             current_list = [i.strip() if isinstance(i, str) else i for i in current_list]
 
-            if redcap_field.field_name != recordid_field.field_name or recordid_field.field_name != 'recordid':
-                for idx, item in enumerate(current_list):
-                    if (pd.isnull(item) or not item) and redcap_field.required:
-                        if idx not in rows_in_error:
-                            rows_in_error.append(idx)
-                        all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
+            for idx, item in enumerate(current_list):
+                if (pd.isnull(item) or not item) and redcap_field.required:
+                    if idx not in rows_in_error:
+                        rows_in_error.append(idx)
+                    all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
 
             if redcap_field.field_type in ['text', 'notes']:
                 validations = validate_text_type(current_list, redcap_field)
@@ -151,9 +132,11 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
 
                 current_list = [str(item) for item in current_list]
-                is_encoded = all([item in choices_dict.values() for item in current_list])
+                is_encoded = all([item in choices_dict.values() or item == '' for item in current_list])
+                if is_encoded:
+                    encoded_fields[form_name].append(redcap_field.field_name)
                 for idx, item in enumerate(current_list):
-                    if item and not is_encoded and item not in choices_dict:
+                    if item and item not in choices_dict and not is_encoded:
                         if idx not in rows_in_error:
                             rows_in_error.append(idx)
                         all_errors.append("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
@@ -189,8 +172,6 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     instrument_errors = instrument_errors if total_error_count > 0 else None
 
-    # TODO Account for autonumbering
-
     repeat_instance_dict = {}
     if recordid_field.field_name in list(records.columns):
         record_inst = 1
@@ -213,7 +194,10 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     encoded_row['redcap_repeat_instance'] = repeat_instance_dict.get(row[recordid_field.field_name])
                 for matching_field in matching_fields[form_name]:
                     if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
-                        encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                        if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
+                            encoded_row[matching_field.field_name] = row[matching_field.field_name]
+                        else:
+                            encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
                     else:
                         encoded_row[matching_field.field_name] = row[matching_field.field_name]
                 output_records[form_name] = output_records[form_name].append(encoded_row, ignore_index=True)
@@ -230,7 +214,10 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                     continue
                 for matching_field in matching_fields[form_name]:
                     if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
-                        encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                        if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
+                            encoded_row[matching_field.field_name] = row[matching_field.field_name]
+                        else:
+                            encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
                     else:
                         encoded_row[matching_field.field_name] = row[matching_field.field_name]
                 output_records[form_name] = output_records[form_name].append(encoded_row, ignore_index=True)
