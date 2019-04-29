@@ -36,43 +36,41 @@ class EncodedRecords extends Component {
       for (let i = 0; i < sheets.length; i++) {
         const sheetName = sheets[i];
 
-        const innerPanes = [];
+        const tData = encodedRecords[sheetName];
 
-        Object.keys(encodedRecords[sheetName]).forEach((formName) => {
-          const tData = encodedRecords[sheetName][formName];
-          const formFields = formNameToDdFields[formName];
-          const headers = [];
-          if (tData && tData.length > 0) {
-            const encodedHeaders = Object.keys(tData[0]);
-            formFields.forEach((field) => {
-              if (encodedHeaders.includes(field) && field !== recordidField) {
-                headers.push(field);
-              }
-            });
-
-            // Change this later to account for repeatable instruments, this prepends with recordid field
-            encodedHeaders.forEach((header) => {
-              if (!formFields.includes(header) && header !== recordidField) {
-                headers.unshift(header);
-              }
-            });
-
-            headers.unshift(recordidField);
+        const ddFields = [];
+        ddData.forEach((ddField) => {
+          if (!ddFields.includes(ddField.field_name)) {
+            ddFields.push(ddField.field_name);
           }
-          innerPanes.push(
-            <TabPane tab={formName} key={innerPanes.length.toString()}>
-              <Datatable
-                sheetName={`${formName}`}
-                headers={headers}
-                tableData={tData}
-              />
-            </TabPane>
-          );
         });
+
+        const headers = [];
+        if (tData && tData.length > 0) {
+          const encodedHeaders = Object.keys(tData[0]);
+          ddFields.forEach((field) => {
+            if (encodedHeaders.includes(field) && field !== recordidField) {
+              headers.push(field);
+            }
+          });
+
+          // Change this later to account for repeatable instruments, this prepends with recordid field
+          encodedHeaders.forEach((header) => {
+            if (!ddFields.includes(header) && header !== recordidField) {
+              headers.unshift(header);
+            }
+          });
+
+          headers.unshift(recordidField);
+        }
 
         panes.push(
           <TabPane tab={sheetName} key={panes.length.toString()}>
-            <Tabs {...tabProps}>{ innerPanes }</Tabs>
+            <Datatable
+              sheetName={`${sheetName}`}
+              headers={headers}
+              tableData={tData}
+            />
           </TabPane>
         );
       }

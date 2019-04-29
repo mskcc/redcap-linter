@@ -72,9 +72,7 @@ def save_fields():
     for sheet_name in encoded_records:
         if malformed_sheets and sheet_name in malformed_sheets:
             continue
-        output_records[sheet_name] = {}
-        for form_name in encoded_records[sheet_name]:
-            output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':                   json_data,
@@ -234,9 +232,7 @@ def resolve_column():
     for sheet_name in encoded_records:
         if malformed_sheets and sheet_name in malformed_sheets:
             continue
-        output_records[sheet_name] = {}
-        for form_name in encoded_records[sheet_name]:
-            output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':        json_data,
@@ -388,9 +384,7 @@ def resolve_row():
         logging.warning(malformed_sheets)
         if malformed_sheets and sheet_name in malformed_sheets:
             continue
-        output_records[sheet_name] = {}
-        for form_name in encoded_records[sheet_name]:
-            output_records[sheet_name][form_name] = json.loads(encoded_records[sheet_name][form_name].to_json(orient='records'))
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':         json_data,
@@ -527,9 +521,7 @@ def download_output():
     for sheet, form in output_records.items():
         if sheet in malformed_sheets:
             continue
-        for form_name, df in output_records[sheet].items():
-            tab_name = textwrap.shorten('{0} - {1}'.format(form_name, sheet), width=31, placeholder="...")
-            df.to_excel(writer, sheet_name=tab_name, index=False)
+        form.to_excel(writer, sheet_name=sheet, index=False)
     writer.close()
     output.seek(0)
     return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)

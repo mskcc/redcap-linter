@@ -67,13 +67,10 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         total_error_count += 1
         all_errors.append("Primary key {0} not present in sheet {1}.".format(recordid_field.field_name, sheet_name))
 
-    output_records = {}
-    for form_name in form_names:
-        output_records[form_name] = pd.DataFrame()
-        output_records[form_name].insert(0, recordid_field.field_name, None)
-        if len(project_info['repeatable_instruments']) > 0 and form_name in project_info['repeatable_instruments']:
-            output_records[form_name].insert(1, 'redcap_repeat_instrument', None)
-            output_records[form_name].insert(2, 'redcap_repeat_instance', None)
+    output_records = pd.DataFrame()
+    output_records.insert(0, recordid_field.field_name, None)
+    output_records.insert(1, 'redcap_repeat_instrument', None)
+    output_records.insert(2, 'redcap_repeat_instance', None)
 
     # TODO get list of row ids to exclude in final output_records
     rows_to_remove = []
@@ -87,9 +84,10 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
         unique_record_ids = []
         if recordid_field.field_name in records.columns:
             redcap_repeat_instance = []
-            for row_num, recordid in enumerate(list(records[recordid_field.field_name])):
+            for idx, recordid in enumerate(list(records[recordid_field.field_name])):
                 if pd.isnull(recordid) or not recordid:
-                    # rows_to_remove.append(row_num)
+                    # rows_to_remove.append(idx)
+                    rows_in_error.append(idx)
                     redcap_repeat_instance.append(None)
                 elif recordid not in repeat_instance_dict:
                     unique_record_ids.append(recordid)
@@ -172,12 +170,11 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
 
     instrument_errors = instrument_errors if total_error_count > 0 else None
 
+    # TODO Make repeatable rows separate
     repeat_instance_dict = {}
     if recordid_field.field_name in list(records.columns):
-        record_inst = 1
-        if project_info.get('record_autonumbering_enabled') == 1:
-            record_inst = project_info.get('next_record_name')
         for index, row in records.iterrows():
+            encoded_row = {}
             if int(index) in rows_in_error:
                 continue
             if not repeat_instance_dict.get(row[recordid_field.field_name]):
@@ -185,31 +182,32 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
             else:
                 repeat_instance_dict[row[recordid_field.field_name]] += 1
             for form_name in matching_fields:
-                encoded_row = {}
-                if project_info.get('record_autonumbering_enabled') == 1:
-                    encoded_row['recordid'] = record_inst
-                    record_inst += 1
+                encoded_repeatable_row = {}
+                row_to_encode = encoded_row
                 if form_name in project_info.get('repeatable_instruments'):
-                    encoded_row['redcap_repeat_instrument'] = form_name
-                    encoded_row['redcap_repeat_instance'] = repeat_instance_dict.get(row[recordid_field.field_name])
+                    row_to_encode = encoded_repeatable_row
                 for matching_field in matching_fields[form_name]:
                     if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
                         if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
-                            encoded_row[matching_field.field_name] = row[matching_field.field_name]
+                            row_to_encode[matching_field.field_name] = row[matching_field.field_name]
                         else:
-                            encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                            row_to_encode[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
                     else:
-                        encoded_row[matching_field.field_name] = row[matching_field.field_name]
-                output_records[form_name] = output_records[form_name].append(encoded_row, ignore_index=True)
+                        row_to_encode[matching_field.field_name] = row[matching_field.field_name]
+                if form_name in project_info.get('repeatable_instruments'):
+                    row_to_encode['redcap_repeat_instrument'] = form_name
+                    row_to_encode['redcap_repeat_instance'] = repeat_instance_dict.get(row[recordid_field.field_name])
+                    output_records = output_records.append(row_to_encode, ignore_index=True)
+            output_records = output_records.append(encoded_row, ignore_index=True)
 
     if project_info.get('record_autonumbering_enabled') == 1:
         record_inst = project_info.get('next_record_name')
         for index, row in records.iterrows():
+            encoded_row = {'recordid': record_inst}
             if int(index) in rows_in_error:
                 continue
             for form_name in matching_fields:
-                encoded_row = {'recordid': record_inst}
-                # Cannot do repeatable instruments if autonumbered
+                # Cannot do repeatable instruments if autonumbered for now
                 if form_name in project_info.get('repeatable_instruments'):
                     continue
                 for matching_field in matching_fields[form_name]:
@@ -220,7 +218,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                             encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
                     else:
                         encoded_row[matching_field.field_name] = row[matching_field.field_name]
-                output_records[form_name] = output_records[form_name].append(encoded_row, ignore_index=True)
+            output_records = output_records.append(encoded_row, ignore_index=True)
             record_inst += 1
 
 
