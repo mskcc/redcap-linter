@@ -123,7 +123,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 for idx, valid in enumerate(validations):
                     if valid is False and idx not in rows_in_error:
                         rows_in_error.append(idx)
-            elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+            elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
                 choices_dict = redcap_field.choices_dict
 
                 # Always do this or just for yesno/truefalse?
@@ -139,7 +139,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                             rows_in_error.append(idx)
                         all_errors.append("{0} not found in Permissible Values: {1}".format(item, str(choices_dict)))
                 errors = []
-                for row_num, item in enumerate(current_list):
+                for idx, item in enumerate(current_list):
                     if not item:
                         has_error = None
                         if redcap_field.required:
@@ -149,12 +149,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                         if is_encoded:
                             errors.append(False)
                         else:
-                            if redcap_field.field_type == 'checkbox':
-                                permissible_values = map(str.lower, map(str, redcap_field.choices_dict.keys()))
-                                checkbox_items = [i.strip() for i in item.split(',')]
-                                errors.append(True in [str(i).lower() not in permissible_values for i in checkbox_items])
-                            else:
-                                errors.append(item not in choices_dict)
+                            errors.append(item not in choices_dict)
                 instrument_errors[redcap_field.field_name] = errors
 
                 if redcap_field.field_type == 'checkbox':
@@ -163,6 +158,27 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 else:
                     current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
                     replaced_choices = [choices_dict.get(item) or None for item in current_list]
+            elif redcap_field.field_type in ['checkbox']:
+                current_list = [str(item) for item in current_list]
+                errors = []
+                for idx, item in enumerate(current_list):
+                    if not item:
+                        has_error = None
+                        if redcap_field.required:
+                            has_error = True
+                        errors.append(has_error)
+                    else:
+                        permissible_values = [str(i).lower() for i in redcap_field.choices_dict.keys()]
+                        checkbox_items = [i.strip() for i in item.split(',')]
+                        has_error = False
+                        for i in checkbox_items:
+                            if str(i).lower() not in permissible_values:
+                                all_errors.append("{0} not found in Permissible Values: {1}".format(i, permissible_values))
+                                has_error = True
+                        # if has_error:
+                        #     rows_in_error.append(idx)
+                        errors.append(has_error)
+                instrument_errors[redcap_field.field_name] = errors
             else:
                 raise Exception('Unrecognized field_type: {0}'.format(redcap_field.field_type))
 
