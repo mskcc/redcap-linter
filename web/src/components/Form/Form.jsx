@@ -22,6 +22,8 @@ class Form extends Component {
         dataFileName: '',
         mappingsFile: '',
         mappingsFileName: '',
+        existingRecordsFile: '',
+        existingRecordsFileName: '',
         environment: 'test',
       },
     };
@@ -72,6 +74,8 @@ class Form extends Component {
       newForm.dataDictionaryName = e.target.value;
     } else if (field === 'mappingsFile') {
       newForm.mappingsFileName = e.target.value;
+    } else if (field === 'existingRecordsFile') {
+      newForm.existingRecordsFileName = e.target.value;
     }
     this.setState({ form: newForm });
   }
@@ -92,20 +96,6 @@ class Form extends Component {
     if (error) {
       errorText = `<ul><li>${error}</li></ul>`;
     }
-
-    // <fieldset className="App-fieldset">
-    //   <label className="App-fieldsetLabel" htmlFor="repeatableInstruments">
-    //     <span className="Form-label">Repeatable Instruments</span>
-    //     <Input
-    //       className="App-fieldsetInput"
-    //       id="repeatableInstruments"
-    //       type="text"
-    //       placeholder="Ex. Pathology, Imaging, etc."
-    //       value={form.repeatableInstruments}
-    //       onChange={this.handleOnChangeForm.bind(this, 'repeatableInstruments')}
-    //     />
-    //   </label>
-    // </fieldset>
 
     return (
       <div className="App-fieldsetColumn">
@@ -190,6 +180,22 @@ class Form extends Component {
             />
           </label>
         </fieldset>
+
+        <fieldset className="App-fieldset">
+          <label className="App-fieldsetLabel" htmlFor="existingRecordsFile">
+            <span className="Form-label">Existing Records (Optional)</span>
+            <input
+              className="App-fieldsetInput"
+              id="existingRecordsFile"
+              type="file"
+              accept=".csv"
+              value={form.existingRecordsFileName}
+              onChange={this.handleSelectedFile.bind(this, 'existingRecordsFile')}
+            />
+          </label>
+        </fieldset>
+
+        <hr />
 
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="dataFile">

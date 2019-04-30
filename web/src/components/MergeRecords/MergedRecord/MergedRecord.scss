@@ -1,0 +1,36 @@
+@import '../../Utilities/color';
+
+.MergedRecord-headerError {
+	color: color(red500);
+}
+
+.MergedRecord-cellError {
+	color: color(red500);
+}
+
+.MergedRecord-tableTitle {
+  height: 40px;
+}
+
+.MergedRecord-searchBar {
+  float: left;
+}
+
+.MergedRecord-cellContainer {
+	display: flex;
+}
+
+.MergedRecord-cell {
+	width: 80%;
+	display: inline-block;
+	overflow-wrap: break-word;
+}
+
+.MergedRecord-cancel {
+	width: 25px;
+	opacity: 0.6;
+	text-align: right;
+	align-self: center;
+	display: inline-block;
+	margin-left: 5px;
+}

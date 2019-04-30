@@ -19,7 +19,7 @@ class Breadcrumbs extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const pages = ['intro', 'matchFields', 'lint', 'finish'];
+    const pages = ['intro', 'matchFields', 'lint', 'merge', 'finish'];
     if (nextProps.new) {
       return { currentPage: 'matchFields' };
     }
@@ -44,7 +44,7 @@ class Breadcrumbs extends Component {
   render() {
     const { page } = this.props;
     const { currentPage } = this.state;
-    const pages = ['intro', 'matchFields', 'lint', 'finish']
+    const pages = ['intro', 'matchFields', 'lint', 'merge', 'finish']
 
     const {
       jsonData,
@@ -142,6 +142,14 @@ class Breadcrumbs extends Component {
         breadcrumbs.push(<Breadcrumb.Item key="lint">Lint</Breadcrumb.Item>);
       } else {
         breadcrumbs.push(<Breadcrumb.Item key="lint"><a href="#" onClick={e => this.goTo('lint', e)}>Lint</a></Breadcrumb.Item>);
+      }
+    }
+
+    if (pages.indexOf(currentPage) >= pages.indexOf('merge')) {
+      if (page === 'merge') {
+        breadcrumbs.push(<Breadcrumb.Item key="merge">Merge</Breadcrumb.Item>);
+      } else {
+        breadcrumbs.push(<Breadcrumb.Item key="merge"><a href="#" onClick={e => this.goTo('merge', e)}>Merge</a></Breadcrumb.Item>);
       }
     }
 

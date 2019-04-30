@@ -1,0 +1,40 @@
+@import '../../Utilities/color';
+
+.RecordMerger-headerError {
+	color: color(red500);
+}
+
+.RecordMerger-cellError {
+	color: color(red500);
+}
+
+.RecordMerger-dropdown {
+  overflow: visible;
+}
+
+.RecordMerger-buttons {
+	text-align: center;
+}
+
+.RecordMerger-tableTitle {
+  height: 40px;
+}
+
+.RecordMerger-searchBar {
+  float: left;
+}
+
+.RecordMerger-tableLabel {
+  float: right;
+  min-width: 200px;
+}
+
+.RecordMerger-elevate {
+	z-index: 10;
+}
+
+.RecordMerger-matchAll {
+	float: right;
+	margin-right: 5px;
+	height: 38px;
+}

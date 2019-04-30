@@ -65,6 +65,8 @@ class Datatable extends Component {
   }
 
   renderCell(header, cellInfo, index) {
+    console.log(header)
+    console.log(cellInfo)
     const {
       tableErrors,
       editable,
@@ -156,8 +158,7 @@ class Datatable extends Component {
           title: <Tooltip title={header}><div className={headerClassName}>{header}</div></Tooltip>,
           className,
           key: header,
-          render: (text, record, index) => (this.renderCell(header, record, index)),
-          // getProps: this.renderErrors.bind(this),
+          render: (text, record) => (this.renderCell(header, record, tableData.indexOf(record))),
         };
         // if (idx > 0) {
         //   column.width = 100;

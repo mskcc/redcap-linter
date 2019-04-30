@@ -65,6 +65,8 @@ export function postForm(form) {
     const data = new FormData();
     data.append('dataFile', form.dataFile);
     data.append('dataFileName', form.dataFileName);
+    data.append('existingRecordsFile', form.existingRecordsFile);
+    data.append('existingRecordsFileName', form.existingRecordsFileName);
     data.append('mappingsFile', form.mappingsFile);
     data.append('mappingsFileName', form.mappingsFileName);
     data.append('token', form.token);

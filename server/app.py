@@ -554,6 +554,8 @@ def post_form():
     datafile_name = form.get('dataFileName')
     mappings_file_name = None
     mappings = None
+    existing_records_file_name = None
+    existing_records = None
     form_names = set()
     form_name_to_dd_fields = {}
     data_field_to_redcap_field_map = {}
@@ -574,6 +576,8 @@ def post_form():
         if len(list(mappings["noMatchRedcapFields"])) > 0:
             no_match_redcap_fields = json.loads(list(mappings["noMatchRedcapFields"])[0])
 
+    redcap_api = RedcapApi(env)
+
     project_info = {
         'custom_record_label': '',
         'secondary_unique_field': '',
@@ -582,13 +586,12 @@ def post_form():
         'next_record_name': 1
     }
 
-    redcap_api = RedcapApi(env)
-
     data_dictionary = None
     if token:
         try:
+            existing_records = redcap_api.export_records(token)
             data_dictionary = redcap_api.fetch_data_dictionary(token)
-            dd = [RedcapField.from_json(field) for field in data_dictionary[1:]]
+            dd = [RedcapField.from_json(field) for field in data_dictionary]
             project_info = redcap_api.fetch_project_info(token)
             project_info['next_record_name'] = redcap_api.generate_next_record_name(token)
             if project_info['has_repeating_instruments_or_events'] == 1:
@@ -608,6 +611,10 @@ def post_form():
         elif dataDictionaryName.endswith('.xlsx') or dataDictionaryName.endswith('.xls'):
             dd_df = pd.read_excel(request.files['dataDictionary'])
         dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['Variable / Field Name'])]
+        if 'existingRecordsFile' in request.files:
+            existing_records_file_name = form.get('existingRecordsFileName')
+            existing_records =  pd.read_csv(request.files['existingRecordsFile'])
+            existing_records = json.loads(existing_records.to_json(orient='records', date_format='iso'))
 
     all_csv_headers = []
     dd_headers  = []
@@ -764,6 +771,7 @@ def post_form():
         'recordFieldsNotInRedcap': fields_not_in_redcap,
         'formNameToDdFields':      form_name_to_dd_fields,
         'projectInfo':             project_info,
+        'existingRecords':         existing_records,
         'recordidField':           recordid_field,
         'redcapFieldCandidates':   redcap_field_candidates,
         'dataFieldCandidates':     data_field_candidates,
