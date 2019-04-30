@@ -175,8 +175,8 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                             if str(i).lower() not in permissible_values:
                                 all_errors.append("{0} not found in Permissible Values: {1}".format(i, permissible_values))
                                 has_error = True
-                        # if has_error:
-                        #     rows_in_error.append(idx)
+                        if has_error:
+                            rows_in_error.append(idx)
                         errors.append(has_error)
                 instrument_errors[redcap_field.field_name] = errors
             else:
@@ -203,11 +203,19 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if form_name in project_info.get('repeatable_instruments'):
                     row_to_encode = encoded_repeatable_row
                 for matching_field in matching_fields[form_name]:
-                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
                         if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
                             row_to_encode[matching_field.field_name] = row[matching_field.field_name]
                         else:
                             row_to_encode[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                    elif matching_field.field_type in ['checkbox']:
+                        permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
+                        checkbox_items = [i.strip() for i in row[matching_field.field_name].split(',')]
+                        for permissible_value in permissible_values:
+                            if permissible_value in checkbox_items:
+                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 1
+                            else:
+                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 0
                     else:
                         row_to_encode[matching_field.field_name] = row[matching_field.field_name]
                 if form_name in project_info.get('repeatable_instruments'):
@@ -227,11 +235,19 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                 if form_name in project_info.get('repeatable_instruments'):
                     continue
                 for matching_field in matching_fields[form_name]:
-                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
                         if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
                             encoded_row[matching_field.field_name] = row[matching_field.field_name]
                         else:
                             encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                    elif matching_field.field_type in ['checkbox']:
+                        permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
+                        checkbox_items = [i.strip() for i in row[matching_field.field_name].split(',')]
+                        for permissible_value in permissible_values:
+                            if permissible_value in checkbox_items:
+                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 1
+                            else:
+                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 0
                     else:
                         encoded_row[matching_field.field_name] = row[matching_field.field_name]
             output_records = output_records.append(encoded_row, ignore_index=True)
@@ -243,6 +259,7 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
     # Drop rows with missing required data
     # output_records.drop(output_records.index[rows_in_error], inplace=True)
 
+    rows_in_error = list(set(rows_in_error))
     rows_in_error.sort()
     # logging.warning(rows_in_error)
 
