@@ -210,12 +210,12 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                             row_to_encode[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
                     elif matching_field.field_type in ['checkbox']:
                         permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
-                        checkbox_items = [i.strip() for i in row[matching_field.field_name].split(',')]
+                        checkbox_items = [i.strip().lower() for i in row[matching_field.field_name].split(',')]
                         for permissible_value in permissible_values:
                             if permissible_value in checkbox_items:
-                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 1
+                                row_to_encode['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 1
                             else:
-                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 0
+                                row_to_encode['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 0
                     else:
                         row_to_encode[matching_field.field_name] = row[matching_field.field_name]
                 if form_name in project_info.get('repeatable_instruments'):
@@ -242,12 +242,12 @@ def lint_sheet(data_dictionary, project_info, sheet_name, records):
                             encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
                     elif matching_field.field_type in ['checkbox']:
                         permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
-                        checkbox_items = [i.strip() for i in row[matching_field.field_name].split(',')]
+                        checkbox_items = [i.strip().lower() for i in row[matching_field.field_name].split(',')]
                         for permissible_value in permissible_values:
                             if permissible_value in checkbox_items:
-                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 1
+                                encoded_row['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 1
                             else:
-                                encoded_row['{0}__{1}'.format(matching_field.field_name, permissible_value)] = 0
+                                encoded_row['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 0
                     else:
                         encoded_row[matching_field.field_name] = row[matching_field.field_name]
             output_records = output_records.append(encoded_row, ignore_index=True)
