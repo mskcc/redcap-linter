@@ -76,27 +76,12 @@ class MergeRecords extends Component {
 
   render() {
     const {
-      jsonData,
-      csvHeaders,
-      workingSheetName,
       workingMergeRow,
-      removeChoiceMatch,
     } = this.props;
 
     if (workingMergeRow < 0) {
       return null;
     }
-
-    const row = jsonData[workingSheetName][workingMergeRow];
-
-    const sheetHeaders = csvHeaders[workingSheetName];
-    const tableData = sheetHeaders.reduce((filtered, field) => {
-      filtered.push({
-        'Field': field,
-        'Value': row[field] || "",
-      });
-      return filtered;
-    }, []);
 
     return (
       <div>
@@ -105,10 +90,7 @@ class MergeRecords extends Component {
           <div>
             <div className="MergeRecords-matchedChoices">
               <div className="MergeRecords-title">Merged Record</div>
-              <MergedRecord
-                removeChoiceMatch={removeChoiceMatch}
-                tableData={tableData}
-              />
+              <MergedRecord />
             </div>
             <div className="MergeRecords-unmatchedChoices">
               <div className="MergeRecords-title">Existing Record</div>

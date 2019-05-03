@@ -16,6 +16,10 @@ export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
 export const MATCH_CHOICES = 'MATCH_CHOICES';
 
+export const MERGE_FIELD = 'MERGE_FIELD';
+
+export const REMOVE_MERGE = 'REMOVE_MERGE';
+
 export const REMOVE_CHOICE_MATCH = 'REMOVE_CHOICE_MATCH';
 
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
@@ -188,10 +192,35 @@ export function matchChoicesSuccess(payload) {
   };
 }
 
-export function matchChoices(dataFieldToChoiceMap) {
+export function matchChoices(payload) {
   return function action(dispatch) {
-    const payload = dataFieldToChoiceMap;
     return dispatch(matchChoicesSuccess(payload));
+  };
+}
+
+export function mergeFieldSuccess(payload) {
+  return {
+    type: MERGE_FIELD,
+    payload,
+  };
+}
+
+export function mergeField(payload) {
+  return function action(dispatch) {
+    return dispatch(mergeFieldSuccess(payload));
+  };
+}
+
+export function removeMergeSuccess(payload) {
+  return {
+    type: REMOVE_MERGE,
+    payload,
+  };
+}
+
+export function removeMerge(payload) {
+  return function action(dispatch) {
+    return dispatch(removeMergeSuccess(payload));
   };
 }
 

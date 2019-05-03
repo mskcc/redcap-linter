@@ -3,24 +3,16 @@ import './MergedRecord.scss';
 import '../../../App.scss';
 import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { removeMerge } from '../../../actions/RedcapLinterActions';
 
 class MergedRecord extends Component {
   constructor(props) {
     super(props);
     this.state = {
       search: '',
-      // columns: [{
-      //   Header: 'Field',
-      //   accessor: 'Field',
-      //   style: { whiteSpace: 'unset' },
-      //   Cell: this.renderCell.bind(this),
-      // },
-      // {
-      //   Header: 'Value',
-      //   accessor: 'Value',
-      //   style: { whiteSpace: 'unset' },
-      //   Cell: this.renderCell.bind(this),
-      // }],
       columns: [{
         title: 'Field',
         key: 'Field',
@@ -34,14 +26,23 @@ class MergedRecord extends Component {
     };
   }
 
-  removeChoiceMatch(cellInfo) {
+  removeMerge(cellInfo) {
     const {
-      removeChoiceMatch,
+      removeMerge,
     } = this.props;
-    removeChoiceMatch(cellInfo['Field'], cellInfo['Value']);
+    const payload = {
+      field: cellInfo['Field'],
+    }
+    removeMerge(payload);
   }
 
   renderCell(header, cellInfo) {
+    const {
+      mergeMap,
+      workingSheetName,
+      workingMergeRow,
+      removeChoiceMatch,
+    } = this.props;
     let className = 'MergedRecord-cell';
     if (!cellInfo['Value']) {
       className += ' MergedRecord-cellError';
@@ -52,11 +53,14 @@ class MergedRecord extends Component {
     } else {
       cellValue = cellInfo[header];
     }
+    if (header === 'Value' && cellInfo['Merged Value'] && cellInfo['Merged Value'] !== cellInfo['Value']) {
+      cellValue = (<p><del>{ cellValue }</del> {cellInfo['Merged Value']}</p>);
+    }
     let cancelButton = '';
-    if (header === 'Value' && cellInfo['Value'] !== cellInfo['Field']) {
+    if (header === 'Value' && cellInfo['Merged Value'] && cellInfo['Merged Value'] !== cellInfo['Value']) {
       cancelButton = (
         <div className="MergedRecord-cancel">
-          <a onClick={e => this.removeChoiceMatch(cellInfo, e)}>
+          <a onClick={e => this.removeMerge(cellInfo, e)}>
             <Icon type="close" />
           </a>
         </div>
@@ -74,12 +78,40 @@ class MergedRecord extends Component {
 
   render() {
     const {
-      tableData,
+      jsonData,
+      csvHeaders,
+      workingSheetName,
+      workingMergeRow,
+      mergeMap,
+      dataFieldToRedcapFieldMap,
     } = this.props;
+
+    if (workingMergeRow < 0) {
+      return null;
+    }
+
+    let rowMergeMap = {}
+    if (mergeMap[workingSheetName] && mergeMap[workingSheetName][workingMergeRow]) {
+      rowMergeMap = mergeMap[workingSheetName][workingMergeRow];
+    }
+
+    const row = jsonData[workingSheetName][workingMergeRow];
+
+    const matchingHeaders = Object.values(dataFieldToRedcapFieldMap[workingSheetName]);
+    const tableData = matchingHeaders.reduce((filtered, field) => {
+      filtered.push({
+        'Field': field,
+        'Value': row[field] || '',
+        'Merged Value': rowMergeMap[field] || '',
+      });
+      return filtered;
+    }, []);
+
     const {
       search,
       columns,
     } = this.state;
+
     let data = tableData;
     if (search) {
       data = data.filter(row => row['Field'].includes(search) || String(row['Value']).includes(search));
@@ -98,11 +130,21 @@ class MergedRecord extends Component {
 }
 
 MergedRecord.propTypes = {
+  mergeMap: PropTypes.object,
   tableData: PropTypes.array,
 };
 
 MergedRecord.defaultProps = {
+  mergeMap: {},
   tableData: [],
 };
 
-export default MergedRecord;
+function mapStateToProps(state) {
+  return state;
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ removeMerge }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(MergedRecord);

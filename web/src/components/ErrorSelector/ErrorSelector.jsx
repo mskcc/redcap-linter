@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import { Menu, Icon, Button } from 'antd';
-import { resolveColumn, resolveRow, navigateTo } from '../../actions/RedcapLinterActions';
+import { resolveColumn, resolveRow, resolveMergeRow, navigateTo } from '../../actions/RedcapLinterActions';
 
 class ErrorSelector extends Component {
   constructor(props) {
@@ -58,6 +58,29 @@ class ErrorSelector extends Component {
     }
   }
 
+  changeMergeResolve(e) {
+    const {
+      jsonData,
+      projectInfo,
+      ddData,
+      csvHeaders,
+      mergeConflicts,
+      resolveMergeRow,
+    } = this.props;
+    const payload = {
+      jsonData,
+      projectInfo,
+      mergeConflicts,
+      nextMergeRow: e.value.rowNum,
+      nextSheetName: e.value.sheet,
+      ddData,
+      csvHeaders,
+      action: 'continue',
+    };
+    resolveMergeRow(payload);
+  }
+
+
   goTo(page) {
     const {
       navigateTo,
@@ -71,14 +94,18 @@ class ErrorSelector extends Component {
       originalToCorrectedValueMap,
       fieldToValueMap,
       rowsInError,
+      columnsInError,
+      mergeConflicts,
       workingSheetName,
+      workingMergeRow,
       workingColumn,
       workingRow,
-      columnsInError,
       page,
     } = this.props;
 
     const options = [];
+    const mergeConflictOptions = [];
+
     let allErrors = [];
     Object.keys(columnsInError).forEach((sheet) => {
       const subOptions = [];
@@ -149,16 +176,37 @@ class ErrorSelector extends Component {
       allErrors = allErrors.concat(rowsInError[sheet]);
     });
 
-    let selectedValue = {}
+    Object.keys(mergeConflicts).forEach((sheet) => {
+      const subOptions = [];
+      mergeConflicts[sheet].forEach((row) => {
+        const rowNum = Number(row);
+        subOptions.push({
+          value: { sheet: sheet, rowNum: rowNum },
+          label: rowNum + 2,
+        });
+      });
+      mergeConflictOptions.push({
+        label: `${sheet} | Merge Conflicts`,
+        options: subOptions,
+      });
+    });
+
+    let selectedValue = {};
+    let selectedMergeValue = {};
     if (workingColumn) {
       selectedValue = {
         value: { sheet: workingSheetName, column: workingColumn },
         label: workingColumn,
       };
-    } else if (workingRow !== '') {
+    } else if (workingRow >= 0) {
       selectedValue = {
         value: { sheet: workingSheetName, rowNum: workingRow },
         label: workingRow+2,
+      };
+    } else if (workingMergeRow >= 0) {
+      selectedMergeValue = {
+        value: { sheet: workingSheetName, rowNum: workingMergeRow },
+        label: workingMergeRow+2,
       };
     }
 
@@ -203,6 +251,25 @@ class ErrorSelector extends Component {
           />
         </div>
       </div>);
+    } else if (page === 'merge') {
+      errorSelector = (<div className="ErrorSelector-selector">
+        <div className="ErrorSelector-label">
+          <b>Choose Row</b>
+        </div>
+        <div className="ErrorSelector-select">
+          <div className="ErrorSelector-sheetName">
+            { workingSheetName }
+          </div>
+          <Select
+            className="ErrorSelector-elevate"
+            options={mergeConflictOptions}
+            isSearchable
+            value={selectedMergeValue}
+            styles={selectStyles}
+            onChange={this.changeMergeResolve.bind(this)}
+          />
+        </div>
+      </div>);
     }
 
     return (
@@ -220,6 +287,7 @@ ErrorSelector.propTypes = {
   originalToCorrectedValueMap: PropTypes.object,
   columnsInError: PropTypes.object,
   rowsInError: PropTypes.object,
+  mergeConflicts: PropTypes.object,
   fieldToValueMap: PropTypes.object,
 };
 
@@ -227,6 +295,7 @@ ErrorSelector.defaultProps = {
   fieldErrors: {},
   columnsInError: {},
   rowsInError: {},
+  mergeConflicts: {},
   dataFieldToChoiceMap: {},
   noMatchRedcapFields: [],
   originalToCorrectedValueMap: {},
@@ -238,7 +307,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, resolveRow, navigateTo }, dispatch);
+  return bindActionCreators({ resolveColumn, resolveRow, resolveMergeRow, navigateTo }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ErrorSelector);

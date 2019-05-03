@@ -7,7 +7,9 @@ import {
   HIGHLIGHT_COLUMNS,
   REMOVE_FIELD_MATCH,
   MATCH_CHOICES,
+  MERGE_FIELD,
   REMOVE_CHOICE_MATCH,
+  REMOVE_MERGE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
   NAVIGATE_TO_SUCCESS,
@@ -148,6 +150,30 @@ export default function (state = {}, action) {
       })
       fieldErrors.textErrors = textErrors;
       return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
+    }
+    case MERGE_FIELD: {
+      const mergeMap = state.mergeMap || {};
+      const toggle = state.toggle || false;
+      const {
+        workingSheetName,
+        workingMergeRow,
+      } = state;
+      mergeMap[workingSheetName] = mergeMap[workingSheetName] || {}
+      mergeMap[workingSheetName][workingMergeRow] = mergeMap[workingSheetName][workingMergeRow] || {}
+      mergeMap[workingSheetName][workingMergeRow] = Object.assign(mergeMap[workingSheetName][workingMergeRow], action.payload)
+      return Object.assign({}, state, { mergeMap, toggle: !toggle });
+    }
+    case REMOVE_MERGE: {
+      const mergeMap = state.mergeMap || {};
+      const toggle = state.toggle || false;
+      const {
+        workingSheetName,
+        workingMergeRow,
+      } = state;
+      mergeMap[workingSheetName] = mergeMap[workingSheetName] || {}
+      mergeMap[workingSheetName][workingMergeRow] = mergeMap[workingSheetName][workingMergeRow] || {}
+      delete mergeMap[workingSheetName][workingMergeRow][action.payload.field];
+      return Object.assign({}, state, { mergeMap, toggle: !toggle });
     }
     case MATCH_CHOICES: {
       let dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};

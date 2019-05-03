@@ -38,3 +38,22 @@
 	margin-right: 5px;
 	height: 38px;
 }
+
+.RecordMerger-accept {
+	width: 25px;
+	opacity: 0.6;
+	text-align: right;
+	align-self: center;
+	display: inline-block;
+	margin-left: 5px;
+}
+
+.RecordMerger-cellContainer {
+	display: flex;
+}
+
+.RecordMerger-cell {
+	width: 80%;
+	display: inline-block;
+	overflow-wrap: break-word;
+}

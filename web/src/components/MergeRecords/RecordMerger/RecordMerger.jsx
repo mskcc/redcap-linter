@@ -1,19 +1,18 @@
 import React, { Component } from 'react';
 import './RecordMerger.scss';
 import '../../../App.scss';
-import { Table, Input } from 'antd';
+import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { matchChoices } from '../../../actions/RedcapLinterActions';
+import { mergeField } from '../../../actions/RedcapLinterActions';
 
 class RecordMerger extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      choiceMap: {},
       noMatch: '',
       search: '',
       columns: [{
@@ -22,12 +21,24 @@ class RecordMerger extends Component {
         render: (text, record) => (this.renderCell('Field', record)),
       },
       {
-        title: 'Value',
-        key: 'Value',
-        render: (text, record) => (this.renderCell('Value', record)),
+        title: 'Value in Datafile',
+        key: 'Value in Datafile',
+        render: (text, record) => (this.renderCell('Value in Datafile', record)),
+      },
+      {
+        title: 'Existing Value in REDCap',
+        key: 'Existing Value in REDCap',
+        render: (text, record) => (this.renderCell('Existing Value in REDCap', record)),
       }],
     };
   }
+
+  // ,
+  // {
+  //   title: 'Resolve',
+  //   key: 'Resolve',
+  //   render: (text, record) => (this.renderMatchButton(record)),
+  // }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const {
@@ -35,83 +46,36 @@ class RecordMerger extends Component {
       workingSheetName,
     } = prevState;
     if (nextProps.workingMergeRow !== workingMergeRow || nextProps.workingSheetName !== workingSheetName) {
-      return { choiceMap: {}, workingMergeRow: nextProps.workingMergeRow, workingSheetName: nextProps.workingSheetName };
+      return { mergeMap: {}, workingMergeRow: nextProps.workingMergeRow, workingSheetName: nextProps.workingSheetName };
     }
     return null;
   }
 
-  acceptMatches(e) {
+  handleMerge(header, cellInfo) {
     const {
-      choiceMap,
-    } = this.state;
-    const {
-      matchChoices,
-    } = this.props;
-    matchChoices(choiceMap);
-  }
-
-  handleMatch(fieldToMatch) {
-    const {
-      choiceMap,
-    } = this.state;
-    const {
-      matchChoices,
-    } = this.props;
-    const match = choiceMap[fieldToMatch] || '';
-    const payload = {};
-    payload[fieldToMatch] = match;
-    matchChoices(payload);
-  }
-
-  handleNoMatch(fieldToMatch) {
-    const {
-      noMatch,
-    } = this.state;
-    const {
-      matchChoices,
+      mergeField,
     } = this.props;
     const payload = {};
-    payload[fieldToMatch] = noMatch;
-    matchChoices(payload);
-  }
-
-  handleChange(fieldToMatch, e) {
-    const {
-      fieldErrors,
-    } = this.props;
-    const {
-      choiceMap,
-    } = this.state;
-    if (fieldErrors && fieldErrors.fieldType === 'checkbox') {
-      choiceMap[fieldToMatch] = e.map(choice => choice.value);
-    } else {
-      choiceMap[fieldToMatch] = e.value;
-    }
-    this.setState({ choiceMap });
+    payload[cellInfo['Field']] = cellInfo[header];
+    mergeField(payload);
   }
 
   renderCell(header, cellInfo) {
-    return (
-      <Cell
-        cellData={cellInfo[header]}
-        editable={false}
-      />
-    );
-  }
-
-  renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo['Field'];
-    const {
-      choiceMap,
-    } = this.state;
-    let disabled = true;
-    if (choiceMap[fieldToMatch]) {
-      disabled = false;
+    let className = 'RecordMerger-cell';
+    let acceptButton = null;
+    if (header !== 'Field') {
+      acceptButton = (<div className="RecordMerger-accept">
+        <a onClick={e => this.handleMerge(header, cellInfo, e)}>
+          <Icon type="check" />
+        </a>
+      </div>);
     }
     return (
-      <div className="RecordMerger-buttons">
-        <button type="button" disabled={disabled} onClick={e => this.handleMatch(fieldToMatch, e)} className="App-submitButton">Match</button>
-        <button type="button" onClick={e => this.handleNoMatch(fieldToMatch, e)} className="App-actionButton">No Match</button>
+      <div className="RecordMerger-cellContainer">
+        <div className={className}>
+          { cellInfo[header] }
+        </div>
+        { acceptButton }
       </div>
     );
   }
@@ -124,22 +88,35 @@ class RecordMerger extends Component {
       recordidField,
       jsonData,
       csvHeaders,
+      dataFieldToRedcapFieldMap,
+      mergeMap,
     } = this.props;
     const {
       search,
       columns,
-      choiceMap,
     } = this.state;
 
     const row = jsonData[workingSheetName][workingMergeRow]
     const existingRecord = decodedRecords[row[recordidField]];
 
-    const sheetHeaders = csvHeaders[workingSheetName];
-    const tableData = Object.keys(existingRecord).reduce((filtered, field) => {
-      filtered.push({
-        'Field': field,
-        'Value': existingRecord[field] || "",
-      });
+    let rowMergeMap = {};
+    if (mergeMap[workingSheetName] && mergeMap[workingSheetName][workingMergeRow]) {
+      rowMergeMap = mergeMap[workingSheetName][workingMergeRow];
+    }
+
+    // TODO if data field is missing from the data file, but existing in REDCap should it be left blank on upload?
+    // REDCap provides options to override, need to talk to Julian to see if this is ever used
+    const matchingHeaders = Object.values(dataFieldToRedcapFieldMap[workingSheetName]);
+    const tableData = matchingHeaders.reduce((filtered, field) => {
+      if (!rowMergeMap[field]) {
+        if (String(row[field]) !== String(existingRecord[field]) && row[field] && existingRecord[field]) {
+          filtered.push({
+            'Field': field,
+            'Value in Datafile': row[field] || '',
+            'Existing Value in REDCap': existingRecord[field] || '',
+          });
+        }
+      }
       return filtered;
     }, []);
 
@@ -149,15 +126,12 @@ class RecordMerger extends Component {
       data = data.filter(row => row['Field'].includes(search));
     }
 
-    const disabled = Object.keys(choiceMap).length === 0;
-
     return (
       <div className="RecordMerger-table">
         <div className="RecordMerger-tableTitle">
           <span className="RecordMerger-searchBar">
             Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
           </span>
-          <button type="button" disabled={disabled} onClick={this.acceptMatches.bind(this)} className="App-submitButton RecordMerger-matchAll">Accept Matches</button>
         </div>
         <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
       </div>
@@ -166,12 +140,12 @@ class RecordMerger extends Component {
 }
 
 RecordMerger.propTypes = {
-  fieldErrors: PropTypes.object,
+  mergeMap: PropTypes.object,
   dataFieldToChoiceMap: PropTypes.object,
 };
 
 RecordMerger.defaultProps = {
-  fieldErrors: {},
+  mergeMap: {},
   dataFieldToChoiceMap: {},
 };
 
@@ -180,7 +154,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ matchChoices }, dispatch);
+  return bindActionCreators({ mergeField }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RecordMerger);
