@@ -76,44 +76,27 @@ class MergeRecords extends Component {
 
   render() {
     const {
-      fieldErrors,
-      dataFieldToChoiceMap,
+      jsonData,
+      csvHeaders,
       workingSheetName,
-      workingColumn,
+      workingMergeRow,
       removeChoiceMatch,
     } = this.props;
 
-    if (!workingColumn) {
+    if (workingMergeRow < 0) {
       return null;
     }
 
-    let matchedChoices = fieldErrors.matchedChoices || [];
-    let choiceMap = {};
-    if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {
-      choiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
-    }
-    matchedChoices = matchedChoices.map(header => ({
-      'Data Field': header,
-      'Permissible Value': header,
-    }));
-    matchedChoices = matchedChoices.concat(Object.keys(choiceMap).reduce((filtered, dataField) => {
-      if (choiceMap[dataField]) {
-        filtered.push({
-          'Data Field': dataField,
-          'Permissible Value': choiceMap[dataField],
-        });
-      }
+    const row = jsonData[workingSheetName][workingMergeRow];
+
+    const sheetHeaders = csvHeaders[workingSheetName];
+    const tableData = sheetHeaders.reduce((filtered, field) => {
+      filtered.push({
+        'Field': field,
+        'Value': row[field] || "",
+      });
       return filtered;
-    }, []));
-    matchedChoices = matchedChoices.concat(Object.keys(choiceMap).reduce((filtered, dataField) => {
-      if (!choiceMap[dataField]) {
-        filtered.push({
-          'Data Field': dataField,
-          'Permissible Value': choiceMap[dataField],
-        });
-      }
-      return filtered;
-    }, []));
+    }, []);
 
     return (
       <div>
@@ -121,14 +104,14 @@ class MergeRecords extends Component {
         <div className="MergeRecords-container">
           <div>
             <div className="MergeRecords-matchedChoices">
-              <div className="MergeRecords-title">Matched Choices</div>
+              <div className="MergeRecords-title">Merged Record</div>
               <MergedRecord
                 removeChoiceMatch={removeChoiceMatch}
-                tableData={matchedChoices}
+                tableData={tableData}
               />
             </div>
             <div className="MergeRecords-unmatchedChoices">
-              <div className="MergeRecords-title">Unmatched Choices</div>
+              <div className="MergeRecords-title">Existing Record</div>
               <RecordMerger />
             </div>
             <div style={{ clear: 'both' }} />
@@ -145,13 +128,13 @@ class MergeRecords extends Component {
 }
 
 MergeRecords.propTypes = {
-  fieldErrors: PropTypes.object,
-  dataFieldToChoiceMap: PropTypes.object,
+  csvHeaders: PropTypes.object,
+  jsonData: PropTypes.object,
 };
 
 MergeRecords.defaultProps = {
-  fieldErrors: {},
-  dataFieldToChoiceMap: {},
+  csvHeaders: {},
+  jsonData: {},
 };
 
 function mapStateToProps(state) {

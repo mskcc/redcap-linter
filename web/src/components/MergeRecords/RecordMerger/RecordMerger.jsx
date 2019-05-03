@@ -17,33 +17,25 @@ class RecordMerger extends Component {
       noMatch: '',
       search: '',
       columns: [{
-        title: 'Data Field',
-        key: 'Data Field',
-        render: (text, record) => (this.renderCell('Data Field', record)),
+        title: 'Field',
+        key: 'Field',
+        render: (text, record) => (this.renderCell('Field', record)),
       },
       {
-        title: 'Candidate',
-        key: 'Candidate',
-        width: '250px',
-        render: (text, record) => (this.renderCandidates(record)),
+        title: 'Value',
+        key: 'Value',
+        render: (text, record) => (this.renderCell('Value', record)),
       }],
     };
   }
 
-  // ,
-  // {
-  //   title: 'Match',
-  //   key: 'Match',
-  //   render: (text, record) => (this.renderMatchButton(record)),
-  // }
-
   static getDerivedStateFromProps(nextProps, prevState) {
     const {
-      workingColumn,
+      workingMergeRow,
       workingSheetName,
     } = prevState;
-    if (nextProps.workingColumn !== workingColumn || nextProps.workingSheetName !== workingSheetName) {
-      return { choiceMap: {}, workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName };
+    if (nextProps.workingMergeRow !== workingMergeRow || nextProps.workingSheetName !== workingSheetName) {
+      return { choiceMap: {}, workingMergeRow: nextProps.workingMergeRow, workingSheetName: nextProps.workingSheetName };
     }
     return null;
   }
@@ -107,88 +99,8 @@ class RecordMerger extends Component {
     );
   }
 
-  renderCandidates(cellInfo) {
-    const {
-      fieldErrors,
-      ddData,
-      workingColumn,
-    } = this.props;
-    const choiceCandidates = fieldErrors.choiceCandidates || {};
-    const {
-      choiceMap,
-    } = this.state;
-    const ddField = ddData.find(field => field.field_name === workingColumn);
-    const fieldToMatch = cellInfo['Data Field'];
-    const value = choiceMap[fieldToMatch];
-    let selectedValue = [];
-    if (Array.isArray(value)) {
-      selectedValue = value.map(choice => ({
-        value: choice,
-        label: choice,
-      }));
-    } else if (value) {
-      selectedValue = {
-        value: value,
-        label: value,
-      };
-    } else if (value === null) {
-      selectedValue = {
-        value: '',
-        label: 'None',
-      };
-    } else if (ddField.field_type === 'checkbox' && !value) {
-      const checkboxItems = fieldToMatch.split(',').map(item => item.trim());
-      const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
-      checkboxItems.forEach((item) => {
-        if (choices.indexOf(item.toLowerCase()) >= 0) {
-          selectedValue.push({
-            value: item,
-            label: item,
-          });
-        }
-      });
-    }
-    let scores = choiceCandidates[fieldToMatch] || [];
-    scores = scores.sort((a, b) => b.score - a.score);
-    const options = scores.map(score => ({
-      value: score.candidate,
-      label: <span><b>{score.candidate}</b> | <span style={{ fontWeight: 'lighter' }}>{score.choiceValue}</span></span>,
-    }));
-    options.push({
-      value: null,
-      label: 'None',
-    });
-
-    let isMulti = false;
-    if (fieldErrors.fieldType === 'checkbox') {
-      isMulti = true;
-    }
-    const selectStyles = {
-      control: provided => ({
-        ...provided,
-      }),
-      menu: provided => ({
-        // none of react-select's styles are passed to <Control />
-        ...provided,
-        zIndex: 20,
-      }),
-    };
-
-    return (
-      <Select
-        options={options}
-        isSearchable
-        isMulti={isMulti}
-        styles={selectStyles}
-        value={selectedValue}
-        onChange={e => this.handleChange(fieldToMatch, e)}
-        placeholder="Select..."
-      />
-    );
-  }
-
   renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo['Data Field'];
+    const fieldToMatch = cellInfo['Field'];
     const {
       choiceMap,
     } = this.state;
@@ -206,11 +118,12 @@ class RecordMerger extends Component {
 
   render() {
     const {
-      fieldErrors,
+      decodedRecords,
       workingSheetName,
-      workingColumn,
-      dataFieldToChoiceMap,
-      columnsInError,
+      workingMergeRow,
+      recordidField,
+      jsonData,
+      csvHeaders,
     } = this.props;
     const {
       search,
@@ -218,29 +131,25 @@ class RecordMerger extends Component {
       choiceMap,
     } = this.state;
 
-    let savedChoiceMap = {};
-    if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {
-      savedChoiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
-    }
+    const row = jsonData[workingSheetName][workingMergeRow]
+    const existingRecord = decodedRecords[row[recordidField]];
 
-    const tableData = fieldErrors.unmatchedChoices.reduce((filtered, f) => {
-      if (!Object.keys(savedChoiceMap).includes(f)) {
-        filtered.push({
-          'Data Field': f,
-        });
-      }
+    const sheetHeaders = csvHeaders[workingSheetName];
+    const tableData = Object.keys(existingRecord).reduce((filtered, field) => {
+      filtered.push({
+        'Field': field,
+        'Value': existingRecord[field] || "",
+      });
       return filtered;
     }, []);
 
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Data Field'].includes(search));
+      data = data.filter(row => row['Field'].includes(search));
     }
 
-    // {`${workingSheetName}: ${workingColumn}`}
-
-    const disabled = Object.keys(choiceMap).length == 0;
+    const disabled = Object.keys(choiceMap).length === 0;
 
     return (
       <div className="RecordMerger-table">

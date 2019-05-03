@@ -41,7 +41,7 @@ class ResolveErrors extends Component {
       resolveColumn,
       resolveRow,
     } = this.props;
-    if (workingColumn || workingRow) {
+    if (workingColumn || workingRow >= 0) {
       return;
     }
     if (!workingColumn && Object.keys(columnsInError).length > 0) {
@@ -61,7 +61,7 @@ class ResolveErrors extends Component {
       };
       // TODO Call on resolveRow if there are no column errors
       resolveColumn(payload);
-    } else if (!workingRow && Object.keys(rowsInError).length > 0) {
+    } else if (workingRow < 0 && Object.keys(rowsInError).length > 0) {
       // TODO take workingSheetName from props
       const nextSheetName = Object.keys(rowsInError)[0];
       const nextRow = rowsInError[nextSheetName][0];
