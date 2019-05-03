@@ -10,26 +10,26 @@ class MergedRecord extends Component {
     this.state = {
       search: '',
       // columns: [{
-      //   Header: 'Data Field',
-      //   accessor: 'Data Field',
+      //   Header: 'Field',
+      //   accessor: 'Field',
       //   style: { whiteSpace: 'unset' },
       //   Cell: this.renderCell.bind(this),
       // },
       // {
-      //   Header: 'Permissible Value',
-      //   accessor: 'Permissible Value',
+      //   Header: 'Value',
+      //   accessor: 'Value',
       //   style: { whiteSpace: 'unset' },
       //   Cell: this.renderCell.bind(this),
       // }],
       columns: [{
-        title: 'Data Field',
-        key: 'Data Field',
-        render: (text, record) => (this.renderCell('Data Field', record)),
+        title: 'Field',
+        key: 'Field',
+        render: (text, record) => (this.renderCell('Field', record)),
       },
       {
-        title: 'Permissible Value',
-        key: 'Permissible Value',
-        render: (text, record) => (this.renderCell('Permissible Value', record)),
+        title: 'Value',
+        key: 'Value',
+        render: (text, record) => (this.renderCell('Value', record)),
       }],
     };
   }
@@ -38,12 +38,12 @@ class MergedRecord extends Component {
     const {
       removeChoiceMatch,
     } = this.props;
-    removeChoiceMatch(cellInfo['Data Field'], cellInfo['Permissible Value']);
+    removeChoiceMatch(cellInfo['Field'], cellInfo['Value']);
   }
 
   renderCell(header, cellInfo) {
     let className = 'MergedRecord-cell';
-    if (!cellInfo['Permissible Value']) {
+    if (!cellInfo['Value']) {
       className += ' MergedRecord-cellError';
     }
     let cellValue = '';
@@ -53,7 +53,7 @@ class MergedRecord extends Component {
       cellValue = cellInfo[header];
     }
     let cancelButton = '';
-    if (header === 'Permissible Value' && cellInfo['Permissible Value'] !== cellInfo['Data Field']) {
+    if (header === 'Value' && cellInfo['Value'] !== cellInfo['Field']) {
       cancelButton = (
         <div className="MergedRecord-cancel">
           <a onClick={e => this.removeChoiceMatch(cellInfo, e)}>
@@ -82,7 +82,7 @@ class MergedRecord extends Component {
     } = this.state;
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Data Field'].includes(search) || row['Permissible Value'].includes(search));
+      data = data.filter(row => row['Field'].includes(search) || String(row['Value']).includes(search));
     }
     return (
       <div className="MergedRecord-table">

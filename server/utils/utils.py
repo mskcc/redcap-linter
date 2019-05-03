@@ -163,6 +163,48 @@ def get_columns_with_errors(cells_with_errors, records):
             columns_in_error[sheet_name] = sheet_columns_in_error
     return columns_in_error
 
+def get_matching_fields(data_dictionary, records, recordid_field):
+    form_fields = data_dictionary
+
+    form_names = [redcap_field.form_name for redcap_field in data_dictionary]
+    form_names = list(set(form_names))
+    grouped_data_dictionary = {}
+    for form in form_names:
+        grouped_data_dictionary[form] = [field for field in data_dictionary if field.form_name == form or field.field_name == recordid_field.field_name]
+
+    matching_fields = {}
+    matching_field_names = []
+    for form_name in grouped_data_dictionary:
+        form_fields = [f for f in grouped_data_dictionary[form_name] if f.field_name in records.columns]
+        if len(form_fields) > 0:
+            matching_fields[form_name] = form_fields
+            matching_field_names += [f.field_name for f in matching_fields[form_name]]
+    return matching_fields
+
+def validate_text_type(list_to_validate, redcap_field):
+    text_validation = redcap_field.text_validation
+    text_min = redcap_field.text_min
+    text_max = redcap_field.text_max
+    required = redcap_field.required
+    if text_validation in ['date_mdy', 'date_dmy', 'date_ymd']:
+        validations = validate_dates(list_to_validate, text_validation, text_min, text_max, required)
+    elif text_validation in ['number_2dp', 'integer']:
+        validations = validate_numbers(list_to_validate, text_validation, text_min, text_max, required)
+    elif text_validation in ['alpha_only']:
+        validations = [str(i).isalpha() if i else None for i in list_to_validate]
+    elif required:
+        validations = [d != '' for d in list_to_validate]
+    else:
+        validations = list_to_validate
+    return validations
+
+def get_recordid_field(data_dictionary, project_info):
+    recordid_field = None
+    if project_info.get('record_autonumbering_enabled') == 1:
+        recordid_field = RedcapField(field_name='recordid', field_type='text')
+    else:
+        recordid_field = data_dictionary[0]
+    return recordid_field
 
 def parameterize(str):
     # \W = [^a-zA-Z0-9_]

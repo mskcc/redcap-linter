@@ -8,7 +8,7 @@ import { Spin } from 'antd';
 import MergeRecords from '../MergeRecords/MergeRecords';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
-import { resolveColumn, resolveRow, navigateTo } from '../../actions/RedcapLinterActions';
+import { resolveMergeRow, navigateTo } from '../../actions/RedcapLinterActions';
 
 class ResolveMergeConflicts extends Component {
   constructor(props) {
@@ -26,56 +26,43 @@ class ResolveMergeConflicts extends Component {
   }
 
   componentDidMount() {
+
     const {
       jsonData,
       projectInfo,
       ddData,
       csvHeaders,
-      workingColumn,
-      workingRow,
+      workingMergeRow,
       malformedSheets,
-      columnsInError,
-      rowsInError,
-      resolveColumn,
-      resolveRow,
+      mergeConflicts,
+      resolveMergeRow,
     } = this.props;
-    if (workingColumn || workingRow) {
+    if (workingMergeRow >= 0) {
       return;
     }
-    if (!workingColumn && Object.keys(columnsInError).length > 0) {
-      const nextSheetName = Object.keys(columnsInError)[0];
-      const nextColumn = columnsInError[nextSheetName][0];
+    let hasMergeConflicts = false;
+    Object.keys(mergeConflicts).forEach((sheet) => {
+      if (mergeConflicts[sheet] && mergeConflicts[sheet].length > 0) {
+        hasMergeConflicts = true;
+      }
+    })
+    if (workingMergeRow < 0 && hasMergeConflicts) {
+      let nextSheetName = null;
+      nextSheetName = Object.keys(mergeConflicts).find(sheet => mergeConflicts[sheet] && mergeConflicts[sheet].length > 0);
+      const nextMergeRow = mergeConflicts[nextSheetName][0];
       const payload = {
         jsonData,
         projectInfo,
-        malformedSheets,
         ddData,
         csvHeaders,
-        rowsInError,
-        columnsInError,
+        mergeConflicts,
+        malformedSheets,
         nextSheetName,
-        nextColumn,
+        nextMergeRow,
         action: 'continue',
       };
       // TODO Call on resolveRow if there are no column errors
-      resolveColumn(payload);
-    } else if (!workingRow && Object.keys(rowsInError).length > 0) {
-      // TODO take workingSheetName from props
-      const nextSheetName = Object.keys(rowsInError)[0];
-      const nextRow = rowsInError[nextSheetName][0];
-      const payload = {
-        jsonData,
-        projectInfo,
-        columnsInError,
-        malformedSheets,
-        rowsInError,
-        ddData,
-        csvHeaders,
-        nextSheetName,
-        nextRow,
-        action: 'continue',
-      };
-      resolveRow(payload);
+      resolveMergeRow(payload);
     }
   }
 
@@ -95,12 +82,17 @@ class ResolveMergeConflicts extends Component {
       loading,
     } = this.state;
     let content = '';
-    // TODO rework the logic here
+    let hasMergeConflicts = false;
+    Object.keys(mergeConflicts).forEach((sheet) => {
+      if (mergeConflicts[sheet] && mergeConflicts[sheet].length > 0) {
+        hasMergeConflicts = true;
+      }
+    })
     if (loading) {
       content = <Spin tip="Loading..." />;
-    } else if (mergeConflicts.length > 0) {
+    } else if (hasMergeConflicts) {
       content = <MergeRecords />;
-    } else if (mergeConflicts.length === 0) {
+    } else {
       content = (
         <div>
           <p>Nothing to Merge</p>
@@ -118,13 +110,13 @@ class ResolveMergeConflicts extends Component {
 }
 
 ResolveMergeConflicts.propTypes = {
-  workingColumn: PropTypes.string,
-  mergeConflicts: PropTypes.array,
+  workingMergeRow: PropTypes.number,
+  mergeConflicts: PropTypes.object,
 };
 
 ResolveMergeConflicts.defaultProps = {
-  workingColumn: '',
-  mergeConflicts: [],
+  workingMergeRow: -1,
+  mergeConflicts: {},
 };
 
 function mapStateToProps(state) {
@@ -132,7 +124,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, resolveRow, navigateTo }, dispatch);
+  return bindActionCreators({ resolveMergeRow, navigateTo }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResolveMergeConflicts);

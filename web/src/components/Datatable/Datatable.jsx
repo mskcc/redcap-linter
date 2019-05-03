@@ -65,8 +65,8 @@ class Datatable extends Component {
   }
 
   renderCell(header, cellInfo, index) {
-    console.log(header)
-    console.log(cellInfo)
+    // console.log(header)
+    // console.log(cellInfo)
     const {
       tableErrors,
       editable,

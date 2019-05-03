@@ -18,6 +18,8 @@ import {
   RESOLVE_COLUMN_FAILURE,
   RESOLVE_ROW_SUCCESS,
   RESOLVE_ROW_FAILURE,
+  RESOLVE_MERGE_ROW_SUCCESS,
+  RESOLVE_MERGE_ROW_FAILURE,
   CORRECT_VALUE,
   REMOVE_VALUE_MATCH,
   UPDATE_VALUE,
@@ -79,7 +81,7 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { matchedFieldMap, toggle: !toggle });
     }
     case RESOLVE_COLUMN_SUCCESS: {
-      return Object.assign({}, state, { workingRow: '' }, action.payload.data);
+      return Object.assign({}, state, { workingRow: -1, workingMergeRow: -1 }, action.payload.data);
     }
     case RESOLVE_COLUMN_FAILURE: {
       return Object.assign({}, state, {
@@ -87,9 +89,17 @@ export default function (state = {}, action) {
       });
     }
     case RESOLVE_ROW_SUCCESS: {
-      return Object.assign({}, state, { workingColumn: '' }, action.payload.data);
+      return Object.assign({}, state, { workingColumn: '', workingMergeRow: -1 }, action.payload.data);
     }
     case RESOLVE_ROW_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case RESOLVE_MERGE_ROW_SUCCESS: {
+      return Object.assign({}, state, { workingColumn: '', workingRow: -1 }, action.payload.data);
+    }
+    case RESOLVE_MERGE_ROW_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

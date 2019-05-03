@@ -31,6 +31,9 @@ export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
 export const RESOLVE_ROW_SUCCESS = 'RESOLVE_ROW_SUCCESS';
 export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 
+export const RESOLVE_MERGE_ROW_SUCCESS = 'RESOLVE_MERGE_ROW_SUCCESS';
+export const RESOLVE_MERGE_ROW_FAILURE = 'RESOLVE_MERGE_ROW_FAILURE';
+
 export const CORRECT_VALUE = 'CORRECT_VALUE';
 
 export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
@@ -151,6 +154,8 @@ export function saveFields(payload) {
     data.append('dataFieldToRedcapFieldMap', JSON.stringify(payload.dataFieldToRedcapFieldMap));
     data.append('matchedFieldMap', JSON.stringify(payload.matchedFieldMap));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('existingRecords', JSON.stringify(payload.existingRecords));
+    data.append('recordidField', JSON.stringify(payload.recordidField));
     data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('dateColumns', JSON.stringify(payload.dateColumns));
@@ -363,6 +368,50 @@ export function resolveColumn(payload) {
     return request.then(
       response => dispatch(resolveColumnSuccess(response)),
       err => dispatch(resolveColumnError(err)),
+    );
+  };
+}
+
+export function resolveMergeRowSuccess(payload) {
+  return {
+    type: RESOLVE_MERGE_ROW_SUCCESS,
+    payload,
+  };
+}
+
+export function resolveMergeRowError(payload) {
+  return {
+    type: RESOLVE_MERGE_ROW_FAILURE,
+    payload,
+  };
+}
+
+export function resolveMergeRow(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
+    data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
+    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
+    data.append('nextMergeRow', JSON.stringify(payload.nextMergeRow));
+    data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
+    data.append('workingMergeRow', payload.workingMergeRow ? JSON.stringify(payload.workingMergeRow) : '');
+    data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
+    data.append('mergeConflicts', JSON.stringify(payload.mergeConflicts));
+    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
+
+    const request = axios({
+      method: 'POST',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/resolve_merge_row`,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(resolveMergeRowSuccess(response)),
+      err => dispatch(resolveMergeRowError(err)),
     );
   };
 }

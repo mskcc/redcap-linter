@@ -52,6 +52,8 @@ class MatchFields extends Component {
       ddData,
       dateColumns,
       csvHeaders,
+      existingRecords,
+      recordidField,
       saveFields,
     } = this.props;
     const payload = {
@@ -62,6 +64,8 @@ class MatchFields extends Component {
       ddData,
       dateColumns,
       csvHeaders,
+      existingRecords,
+      recordidField,
     };
     saveFields(payload);
     this.setState({ loadingSave: true });
@@ -76,6 +80,8 @@ class MatchFields extends Component {
       ddData,
       dateColumns,
       csvHeaders,
+      existingRecords,
+      recordidField,
       saveFields,
     } = this.props;
     let hasUnsavedFields = false;
@@ -101,6 +107,8 @@ class MatchFields extends Component {
       ddData,
       dateColumns,
       csvHeaders,
+      existingRecords,
+      recordidField,
       action: 'continue',
     };
     saveFields(payload);
@@ -230,6 +238,8 @@ MatchFields.propTypes = {
   matchingHeaders: PropTypes.array,
   unmatchedRedcapFields: PropTypes.array,
   noMatchRedcapFields: PropTypes.array,
+  existingRecords: PropTypes.array,
+  recordidField: PropTypes.string,
   redcapFieldCandidates: PropTypes.object,
   dataFieldToRedcapFieldMap: PropTypes.object,
   matchedFieldMap: PropTypes.object,
@@ -239,9 +249,11 @@ MatchFields.defaultProps = {
   matchingHeaders: [],
   unmatchedRedcapFields: [],
   noMatchRedcapFields: [],
+  existingRecords: [],
   redcapFieldCandidates: {},
   dataFieldToRedcapFieldMap: {},
   matchedFieldMap: {},
+  recordidField: '',
 };
 
 function mapStateToProps(state) {

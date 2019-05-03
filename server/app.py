@@ -16,6 +16,7 @@ from models.redcap_field import RedcapField
 from api.redcap.redcap_api import RedcapApi
 from linter import linter
 from utils import utils
+from serializers import serializer
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 import textwrap
@@ -30,6 +31,8 @@ def save_fields():
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     matched_field_map = json.loads(form.get('matchedFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
+    existing_records = json.loads(form.get('existingRecords'))
+    recordid_field = json.loads(form.get('recordidField'))
     malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     date_cols = json.loads(form.get('dateColumns'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
@@ -74,6 +77,30 @@ def save_fields():
             continue
         output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
+    records_to_reconcile = {}
+    if existing_records:
+        for record in existing_records:
+            if not record['redcap_repeat_instrument']:
+                records_to_reconcile[record[recordid_field]] = record
+
+    # TODO Get list of rows with merge conflicts
+    merge_conflicts = {}
+    decoded_records = {}
+
+    for sheet_name in records.keys():
+        merge_conflicts[sheet_name] = []
+        sheet = records.get(sheet_name)
+        for index, row in sheet.iterrows():
+            if row.get(recordid_field):
+                if isinstance(row.get(recordid_field), float) and row.get(recordid_field).is_integer():
+                    # Excel reads this in as a float :/
+                    recordid = str(int(row[recordid_field]))
+                    if records_to_reconcile.get(recordid):
+                        # TODO Logic to determine if there is a merge conflict
+                        merge_conflicts[sheet_name].append(int(index))
+                        decoded_row = serializer.decode_sheet(dd, project_info, records_to_reconcile.get(recordid))
+                        decoded_records[recordid] = decoded_row
+
     results = {
         'jsonData':                   json_data,
         'rowsInError':                rows_in_error,
@@ -82,6 +109,8 @@ def save_fields():
         'csvHeaders':                 csv_headers,
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
+        'decodedRecords':             decoded_records,
+        'mergeConflicts':             merge_conflicts,
         'fieldsSaved':                True,
     }
     response = flask.jsonify(results)
@@ -400,6 +429,146 @@ def resolve_row():
         if next_column:
             results['workingColumn'] = next_column
             results['fieldErrors'] = field_errors
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+
+@app.route('/resolve_merge_row', methods=['GET', 'POST', 'OPTIONS'])
+def resolve_merge_row():
+    form  = request.form.to_dict()
+    csv_headers = json.loads(form.get('csvHeaders'))
+    # Working column is the column being saved
+    action = json.loads(form.get('action') or '""')
+    next_merge_row = json.loads(form.get('nextMergeRow') or '')
+    next_sheet_name = json.loads(form.get('nextSheetName') or '""')
+    working_merge_row = json.loads(form.get('workingMergeRow') or '""')
+    working_sheet_name = json.loads(form.get('workingSheetName') or '""')
+    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
+    field_to_value_map = json.loads(form.get('fieldToValueMap'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    # value_map = {}
+    # if working_sheet_name in field_to_value_map and str(working_row) in field_to_value_map[working_sheet_name]:
+    #     value_map = field_to_value_map[working_sheet_name][str(working_row)]
+    #
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df = df[csv_headers[sheet]]
+        df.fillna('',inplace=True)
+        # if sheet == working_sheet_name:
+        #     for field in value_map:
+        #         dd_field = [f for f in dd if f.field_name == field][0]
+        #         value = value_map[field]
+        #         if dd_field.text_validation == 'integer':
+        #             value = int(value) if value else value
+        #         elif dd_field.text_validation == 'number_2dp':
+        #             value = float(value) if value else value
+        #         df.iloc[working_row, df.columns.get_loc(field)] = value
+        records[sheet] = df
+
+    merge_conflicts = json.loads(form.get('mergeConflicts'))
+    project_info = json.loads(form.get('projectInfo'))
+
+    next_sheet = False
+    for sheet in merge_conflicts:
+        if next_sheet:
+            next_sheet_name = sheet
+            next_merge_row = merge_conflicts[sheet][0]
+        if sheet == working_sheet_name:
+            sheet_merge_conflicts = merge_conflicts[sheet]
+            if sheet == working_sheet_name and working_merge_row == sheet_merge_conflicts[-1]:
+                next_sheet = True
+            elif sheet == working_sheet_name:
+                next_sheet_name = sheet
+                if working_merge_row not in sheet_merge_conflicts:
+                    next_merge_row = sheet_merge_conflicts[0]
+                else:
+                    next_merge_row = sheet_merge_conflicts[sheet_merge_conflicts.index(working_merge_row)+1]
+
+    # field_errors = {}
+    # if next_column:
+    #     dd_field = [f for f in dd if f.field_name == next_column][0]
+    #     field_errors['fieldType'] = dd_field.field_type
+    #     field_errors['required'] = dd_field.required
+    #     if dd_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox']:
+    #         current_list = list(records[next_sheet_name][next_column])
+    #         if dd_field.field_type in ['yesno', 'truefalse']:
+    #             current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
+    #             field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+    #             field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+    #         elif dd_field.field_type in ['radio', 'dropdown']:
+    #             current_list = [str(int(item)) if isinstance(item, numbers.Number) and float(item).is_integer() else str(item) for item in current_list]
+    #             field_errors['matchedChoices'] = list({r for r in current_list if r in dd_field.choices_dict})
+    #             field_errors['unmatchedChoices'] = list({str(r) for r in current_list if r and r not in dd_field.choices_dict})
+    #         elif dd_field.field_type in ['checkbox']:
+    #             field_errors['matchedChoices'] = set()
+    #             field_errors['unmatchedChoices'] = set()
+    #             permissible_values = map(str.lower, map(str, dd_field.choices_dict.keys()))
+    #             for item in current_list:
+    #                 if not item:
+    #                     continue
+    #                 checkbox_items = [i.strip() for i in item.split(',')]
+    #                 # At least 1 item not in the Permissible Values
+    #                 if True in [str(i).lower() not in permissible_values for i in checkbox_items]:
+    #                     field_errors['unmatchedChoices'].add(item)
+    #                 else:
+    #                     field_errors['matchedChoices'].add(item)
+    #             field_errors['matchedChoices'] = list(field_errors['matchedChoices'])
+    #             field_errors['unmatchedChoices'] = list(field_errors['unmatchedChoices'])
+    #         choice_candidates = {}
+    #         for f1 in field_errors['unmatchedChoices']:
+    #             for f2 in dd_field.choices_dict:
+    #                 if not choice_candidates.get(f1):
+    #                     choice_candidates[f1] = []
+    #                 choice_candidates[f1].append({
+    #                     'candidate': f2,
+    #                     'choiceValue': dd_field.choices_dict[f2],
+    #                     'score': fuzz.ratio(f1, f2)
+    #                 })
+    #         field_errors['choiceCandidates'] = choice_candidates
+    #     if dd_field.field_type in ['text', 'notes']:
+    #         current_list = list(records[next_sheet_name][next_column])
+    #         validations = linter.validate_text_type(current_list, dd_field)
+    #         textErrors = [val for val, valid in zip(current_list, validations) if val and valid is False]
+    #         field_errors['textErrors']        = textErrors
+    #         field_errors['textValidation']    = dd_field.text_validation
+    #         field_errors['textValidationMin'] = dd_field.text_min
+    #         field_errors['textValidationMax'] = dd_field.text_max
+
+    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    rows_in_error = datafile_errors['rows_in_error']
+    encoded_records = datafile_errors['encoded_records']
+
+    all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
+
+    json_data   = {}
+    output_records = {}
+
+    for sheetName, sheet in records.items():
+        json_data[sheetName] = json.loads(sheet.to_json(orient='records', date_format='iso'))
+        cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
+
+    for sheet_name in encoded_records:
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
+
+    results = {
+        'jsonData':         json_data,
+        'allErrors':        all_errors,
+        'mergeConflicts':   merge_conflicts,
+        'cellsWithErrors':  cells_with_errors,
+        'encodedRecords':   output_records,
+    }
+    if action == 'continue':
+        results['workingMergeRow'] = next_merge_row
+        results['workingSheetName'] = next_sheet_name
+    logging.warning(results['workingMergeRow'])
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -777,7 +946,7 @@ def post_form():
         'dataFieldCandidates':     data_field_candidates,
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'unmatchedDataFields':     unmatched_data_fields,
-        'dataFileName':            datafile_name
+        'dataFileName':            datafile_name,
     }
     if data_field_to_redcap_field_map:
         results['dataFieldToRedcapFieldMap'] = data_field_to_redcap_field_map
