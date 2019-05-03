@@ -6,7 +6,7 @@ import MergedRecord from './MergedRecord/MergedRecord';
 import RecordMerger from './RecordMerger/RecordMerger';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MergeRecords.scss';
-import { resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
+import { resolveMergeRow } from '../../actions/RedcapLinterActions';
 
 class MergeRecords extends Component {
   constructor(props) {
@@ -17,61 +17,57 @@ class MergeRecords extends Component {
   saveChanges(e) {
     const {
       jsonData,
-      dataFieldToChoiceMap,
+      mergeMap,
       projectInfo,
       ddData,
-      workingColumn,
+      workingMergeRow,
       workingSheetName,
       malformedSheets,
-      columnsInError,
-      rowsInError,
+      mergeConflicts,
       csvHeaders,
-      resolveColumn,
+      resolveMergeRow,
     } = this.props;
     const payload = {
       jsonData,
-      dataFieldToChoiceMap,
+      mergeMap,
       projectInfo,
-      workingColumn,
+      workingMergeRow,
       workingSheetName,
       malformedSheets,
-      columnsInError,
-      rowsInError,
+      mergeConflicts,
       ddData,
       csvHeaders,
       action: 'save'
     };
-    resolveColumn(payload);
+    resolveMergeRow(payload);
   }
 
   saveAndContinue(e) {
     const {
       jsonData,
-      dataFieldToChoiceMap,
-      workingColumn,
+      mergeMap,
+      workingMergeRow,
       workingSheetName,
       malformedSheets,
       projectInfo,
       ddData,
       csvHeaders,
-      columnsInError,
-      rowsInError,
-      resolveColumn,
+      mergeConflicts,
+      resolveMergeRow,
     } = this.props;
     const payload = {
       jsonData,
-      dataFieldToChoiceMap,
+      mergeMap,
       projectInfo,
-      workingColumn,
+      workingMergeRow,
       workingSheetName,
       malformedSheets,
-      columnsInError,
-      rowsInError,
+      mergeConflicts,
       ddData,
       csvHeaders,
       action: 'continue'
     };
-    resolveColumn(payload);
+    resolveMergeRow(payload);
   }
 
   render() {
@@ -124,7 +120,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, removeChoiceMatch }, dispatch);
+  return bindActionCreators({ resolveMergeRow }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MergeRecords);

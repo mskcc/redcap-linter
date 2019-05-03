@@ -422,11 +422,11 @@ export function resolveMergeRow(payload) {
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-    data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
+    data.append('mergeMap', JSON.stringify(payload.mergeMap || {}));
     data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
-    data.append('nextMergeRow', JSON.stringify(payload.nextMergeRow));
+    data.append('nextMergeRow', payload.nextMergeRow >= 0 ? JSON.stringify(payload.nextMergeRow) : '');
     data.append('nextSheetName', payload.nextSheetName ? JSON.stringify(payload.nextSheetName) : '');
-    data.append('workingMergeRow', payload.workingMergeRow ? JSON.stringify(payload.workingMergeRow) : '');
+    data.append('workingMergeRow', payload.workingMergeRow >= 0 ? JSON.stringify(payload.workingMergeRow) : '');
     data.append('workingSheetName', payload.workingSheetName ? JSON.stringify(payload.workingSheetName) : '');
     data.append('mergeConflicts', JSON.stringify(payload.mergeConflicts));
     data.append('action', payload.action ? JSON.stringify(payload.action) : '');
