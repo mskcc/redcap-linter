@@ -410,7 +410,7 @@ def resolve_row():
         cells_with_errors[sheetName] = json.loads(cells_with_errors[sheetName].to_json(orient='records'))
 
     for sheet_name in encoded_records:
-        logging.warning(malformed_sheets)
+        # logging.warning(malformed_sheets)
         if malformed_sheets and sheet_name in malformed_sheets:
             continue
         output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
@@ -713,12 +713,14 @@ def post_form():
         try:
             existing_records = redcap_api.export_records(token)
             data_dictionary = redcap_api.fetch_data_dictionary(token)
-            dd = [RedcapField.from_json(field) for field in data_dictionary]
             project_info = redcap_api.fetch_project_info(token)
             project_info['next_record_name'] = redcap_api.generate_next_record_name(token)
             if project_info['has_repeating_instruments_or_events'] == 1:
                 repeatable_instruments = redcap_api.fetch_repeatable_instruments(token)
                 project_info['repeatable_instruments'] = [i['form_name'] for i in repeatable_instruments]
+            if project_info['record_autonumbering_enabled'] == 0:
+                data_dictionary[0]['required'] = 'Y'
+            dd = [RedcapField.from_json(field) for field in data_dictionary]
         except Exception as e:
             logging.warning(e)
             results = {'error': "Error: {0}".format(e)}

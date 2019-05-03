@@ -47,10 +47,8 @@ def lint_sheet(data_dictionary, project_info, records):
                         rows_in_error.append(idx)
             elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
                 choices_dict = redcap_field.choices_dict
-
                 # Always do this or just for yesno/truefalse?
                 current_list = [str(int(i)) if isinstance(i, float) and i.is_integer() else i for i in current_list]
-
                 current_list = [str(item) for item in current_list]
                 is_encoded = all([item in choices_dict.values() or item == '' for item in current_list])
                 for idx, item in enumerate(current_list):
