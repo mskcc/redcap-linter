@@ -455,11 +455,6 @@ def resolve_merge_row():
     if working_sheet_name in merge_map and str(working_merge_row) in merge_map[working_sheet_name]:
         row_merge_map = merge_map[working_sheet_name].get(str(working_merge_row))
 
-    logging.warning(working_merge_row)
-    logging.warning(next_merge_row)
-    logging.warning(row_merge_map)
-    logging.warning(merge_map)
-
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
@@ -494,6 +489,9 @@ def resolve_merge_row():
                     next_merge_row = sheet_merge_conflicts[0]
                 else:
                     next_merge_row = sheet_merge_conflicts[sheet_merge_conflicts.index(working_merge_row)+1]
+
+    if working_sheet_name and merge_conflicts and merge_conflicts[working_sheet_name]:
+        merge_conflicts[working_sheet_name].remove(working_merge_row)
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
