@@ -233,7 +233,7 @@ def resolve_column():
             field_errors['choiceCandidates'] = choice_candidates
         if dd_field.field_type in ['text', 'notes']:
             current_list = list(records[next_sheet_name][next_column])
-            validations = linter.validate_text_type(current_list, dd_field)
+            validations = utils.validate_text_type(current_list, dd_field)
             textErrors = [val for val, valid in zip(current_list, validations) if val and valid is False]
             field_errors['textErrors']        = textErrors
             field_errors['textValidation']    = dd_field.text_validation
@@ -388,7 +388,7 @@ def resolve_row():
             field_errors['choiceCandidates'] = choice_candidates
         if dd_field.field_type in ['text', 'notes']:
             current_list = list(records[next_sheet_name][next_column])
-            validations = linter.validate_text_type(current_list, dd_field)
+            validations = utils.validate_text_type(current_list, dd_field)
             textErrors = [val for val, valid in zip(current_list, validations) if val and valid is False]
             field_errors['textErrors']        = textErrors
             field_errors['textValidation']    = dd_field.text_validation
