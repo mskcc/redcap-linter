@@ -96,9 +96,10 @@ class EncodedRecords extends Component {
 
 
         panes.push(
-          <TabPane tab={'Import Errors'} key={panes.length.toString()}>
+          <TabPane tab={<span className="EncodedRecords-errorTab">Import Errors</span>} key={panes.length.toString()}>
             <Datatable
               sheetName={'Import Errors'}
+              sheetInError
               headers={['sheet', 'error']}
               tableData={importErrs}
             />
