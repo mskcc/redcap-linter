@@ -23,6 +23,7 @@ class EncodedRecords extends Component {
       ddData,
       projectInfo,
       recordidField,
+      importErrors,
     } = this.props;
 
     const tabProps = {
@@ -74,6 +75,36 @@ class EncodedRecords extends Component {
           </TabPane>
         );
       }
+
+      const importErrs = [];
+
+      let hasError = false;
+      Object.keys(importErrors).forEach((sheet) => {
+        if (importErrors[sheet]['error']) {
+          hasError = true;
+        }
+      });
+
+      if (hasError) {
+        Object.keys(importErrors).forEach((sheet) => {
+          if (importErrors[sheet]['error']) {
+            importErrors[sheet]['error'].split('\n').forEach((err) => {
+              importErrs.push({ sheet: sheet, error: err });
+            });
+          }
+        });
+
+
+        panes.push(
+          <TabPane tab={'Import Errors'} key={panes.length.toString()}>
+            <Datatable
+              sheetName={'Import Errors'}
+              headers={['sheet', 'error']}
+              tableData={importErrs}
+            />
+          </TabPane>
+        );
+      }
     } else {
       panes.push(
         <TabPane tab="Sheet1" key={panes.length.toString()}>
@@ -93,6 +124,7 @@ EncodedRecords.propTypes = {
   projectInfo: PropTypes.object,
   ddData: PropTypes.array,
   recordidField: PropTypes.string,
+  importErrors: PropTypes.object,
 };
 
 EncodedRecords.defaultProps = {
@@ -102,6 +134,7 @@ EncodedRecords.defaultProps = {
   projectInfo: {},
   ddData: [],
   recordidField: '',
+  importErrors: {},
 };
 
 function mapStateToProps(state) {

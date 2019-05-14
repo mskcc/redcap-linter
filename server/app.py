@@ -526,6 +526,27 @@ def resolve_merge_row():
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+@app.route('/import_records', methods=['GET', 'POST', 'OPTIONS'])
+def import_records():
+    form  = request.form.to_dict()
+    encoded_records = json.loads(form.get('encodedRecords'))
+
+    env = json.loads(form.get('env'))
+    token = json.loads(form.get('token'))
+    redcap_api = RedcapApi(env)
+
+    errors = {}
+    for sheet_name, sheet_records in encoded_records.items():
+        r = redcap_api.import_records(token, sheet_records)
+        errors[sheet_name] = r
+
+    results = {
+        'importErrors': errors
+    }
+    response = flask.jsonify(results)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 @app.route('/download_progress', methods=['GET', 'POST', 'OPTIONS'])
 def download_progress():
     form  = request.form.to_dict()
@@ -902,6 +923,8 @@ def post_form():
         'unmatchedRedcapFields':   unmatched_redcap_fields,
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name,
+        'token':                   token,
+        'env':                     env,
     }
     if data_field_to_redcap_field_map:
         results['dataFieldToRedcapFieldMap'] = data_field_to_redcap_field_map

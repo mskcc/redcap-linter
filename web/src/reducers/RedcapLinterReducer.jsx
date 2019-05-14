@@ -12,6 +12,8 @@ import {
   REMOVE_MERGE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
+  IMPORT_RECORDS_SUCCESS,
+  IMPORT_RECORDS_FAILURE,
   NAVIGATE_TO_SUCCESS,
   NAVIGATE_TO_FAILURE,
   FILTER_TABLE,
@@ -66,6 +68,14 @@ export default function (state = {}, action) {
     }
     case FILTER_ROW: {
       return Object.assign({}, state, action.payload);
+    }
+    case IMPORT_RECORDS_SUCCESS: {
+      return Object.assign({}, state, action.payload.data);
+    }
+    case IMPORT_RECORDS_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
     }
     case NAVIGATE_TO_SUCCESS: {
       return Object.assign({}, state, action.payload);

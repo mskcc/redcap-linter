@@ -4,8 +4,11 @@ import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
+import PropTypes from 'prop-types';
+import { Icon } from 'antd';
 import EncodedRecords from '../EncodedRecords/EncodedRecords';
-import DownloadIcon from '../DownloadIcon/DownloadIcon';
+
+import { importRecords } from '../../actions/RedcapLinterActions';
 
 class ErrorsResolved extends Component {
   constructor(props) {
@@ -19,6 +22,23 @@ class ErrorsResolved extends Component {
     console.log(e)
   }
 
+  uploadToRedcap(e) {
+    const {
+      encodedRecords,
+      token,
+      env,
+      importRecords,
+    } = this.props;
+
+    const payload = {
+      encodedRecords: encodedRecords,
+      token: token,
+      env: env,
+    }
+
+    importRecords(payload);
+  }
+
   render() {
     const {
       jsonData,
@@ -28,6 +48,8 @@ class ErrorsResolved extends Component {
       ddData,
       csvHeaders,
       malformedSheets,
+      token,
+      importErrors,
     } = this.props;
 
     const {
@@ -61,6 +83,32 @@ class ErrorsResolved extends Component {
 
     const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_output`;
 
+    let uploadToRedcapButton = null;
+
+    if (token) {
+      uploadToRedcapButton = (
+        <button type="submit" className="App-submitButton ErrorsResolved-download" onClick={this.uploadToRedcap.bind(this)} value="Submit">
+          <div className="ErrorsResolved-downloadIcon">
+            <Icon type="upload" height="25px" />
+          </div>
+          Upload to REDCap
+        </button>
+      );
+    }
+
+    let errorText = null;
+
+    let hasError = false;
+    Object.keys(importErrors).forEach((sheet) => {
+      if (importErrors[sheet]['error']) {
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      errorText = (<div className="ErrorsResolved-errorText">There were errors on upload to REDCap.</div>);
+    }
+
     return (
       <div>
         <div className="ErrorsResolved-introduction">
@@ -86,10 +134,12 @@ class ErrorsResolved extends Component {
           { repeatableFieldDropdown }
           <button type="submit" form="downloadOutput" className="App-actionButton ErrorsResolved-download" value="Submit">
             <div className="ErrorsResolved-downloadIcon">
-              <DownloadIcon />
+              <Icon type="download" height="25px" />
             </div>
             Download Output
           </button>
+          { uploadToRedcapButton }
+          { errorText }
         </div>
         <div className="ErrorsResolved-container">
           <EncodedRecords />
@@ -99,12 +149,20 @@ class ErrorsResolved extends Component {
   }
 }
 
+ErrorsResolved.propTypes = {
+  importErrors: PropTypes.object,
+};
+
+ErrorsResolved.defaultProps = {
+  importErrors: {},
+};
+
 function mapStateToProps(state) {
   return state;
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ }, dispatch);
+  return bindActionCreators({ importRecords }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ErrorsResolved);

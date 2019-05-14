@@ -5,6 +5,9 @@ export const LOADING_START = 'LOADING_START';
 export const POST_FORM_SUCCESS = 'POST_FORM_SUCCESS';
 export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 
+export const IMPORT_RECORDS_SUCCESS = 'IMPORT_RECORDS_SUCCESS';
+export const IMPORT_RECORDS_FAILURE = 'IMPORT_RECORDS_FAILURE';
+
 export const MATCH_FIELDS = 'MATCH_FIELDS';
 
 export const HIGHLIGHT_COLUMNS = 'HIGHLIGHT_COLUMNS';
@@ -94,6 +97,43 @@ export function postForm(form) {
     return request.then(
       response => dispatch(postFormSuccess(response)),
       err => dispatch(postFormError(err)),
+    );
+  };
+}
+
+export function importRecordsSuccess(results) {
+  return {
+    type: IMPORT_RECORDS_SUCCESS,
+    payload: results,
+  };
+}
+
+export function importRecordsError(error) {
+  return {
+    type: IMPORT_RECORDS_FAILURE,
+    payload: error,
+  };
+}
+
+export function importRecords(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('encodedRecords', JSON.stringify(payload.encodedRecords || []));
+    data.append('token', JSON.stringify(payload.token || ''));
+    data.append('env', JSON.stringify(payload.env || ''));
+
+    // dispatch(loadingStart());
+
+    const request = axios({
+      method: 'POST',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/import_records`,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(importRecordsSuccess(response)),
+      err => dispatch(importRecordsError(err)),
     );
   };
 }

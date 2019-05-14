@@ -1,5 +1,6 @@
 import requests
 import yaml
+import json
 import logging
 from definitions import ROOT_DIR
 
@@ -53,20 +54,22 @@ class RedcapApi(object):
         return r.json()
 
     def import_records(self, token, records):
+        logging.warning(records)
         payload = {
             'token': token,
             'content': 'record',
             'format': self.format,
             'type': 'flat',
-            'overwriteBehavior': 'normal',
+            'overwriteBehavior': 'overwrite',
             'forceAutoNumber': 'false',
-            'data': records.to_csv(),
+            'data': json.dumps(records),
+            'dateFormat': 'MDY',
             'returnContent': 'count',
             'returnFormat': self.format
         }
         r = requests.post(self.base_url, data=payload)
-        if r.status_code != 200:
-            raise Exception("Failed to retrieve data dictionary. REDCap responded with status code {0}".format(r.status_code))
+        if r.status_code not in [200, 400]:
+            raise Exception("REDCap responded with status code {0}: {1}".format(r.status_code, r.text))
         return r.json()
 
     def export_records(self, token):

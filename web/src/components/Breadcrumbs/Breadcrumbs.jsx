@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { Breadcrumb, Menu, Icon, Button } from 'antd';
-import DownloadIcon from '../DownloadIcon/DownloadIcon';
 import { navigateTo } from '../../actions/RedcapLinterActions';
 
 const { SubMenu } = Menu;
@@ -61,23 +60,6 @@ class Breadcrumbs extends Component {
     const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_progress`;
 
     const downloadMappingsLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_mappings`;
-
-    // <button type="submit" form="downloadMappingsForm" className="App-actionButton" value="Submit">
-    //   <div className="Breadcrumbs-buttonText">
-    //     Download Mappings
-    //   </div>
-    //   <div className="Breadcrumbs-downloadIcon">
-    //     <DownloadIcon />
-    //   </div>
-    // </button>
-    // <button type="submit" form="downloadForm" className="App-actionButton" value="Submit">
-    //   <div className="Breadcrumbs-buttonText">
-    //     Download Progress
-    //   </div>
-    //   <div className="Breadcrumbs-downloadIcon">
-    //     <DownloadIcon />
-    //   </div>
-    // </button>
 
     let downloadButton = '';
     if (page === 'finish') {
