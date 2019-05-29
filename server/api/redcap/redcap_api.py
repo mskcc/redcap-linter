@@ -109,8 +109,8 @@ class RedcapApi(object):
             for i, record in enumerate(options.get('records')):
                 payload["records[{0}]".format(i)] = record
         if options.get('forms'):
-            for i, record in enumerate(options.get('forms')):
-                payload["forms[{0}]".format(i)] = forms
+            for i, form in enumerate(options.get('forms')):
+                payload["forms[{0}]".format(i)] = form
         r = requests.post(self.base_url, data=payload)
         if r.status_code != 200:
             raise Exception(
