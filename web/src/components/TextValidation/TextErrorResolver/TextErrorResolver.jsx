@@ -10,7 +10,7 @@ import Cell from '../../Cell/Cell';
 import {
   correctValue,
   filterTable,
-} from '../../../actions/RedcapLinterActions';
+} from '../../../actions/REDCapLinterActions';
 
 class TextErrorResolver extends Component {
   constructor(props) {

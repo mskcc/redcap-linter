@@ -5,7 +5,7 @@ import { Tabs } from 'antd';
 import PropTypes from 'prop-types';
 import Datatable from '../Datatable/Datatable';
 import './TabbedDatatable.scss';
-import { postForm } from '../../actions/RedcapLinterActions';
+import { postForm } from '../../actions/REDCapLinterActions';
 
 const { TabPane } = Tabs;
 

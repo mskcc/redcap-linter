@@ -1,0 +1,49 @@
+@import '../../Utilities/color';
+
+.RepeatSelector-headerError {
+	color: color(red500);
+}
+
+.RepeatSelector-cellError {
+	color: color(red500);
+}
+
+.RepeatSelector-tableTitle {
+  height: 40px;
+}
+
+.RepeatSelector-title {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 4px;
+}
+
+.RepeatSelector-description {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.RepeatSelector-searchBar {
+  float: left;
+}
+
+.RepeatSelector-cellContainer {
+	display: flex;
+}
+
+.RepeatSelector-cell {
+	width: 80%;
+	display: inline-block;
+	overflow-wrap: break-word;
+}
+
+.RepeatSelector-cancel {
+	width: 25px;
+	opacity: 0.6;
+	text-align: right;
+	align-self: center;
+	display: inline-block;
+	margin-left: 5px;
+}

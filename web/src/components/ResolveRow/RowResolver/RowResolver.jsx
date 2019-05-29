@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { updateValue, filterRow } from '../../../actions/RedcapLinterActions';
+import { updateValue, filterRow } from '../../../actions/REDCapLinterActions';
 
 class RowResolver extends Component {
   constructor(props) {

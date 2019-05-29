@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { mergeField } from '../../../actions/RedcapLinterActions';
+import { mergeField } from '../../../actions/REDCapLinterActions';
 
 class RecordMerger extends Component {
   constructor(props) {
@@ -103,6 +103,8 @@ class RecordMerger extends Component {
     if (mergeMap[workingSheetName] && mergeMap[workingSheetName][workingMergeRow]) {
       rowMergeMap = mergeMap[workingSheetName][workingMergeRow];
     }
+
+    console.log(existingRecord);
 
     // TODO if data field is missing from the data file, but existing in REDCap should it be left blank on upload?
     // REDCap provides options to override, need to talk to Julian to see if this is ever used

@@ -10,7 +10,7 @@ import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import Form from '../Form/Form';
 import MatchFields from '../MatchFields/MatchFields';
-import { postForm } from '../../actions/RedcapLinterActions';
+import { postForm } from '../../actions/REDCapLinterActions';
 
 class Linter extends Component {
   constructor(props) {

@@ -6,7 +6,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import { Menu, Icon, Button } from 'antd';
-import { resolveColumn, resolveRow, resolveMergeRow, navigateTo } from '../../actions/RedcapLinterActions';
+import { navigateTo } from '../../actions/REDCapLinterActions';
+import { resolveColumn, resolveRow, resolveMergeRow } from '../../actions/ResolveActions';
 
 class ErrorSelector extends Component {
   constructor(props) {

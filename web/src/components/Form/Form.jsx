@@ -5,7 +5,7 @@ import { Input, Spin } from 'antd';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { postForm } from '../../actions/RedcapLinterActions';
+import { postForm } from '../../actions/REDCapLinterActions';
 
 class Form extends Component {
   constructor(props) {

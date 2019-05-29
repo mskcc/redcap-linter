@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { Icon } from 'antd';
 import EncodedRecords from '../EncodedRecords/EncodedRecords';
 
-import { importRecords } from '../../actions/RedcapLinterActions';
+import { importRecords } from '../../actions/REDCapLinterActions';
 
 class ErrorsResolved extends Component {
   constructor(props) {

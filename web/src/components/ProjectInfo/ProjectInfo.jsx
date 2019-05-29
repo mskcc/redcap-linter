@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 
-import { changeRepeatableInstruments } from '../../actions/RedcapLinterActions';
+import { changeRepeatableInstruments, changeSecondaryUniqueField } from '../../actions/REDCapLinterActions';
 
 class ProjectInfo extends Component {
   constructor(props) {
@@ -49,6 +49,13 @@ class ProjectInfo extends Component {
     changeRepeatableInstruments({ repeatableInstruments: newRepeatableInstruments });
   }
 
+  changeSecondaryUniqueField(selectedOption) {
+    const {
+      changeSecondaryUniqueField,
+    } = this.props;
+    changeSecondaryUniqueField({ secondaryUniqueField: selectedOption.value });
+  }
+
   handleOnChangeProjectInfo(field, e) {
     const { form } = this.state;
     const newProjectInfo = form;
@@ -81,12 +88,14 @@ class ProjectInfo extends Component {
     } = this.props;
     let project = '';
     let warning = '';
-    let disabled = false;
+    let repeatableInstrumentsDisabled = false;
+    let secondaryUniqueDisabled = false;
+    let selectedSecondaryValue = null;
     if (!error) {
       project += '<div>';
       if (projectInfo.project_id) {
         project += `<b>Project ID</b>: ${projectInfo.project_id}<br />`;
-        disabled = true;
+        repeatableInstrumentsDisabled = true;
       }
       if (projectInfo.project_title) {
         project += `<b>Project Title</b>: ${projectInfo.project_title}<br />`;
@@ -99,11 +108,15 @@ class ProjectInfo extends Component {
       } else {
         project += '<b>Record Autonumbering</b>: false<br />';
       }
+      if (projectInfo.secondary_unique_field) {
+        // secondaryUniqueDisabled = true;
+        selectedSecondaryValue = {
+          value: projectInfo.secondary_unique_field,
+          label: projectInfo.secondary_unique_field,
+        };
+      }
       if (projectInfo.custom_record_label) {
         project += `<b>Custom Record Label</b>: ${projectInfo.custom_record_label}<br />`;
-      }
-      if (projectInfo.secondary_unique_field) {
-        project += `<b>Secondary Unique Field</b>: ${projectInfo.secondary_unique_field}<br />`;
       }
       project += '</div>';
       if (malformedSheets && malformedSheets.length > 0) {
@@ -111,9 +124,9 @@ class ProjectInfo extends Component {
       }
     }
 
-    const options = [];
+    const repeatableInstrumentOptions = [];
     formNames.forEach((formName) => {
-      options.push({
+      repeatableInstrumentOptions.push({
         value: formName,
         label: formName,
       });
@@ -129,16 +142,41 @@ class ProjectInfo extends Component {
       });
     }
 
+    const secondaryUniqueFieldOptions = []
+    ddData.forEach((ddField) => {
+      secondaryUniqueFieldOptions.push({
+        value: ddField.field_name,
+        label: ddField.field_name,
+      });
+    });
+
+    let secondaryUniqueSelector = null;
+    if (projectInfo.record_autonumbering_enabled === 1) {
+      secondaryUniqueSelector = (<div className="ProjectInfo-repeatableInstruments">
+          <div>
+            <b>Secondary Unique Field</b>:
+          </div>
+          <Select
+            className="ProjectInfo-elevate"
+            options={secondaryUniqueFieldOptions}
+            isSearchable
+            isDisabled={secondaryUniqueDisabled}
+            value={selectedSecondaryValue}
+            onChange={this.changeSecondaryUniqueField.bind(this)}
+          />
+        </div>);
+    }
+
     let repeatableInstrumentsSelector = (<div className="ProjectInfo-repeatableInstruments">
         <div>
           <b>Repeatable Instruments</b>:
         </div>
         <Select
           className="ProjectInfo-elevate"
-          options={options}
+          options={repeatableInstrumentOptions}
           isMulti
           isSearchable
-          isDisabled={disabled}
+          isDisabled={repeatableInstrumentsDisabled}
           value={selectedValue}
           onChange={this.changeRepeatableInstruments.bind(this)}
         />
@@ -151,6 +189,7 @@ class ProjectInfo extends Component {
           dangerouslySetInnerHTML={{ __html: project }}
         />
         { repeatableInstrumentsSelector }
+        { secondaryUniqueSelector }
         <div
           className="ProjectInfo-malformedSheets"
           dangerouslySetInnerHTML={{ __html: warning }}
@@ -178,7 +217,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ changeRepeatableInstruments }, dispatch);
+  return bindActionCreators({ changeRepeatableInstruments, changeSecondaryUniqueField }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectInfo);

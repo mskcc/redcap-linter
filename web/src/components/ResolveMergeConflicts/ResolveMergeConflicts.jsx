@@ -6,15 +6,18 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { Spin } from 'antd';
 import MergeRecords from '../MergeRecords/MergeRecords';
+import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
-import { resolveMergeRow, navigateTo } from '../../actions/RedcapLinterActions';
+import { navigateTo } from '../../actions/REDCapLinterActions';
+import { resolveMergeRow } from '../../actions/ResolveActions';
 
 class ResolveMergeConflicts extends Component {
   constructor(props) {
     super(props);
     this.state = {
       loading: false,
+      mode: 'CHOOSE_RECONCILIATION_COLUMNS'
     };
   }
 
@@ -25,8 +28,7 @@ class ResolveMergeConflicts extends Component {
     return null;
   }
 
-  componentDidMount() {
-
+  merge() {
     const {
       jsonData,
       projectInfo,
@@ -38,6 +40,7 @@ class ResolveMergeConflicts extends Component {
       resolveMergeRow,
     } = this.props;
     if (workingMergeRow >= 0) {
+      this.setState({ mode: 'MERGE' });
       return;
     }
     let hasMergeConflicts = false;
@@ -64,6 +67,12 @@ class ResolveMergeConflicts extends Component {
       // TODO Call on resolveRow if there are no column errors
       resolveMergeRow(payload);
     }
+
+    this.setState({ mode: 'MERGE' });
+  }
+
+  back() {
+    this.setState({ mode: 'CHOOSE_RECONCILIATION_COLUMNS' });
   }
 
   continue() {
@@ -77,9 +86,11 @@ class ResolveMergeConflicts extends Component {
   render() {
     const {
       mergeConflicts,
+      workingMergeRow,
     } = this.props;
     const {
       loading,
+      mode,
     } = this.state;
     let content = '';
     let hasMergeConflicts = false;
@@ -88,10 +99,28 @@ class ResolveMergeConflicts extends Component {
         hasMergeConflicts = true;
       }
     })
+    let backButton = null;
+    if (workingMergeRow >= 0) {
+      backButton = (<button type="button" onClick={this.back.bind(this)} className="App-actionButton ResolveMergeConflicts-back">Select Reconciliation Column(s)</button>);
+    }
     if (loading) {
       content = <Spin tip="Loading..." />;
     } else if (hasMergeConflicts) {
-      content = <MergeRecords />;
+      if (mode === 'CHOOSE_RECONCILIATION_COLUMNS') {
+        content = (
+          <div className="ResolveMergeConflicts-selector">
+            <RepeatSelector />
+            <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">Continue</button>
+          </div>
+        );
+      } else if (mode === 'MERGE') {
+        content = (
+          <div>
+            { backButton }
+            <MergeRecords />
+          </div>
+        );
+      }
     } else {
       content = (
         <div>

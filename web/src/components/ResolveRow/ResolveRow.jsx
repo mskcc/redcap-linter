@@ -6,7 +6,8 @@ import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './ResolveRow.scss';
-import { resolveRow, filterRow, updateValue } from '../../actions/RedcapLinterActions';
+import { filterRow, updateValue } from '../../actions/REDCapLinterActions';
+import { resolveRow } from '../../actions/ResolveActions';
 
 class ResolveRow extends Component {
   constructor(props) {

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { removeMerge } from '../../../actions/RedcapLinterActions';
+import { removeMerge } from '../../../actions/REDCapLinterActions';
 
 class MergedRecord extends Component {
   constructor(props) {

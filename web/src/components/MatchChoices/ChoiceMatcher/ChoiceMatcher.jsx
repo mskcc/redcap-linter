@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { matchChoices } from '../../../actions/RedcapLinterActions';
+import { matchChoices } from '../../../actions/REDCapLinterActions';
 
 class ChoiceMatcher extends Component {
   constructor(props) {

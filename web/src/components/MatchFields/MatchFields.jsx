@@ -9,7 +9,7 @@ import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import ProjectInfo from '../ProjectInfo/ProjectInfo';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchFields.scss';
-import { saveFields, removeFieldMatch } from '../../actions/RedcapLinterActions';
+import { saveFields, removeFieldMatch } from '../../actions/REDCapLinterActions';
 
 class MatchFields extends Component {
   constructor(props) {
@@ -53,6 +53,8 @@ class MatchFields extends Component {
       dateColumns,
       csvHeaders,
       existingRecords,
+      token,
+      env,
       recordidField,
       saveFields,
     } = this.props;
@@ -65,6 +67,8 @@ class MatchFields extends Component {
       dateColumns,
       csvHeaders,
       existingRecords,
+      token,
+      env,
       recordidField,
     };
     saveFields(payload);
@@ -81,6 +85,8 @@ class MatchFields extends Component {
       dateColumns,
       csvHeaders,
       existingRecords,
+      token,
+      env,
       recordidField,
       saveFields,
     } = this.props;
@@ -108,6 +114,8 @@ class MatchFields extends Component {
       dateColumns,
       csvHeaders,
       existingRecords,
+      token,
+      env,
       recordidField,
       action: 'continue',
     };

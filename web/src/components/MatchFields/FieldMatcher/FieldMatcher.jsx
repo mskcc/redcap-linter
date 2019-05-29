@@ -8,7 +8,7 @@ import Select from 'react-select';
 import _ from 'lodash';
 import { Table, Input, Switch, Icon } from 'antd';
 import Cell from '../../Cell/Cell';
-import { matchFields, highlightColumns } from '../../../actions/RedcapLinterActions';
+import { matchFields, highlightColumns } from '../../../actions/REDCapLinterActions';
 
 class FieldMatcher extends Component {
   constructor(props) {

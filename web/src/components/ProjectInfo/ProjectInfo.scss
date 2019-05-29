@@ -10,6 +10,7 @@
   margin-left: 10px;
   float: left;
   margin-top: 7px;
+	margin-bottom: 5px;
 }
 
 .ProjectInfo-submitButtonDiv {
@@ -35,4 +36,8 @@
 
 .ProjectInfo-label {
 	font-weight: 600;
+}
+
+.ProjectInfo-elevate {
+	z-index: 10;
 }

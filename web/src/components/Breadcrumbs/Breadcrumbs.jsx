@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { Breadcrumb, Menu, Icon, Button } from 'antd';
-import { navigateTo } from '../../actions/RedcapLinterActions';
+import { navigateTo } from '../../actions/REDCapLinterActions';
 
 const { SubMenu } = Menu;
 

@@ -6,7 +6,8 @@ import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './TextValidation.scss';
-import { resolveColumn, filterTable, removeValueMatch } from '../../actions/RedcapLinterActions';
+import { filterTable, removeValueMatch } from '../../actions/REDCapLinterActions';
+import { resolveColumn } from '../../actions/ResolveActions';
 
 class TextValidation extends Component {
   constructor(props) {

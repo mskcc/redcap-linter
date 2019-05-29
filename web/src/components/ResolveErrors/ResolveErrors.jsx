@@ -10,7 +10,8 @@ import TextValidation from '../TextValidation/TextValidation';
 import ResolveRow from '../ResolveRow/ResolveRow';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
-import { resolveColumn, resolveRow, navigateTo } from '../../actions/RedcapLinterActions';
+import { navigateTo } from '../../actions/REDCapLinterActions';
+import { resolveColumn, resolveRow } from '../../actions/ResolveActions';
 
 class ResolveErrors extends Component {
   constructor(props) {

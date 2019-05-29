@@ -6,7 +6,7 @@ import { Tab } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import Datatable from '../Datatable/Datatable';
 import './EncodedRecords.scss';
-import { postForm } from '../../actions/RedcapLinterActions';
+import { postForm } from '../../actions/REDCapLinterActions';
 
 const { TabPane } = Tabs;
 

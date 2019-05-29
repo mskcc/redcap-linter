@@ -5,6 +5,7 @@ import {
   POST_FORM_FAILURE,
   MATCH_FIELDS,
   HIGHLIGHT_COLUMNS,
+  CHANGE_RECONCILIATION_COLUMNS,
   REMOVE_FIELD_MATCH,
   MATCH_CHOICES,
   MERGE_FIELD,
@@ -18,17 +19,21 @@ import {
   NAVIGATE_TO_FAILURE,
   FILTER_TABLE,
   FILTER_ROW,
+  CORRECT_VALUE,
+  REMOVE_VALUE_MATCH,
+  UPDATE_VALUE,
+  CHANGE_REPEATABLE_INSTRUMENTS,
+  CHANGE_SECONDARY_UNIQUE_FIELD,
+} from '../actions/REDCapLinterActions';
+
+import {
   RESOLVE_COLUMN_SUCCESS,
   RESOLVE_COLUMN_FAILURE,
   RESOLVE_ROW_SUCCESS,
   RESOLVE_ROW_FAILURE,
   RESOLVE_MERGE_ROW_SUCCESS,
   RESOLVE_MERGE_ROW_FAILURE,
-  CORRECT_VALUE,
-  REMOVE_VALUE_MATCH,
-  UPDATE_VALUE,
-  CHANGE_REPEATABLE_INSTRUMENTS,
-} from '../actions/RedcapLinterActions';
+} from '../actions/ResolveActions';
 
 export default function (state = {}, action) {
   switch (action.type) {
@@ -92,6 +97,12 @@ export default function (state = {}, action) {
       matchedFieldMap = _.merge(matchedFieldMap, action.payload.matchedFieldMap);
       return Object.assign({}, state, { matchedFieldMap, toggle: !toggle });
     }
+    case CHANGE_RECONCILIATION_COLUMNS: {
+      const toggle = state.toggle || false;
+      const reconciliationColumns = state.reconciliationColumns || {}
+      reconciliationColumns[action.payload.instrument] = action.payload.reconciliationColumns;
+      return Object.assign({}, state, { toggle: !toggle, reconciliationColumns: reconciliationColumns });
+    }
     case RESOLVE_COLUMN_SUCCESS: {
       return Object.assign({}, state, { workingRow: -1, workingMergeRow: -1 }, action.payload.data);
     }
@@ -138,6 +149,12 @@ export default function (state = {}, action) {
       const projectInfo = state.projectInfo || {};
       const toggle = state.toggle || false;
       projectInfo.repeatable_instruments = action.payload.repeatableInstruments;
+      return Object.assign({}, state, { projectInfo, toggle: !toggle });
+    }
+    case CHANGE_SECONDARY_UNIQUE_FIELD: {
+      const projectInfo = state.projectInfo || {};
+      const toggle = state.toggle || false;
+      projectInfo.secondary_unique_field = action.payload.secondaryUniqueField;
       return Object.assign({}, state, { projectInfo, toggle: !toggle });
     }
     case CORRECT_VALUE: {

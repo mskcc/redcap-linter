@@ -6,7 +6,7 @@ import MergedRecord from './MergedRecord/MergedRecord';
 import RecordMerger from './RecordMerger/RecordMerger';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MergeRecords.scss';
-import { resolveMergeRow } from '../../actions/RedcapLinterActions';
+import { resolveMergeRow } from '../../actions/ResolveActions';
 
 class MergeRecords extends Component {
   constructor(props) {
@@ -84,13 +84,13 @@ class MergeRecords extends Component {
         <ActionMenu />
         <div className="MergeRecords-container">
           <div>
-            <div className="MergeRecords-matchedChoices">
-              <div className="MergeRecords-title">Merged Record</div>
-              <MergedRecord />
-            </div>
             <div className="MergeRecords-unmatchedChoices">
               <div className="MergeRecords-title">Existing Record</div>
               <RecordMerger />
+            </div>
+            <div className="MergeRecords-matchedChoices">
+              <div className="MergeRecords-title">Merged Record</div>
+              <MergedRecord />
             </div>
             <div style={{ clear: 'both' }} />
           </div>

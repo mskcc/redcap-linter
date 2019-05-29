@@ -6,7 +6,8 @@ import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchChoices.scss';
-import { resolveColumn, removeChoiceMatch } from '../../actions/RedcapLinterActions';
+import { removeChoiceMatch } from '../../actions/REDCapLinterActions';
+import { resolveColumn } from '../../actions/ResolveActions';
 
 class MatchChoices extends Component {
   constructor(props) {
