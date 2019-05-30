@@ -2,10 +2,10 @@ import logging
 import re
 import numbers
 
+from models.redcap_field import RedcapField
+
 import pandas as pd
 from dateutil import parser
-
-import flask
 
 def write_errors_to_excel(original_records, errors, error_cols):
     writer = pd.ExcelWriter('datafile_errors.xlsx', engine='xlsxwriter')
@@ -34,25 +34,6 @@ def write_errors_to_excel(original_records, errors, error_cols):
                     data_worksheet.write(index + 1, j, target_string, error_format)
 
     writer.save()
-
-
-def write_encoded_records_to_csv(encoded_records):
-    # TODO output all these on one sheet.
-    for key in encoded_records:
-        encoded_records.get(key).to_csv('{0}_output.csv'.format(key), index=False)
-
-
-def titleize(str):
-    return str.replace('_', ' ').title()
-
-
-def get_from_data_dictionary(data_dictionary, field_name, col):
-    cell = list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])
-    if len(cell) > 0:
-        return list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])[0]
-    else:
-        return None
-
 
 def validate_numbers(numbers_list, number_format, number_min, number_max, required):
     formatted_numbers = []

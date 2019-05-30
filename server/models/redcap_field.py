@@ -1,4 +1,3 @@
-from utils import utils
 import logging
 import json
 
@@ -22,14 +21,14 @@ class RedcapField(object):
     def from_data_dictionary(cls, data_dictionary, field_name):
         field = {
             'field_name': field_name,
-            'field_label': utils.get_from_data_dictionary(data_dictionary, field_name, 'Field Label'),
-            'field_type': utils.get_from_data_dictionary(data_dictionary, field_name, 'Field Type'),
-            'text_validation': utils.get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Type OR Show Slider Number'),
-            'text_min': utils.get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Min'),
-            'text_max': utils.get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Max'),
-            'choices': utils.get_from_data_dictionary(data_dictionary, field_name, 'Choices, Calculations, OR Slider Labels'),
-            'form_name': utils.get_from_data_dictionary(data_dictionary, field_name, 'Form Name'),
-            'required': utils.get_from_data_dictionary(data_dictionary, field_name, 'Required Field?') in ['y', 'Y']
+            'field_label': get_from_data_dictionary(data_dictionary, field_name, 'Field Label'),
+            'field_type': get_from_data_dictionary(data_dictionary, field_name, 'Field Type'),
+            'text_validation': get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Type OR Show Slider Number'),
+            'text_min': get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Min'),
+            'text_max': get_from_data_dictionary(data_dictionary, field_name, 'Text Validation Max'),
+            'choices': get_from_data_dictionary(data_dictionary, field_name, 'Choices, Calculations, OR Slider Labels'),
+            'form_name': get_from_data_dictionary(data_dictionary, field_name, 'Form Name'),
+            'required': get_from_data_dictionary(data_dictionary, field_name, 'Required Field?') in ['y', 'Y']
         }
 
         if field['field_type'] in ['yesno', 'truefalse']:
@@ -66,3 +65,10 @@ class RedcapField(object):
 
     def __str__(self):
         return json.dumps(self.__dict__)
+
+    def get_from_data_dictionary(data_dictionary, field_name, col):
+        cell = list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])
+        if len(cell) > 0:
+            return list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])[0]
+        else:
+            return None

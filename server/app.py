@@ -37,7 +37,7 @@ def save_fields():
     csv_headers = json.loads(form.get('csvHeaders'))
     existing_records = json.loads(form.get('existingRecords'))
     recordid_field = json.loads(form.get('recordidField'))
-    project_info = json.loads(form.get('projecInfo'))
+    project_info = json.loads(form.get('projectInfo'))
     malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     date_cols = json.loads(form.get('dateColumns'))
     token = json.loads(form.get('token'))
@@ -95,7 +95,8 @@ def save_fields():
         for record in existing_records:
             if not record['redcap_repeat_instrument']:
                 # TODO implement merging logic
-                records_to_reconcile[record[recordid_field]] = record
+                if record.get(recordid_field):
+                    records_to_reconcile[record[recordid_field]] = record
 
     # TODO Get list of rows with merge conflicts
     merge_conflicts = {}
