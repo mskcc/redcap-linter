@@ -60,13 +60,33 @@ def save_fields():
     dd_data = json.loads(form.get('ddData'))
     dd = [RedcapField.from_json(field) for field in dd_data]
 
-    redcap_api = RedcapApi(env)
     if token:
-        # TODO Collect ids to reconcile with
+        redcap_api = RedcapApi(env)
         if project_info['record_autonumbering_enabled'] == 1:
-            existing_records = redcap_api.export_records(token)
+            if not project_info['secondary_unique_field']:
+                existing_records = None
+            else:
+                secondary_unique_field_values = set()
+                for sheet_name, sheet in records.items():
+                    for index, record in sheet.iterrows():
+                        if record.get(project_info['secondary_unique_field']):
+                            secondary_unique_field_values.add(utils.get_record_id(record.get(project_info['secondary_unique_field'])))
+                secondary_unique_field_values = list(secondary_unique_field_values)
+                # TODO figure out filter logic implementation
+                options = {
+                    'secondary_unique_field': project_info['secondary_unique_field'],
+                    'secondary_unique_field_values': secondary_unique_field_values
+                }
+                existing_records = redcap_api.export_records(token, options)
         else:
-            existing_records = redcap_api.export_records(token)
+            record_ids = set()
+            for sheet_name, sheet in records.items():
+                for index, record in sheet.iterrows():
+                    if record.get(recordid_field):
+                        record_ids.add(utils.get_record_id(record.get(recordid_field)))
+            record_ids = list(record_ids)
+            options = { 'records': record_ids }
+            existing_records = redcap_api.export_records(token, options)
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
@@ -122,6 +142,7 @@ def save_fields():
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
+        'existingRecords':            existing_records,
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
         'decodedRecords':             decoded_records,

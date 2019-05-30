@@ -151,6 +151,7 @@ class ProjectInfo extends Component {
     });
 
     let secondaryUniqueSelector = null;
+    let secondaryUniqueWarning = null;
     if (projectInfo.record_autonumbering_enabled === 1) {
       secondaryUniqueSelector = (<div className="ProjectInfo-repeatableInstruments">
           <div>
@@ -165,6 +166,14 @@ class ProjectInfo extends Component {
             onChange={this.changeSecondaryUniqueField.bind(this)}
           />
         </div>);
+        if (!selectedSecondaryValue) {
+          secondaryUniqueWarning = (
+            <div
+              className="ProjectInfo-warning">
+              <b>Warning</b>: If no secondary unique field is selected, REDCap Linter will not be able to reconcile with existing records.
+            </div>
+          );
+        }
     }
 
     let repeatableInstrumentsSelector = (<div className="ProjectInfo-repeatableInstruments">
@@ -190,8 +199,9 @@ class ProjectInfo extends Component {
         />
         { repeatableInstrumentsSelector }
         { secondaryUniqueSelector }
+        { secondaryUniqueWarning }
         <div
-          className="ProjectInfo-malformedSheets"
+          className="ProjectInfo-warning"
           dangerouslySetInnerHTML={{ __html: warning }}
         />
       </div>

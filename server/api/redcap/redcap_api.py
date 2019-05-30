@@ -111,6 +111,13 @@ class RedcapApi(object):
         if options.get('forms'):
             for i, form in enumerate(options.get('forms')):
                 payload["forms[{0}]".format(i)] = form
+        if options.get('secondary_unique_field'):
+            filter_logic = ''
+            for i, value in enumerate(options.get('secondary_unique_field_values')):
+                filter_logic += "[{0}] = '{1}'".format(options.get('secondary_unique_field'), value)
+                if i < len(options.get('secondary_unique_field_values')) - 1:
+                    filter_logic += " OR "
+            payload["filterLogic"] = filter_logic
         r = requests.post(self.base_url, data=payload)
         if r.status_code != 200:
             raise Exception(
