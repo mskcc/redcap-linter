@@ -21,3 +21,10 @@ def test_empty_db(client):
 
     # rv = client.get('/')
     assert 1 + 1 == 2
+
+
+def test_failure(client):
+    """Start with a blank database."""
+
+    # rv = client.get('/')
+    assert 1 + 1 == 3
