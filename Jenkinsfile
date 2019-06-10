@@ -17,8 +17,7 @@ pipeline {
             emailext (
               subject: 'Test',
               body: 'A Test EMail',
-              to: 'perkinsc@mskcc.org',
-              recipientProviders: [[$class: 'RequesterRecipientProvider']]
+              to: 'perkinsc@mskcc.org'
             )
         }
     }
