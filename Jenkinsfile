@@ -15,8 +15,8 @@ pipeline {
     post {
         always {
             emailext (
-              subject: 'Test',
-              body: 'A Test EMail',
+              subject: "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}",
+              body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}",,
               to: 'perkinsc@mskcc.org'
             )
         }
