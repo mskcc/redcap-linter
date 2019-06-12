@@ -9,7 +9,6 @@ import MatchChoices from '../MatchChoices/MatchChoices';
 import TextValidation from '../TextValidation/TextValidation';
 import ResolveRow from '../ResolveRow/ResolveRow';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
-// Remove this depencency
 import { navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn, resolveRow } from '../../actions/ResolveActions';
 
@@ -83,27 +82,22 @@ class ResolveErrors extends Component {
   }
 
   continue() {
-    const {
-      navigateTo,
-    } = this.props;
+    const { navigateTo } = this.props;
 
     navigateTo('merge');
   }
 
   render() {
-    const {
-      columnsInError,
-      fieldErrors,
-      rowsInError,
-    } = this.props;
-    const {
-      loading,
-    } = this.state;
+    const { columnsInError, fieldErrors, rowsInError } = this.props;
+    const { loading } = this.state;
     let content = '';
     // TODO rework the logic here
     if (loading) {
       content = <Spin tip="Loading..." />;
-    } else if (fieldErrors && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)) {
+    } else if (
+      fieldErrors
+      && ['radio', 'dropdown', 'yesno', 'truefalse', 'checkbox'].includes(fieldErrors.fieldType)
+    ) {
       content = <MatchChoices />;
     } else if (fieldErrors && ['text', 'notes'].includes(fieldErrors.fieldType)) {
       content = <TextValidation />;
@@ -113,13 +107,15 @@ class ResolveErrors extends Component {
       content = (
         <div>
           <p>Nothing to Lint</p>
-          <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">Continue</button>
+          <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
+            Continue
+          </button>
         </div>
       );
     }
     return (
       <div className="ResolveErrors-container">
-        { content }
+        {content}
         <TabbedDatatable />
       </div>
     );
@@ -127,15 +123,29 @@ class ResolveErrors extends Component {
 }
 
 ResolveErrors.propTypes = {
-  cellsWithErrors: PropTypes.object,
-  columnsInError: PropTypes.object,
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
+  fieldErrors: PropTypes.objectOf(PropTypes.any),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  columnsInError: PropTypes.objectOf(PropTypes.array),
+  rowsInError: PropTypes.objectOf(PropTypes.array),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
   workingColumn: PropTypes.string,
+  workingRow: PropTypes.number,
 };
 
 ResolveErrors.defaultProps = {
-  cellsWithErrors: {},
+  ddData: [],
+  jsonData: {},
+  projectInfo: {},
+  csvHeaders: {},
+  fieldErrors: {},
   columnsInError: {},
+  rowsInError: {},
+  malformedSheets: [],
   workingColumn: '',
+  workingRow: -1,
 };
 
 function mapStateToProps(state) {
@@ -146,4 +156,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveColumn, resolveRow, navigateTo }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ResolveErrors);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ResolveErrors);

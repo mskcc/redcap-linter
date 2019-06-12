@@ -181,7 +181,7 @@ ActionMenu.propTypes = {
   csvHeaders: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
   jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
-  cellsWithErrors: PropTypes.objectOf(PropTypes.object),
+  cellsWithErrors: PropTypes.objectOf(PropTypes.array),
   recordFieldsNotInRedcap: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
   dataFileName: PropTypes.string,
 };

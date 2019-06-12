@@ -13,7 +13,7 @@
 }
 
 .Header-header {
-  background-color: #005EC5;
+  background-color: #005ec5;
   height: 70px;
 }
 
@@ -32,4 +32,11 @@
 .Header-githubIcon {
   height: 35px;
   font-size: 35px;
+}
+
+.Header-issueTracker {
+  color: white;
+}
+.Header-issueTracker:hover {
+  color: #1890ff;
 }

@@ -10,12 +10,11 @@ import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import Form from '../Form/Form';
 import MatchFields from '../MatchFields/MatchFields';
-import { postForm } from '../../actions/REDCapLinterActions';
 
 class Linter extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
   render() {
@@ -23,10 +22,12 @@ class Linter extends Component {
     let currentPage = '';
     console.log(this.props);
     if (page === 'intro') {
-      currentPage = (<div className="Linter-container">
-        <Form />
-        <Intro />
-      </div>);
+      currentPage = (
+        <div className="Linter-container">
+          <Form />
+          <Intro />
+        </div>
+      );
     } else if (page === 'matchFields') {
       currentPage = <MatchFields />;
     } else if (page === 'lint') {
@@ -58,7 +59,10 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ submitForm: postForm }, dispatch);
+  return bindActionCreators({}, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Linter);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Linter);
