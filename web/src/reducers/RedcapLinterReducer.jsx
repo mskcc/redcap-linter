@@ -41,10 +41,11 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { loading: true });
     }
     case POST_FORM_SUCCESS: {
-      let error = '';
-      if (action.payload.data && action.payload.data.error) {
-        error = action.payload.data.error;
-      }
+      const {
+        payload: {
+          data: { error },
+        },
+      } = action;
       let page = 'matchFields';
       if (error) {
         page = 'intro';
@@ -91,17 +92,18 @@ export default function (state = {}, action) {
       });
     }
     case HIGHLIGHT_COLUMNS: {
-      let matchedFieldMap = state.matchedFieldMap || {};
-      // This is awful, figure out a fix
-      const toggle = state.toggle || false;
+      let { matchedFieldMap = {} } = state;
+      const { toggle = false } = state;
       matchedFieldMap = _.merge(matchedFieldMap, action.payload.matchedFieldMap);
       return Object.assign({}, state, { matchedFieldMap, toggle: !toggle });
     }
     case CHANGE_RECONCILIATION_COLUMNS: {
-      const toggle = state.toggle || false;
-      const reconciliationColumns = state.reconciliationColumns || {}
+      const { reconciliationColumns = {}, toggle = false } = state;
       reconciliationColumns[action.payload.instrument] = action.payload.reconciliationColumns;
-      return Object.assign({}, state, { toggle: !toggle, reconciliationColumns: reconciliationColumns });
+      return Object.assign({}, state, {
+        toggle: !toggle,
+        reconciliationColumns,
+      });
     }
     case RESOLVE_COLUMN_SUCCESS: {
       return Object.assign({}, state, { workingRow: -1, workingMergeRow: -1 }, action.payload.data);
@@ -112,7 +114,12 @@ export default function (state = {}, action) {
       });
     }
     case RESOLVE_ROW_SUCCESS: {
-      return Object.assign({}, state, { workingColumn: '', workingMergeRow: -1 }, action.payload.data);
+      return Object.assign(
+        {},
+        state,
+        { workingColumn: '', workingMergeRow: -1 },
+        action.payload.data,
+      );
     }
     case RESOLVE_ROW_FAILURE: {
       return Object.assign({}, state, {
@@ -128,14 +135,15 @@ export default function (state = {}, action) {
       });
     }
     case UPDATE_VALUE: {
-      const fieldToValueMap = Object.assign({}, state.fieldToValueMap) || {};
       const {
-        workingSheetName,
-        workingRow,
+        workingSheetName, workingRow, fieldToValueMap = {}, toggle = false,
       } = state;
-      fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {}
-      fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {}
-      fieldToValueMap[workingSheetName][workingRow] = Object.assign(fieldToValueMap[workingSheetName][workingRow], action.payload)
+      fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {};
+      fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {};
+      fieldToValueMap[workingSheetName][workingRow] = Object.assign(
+        fieldToValueMap[workingSheetName][workingRow],
+        action.payload,
+      );
       // Object.keys(action.payload).forEach((field) => {
       //   if (!action.payload[field]) {
       //     delete fieldToValueMap[field];
@@ -143,7 +151,7 @@ export default function (state = {}, action) {
       //     fieldToValueMap[field] = action.payload[field];
       //   }
       // });
-      return Object.assign({}, state, { fieldToValueMap });
+      return Object.assign({}, state, { fieldToValueMap, toggle: !toggle });
     }
     case CHANGE_REPEATABLE_INSTRUMENTS: {
       const projectInfo = state.projectInfo || {};
@@ -158,15 +166,18 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { projectInfo, toggle: !toggle });
     }
     case CORRECT_VALUE: {
-      const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
       const {
         workingSheetName,
         workingColumn,
+        originalToCorrectedValueMap = {},
+        fieldErrors = {},
       } = state;
-      originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {}
-      originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {}
-      originalToCorrectedValueMap[workingSheetName][workingColumn] = Object.assign(originalToCorrectedValueMap[workingSheetName][workingColumn], action.payload)
-      const fieldErrors = state.fieldErrors || {};
+      originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {};
+      originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {};
+      originalToCorrectedValueMap[workingSheetName][workingColumn] = Object.assign(
+        originalToCorrectedValueMap[workingSheetName][workingColumn],
+        action.payload,
+      );
       let textErrors = [];
       if (fieldErrors.textErrors) {
         textErrors = fieldErrors.textErrors.slice();
@@ -174,41 +185,38 @@ export default function (state = {}, action) {
       Object.keys(action.payload).forEach((originalValue) => {
         const idx = textErrors.indexOf(originalValue);
         if (idx !== -1) textErrors.splice(idx, 1);
-      })
+      });
       fieldErrors.textErrors = textErrors;
       return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
     }
     case MERGE_FIELD: {
-      const mergeMap = state.mergeMap || {};
-      const toggle = state.toggle || false;
       const {
-        workingSheetName,
-        workingMergeRow,
+        workingSheetName, workingMergeRow, mergeMap = {}, toggle = false,
       } = state;
-      mergeMap[workingSheetName] = mergeMap[workingSheetName] || {}
-      mergeMap[workingSheetName][workingMergeRow] = mergeMap[workingSheetName][workingMergeRow] || {}
-      mergeMap[workingSheetName][workingMergeRow] = Object.assign(mergeMap[workingSheetName][workingMergeRow], action.payload)
+      mergeMap[workingSheetName] = mergeMap[workingSheetName] || {};
+      mergeMap[workingSheetName][workingMergeRow] = mergeMap[workingSheetName][workingMergeRow] || {};
+      mergeMap[workingSheetName][workingMergeRow] = Object.assign(
+        mergeMap[workingSheetName][workingMergeRow],
+        action.payload,
+      );
       return Object.assign({}, state, { mergeMap, toggle: !toggle });
     }
     case REMOVE_MERGE: {
-      const mergeMap = state.mergeMap || {};
-      const toggle = state.toggle || false;
       const {
-        workingSheetName,
-        workingMergeRow,
+        workingSheetName, workingMergeRow, mergeMap = {}, toggle = false,
       } = state;
-      mergeMap[workingSheetName] = mergeMap[workingSheetName] || {}
-      mergeMap[workingSheetName][workingMergeRow] = mergeMap[workingSheetName][workingMergeRow] || {}
+      mergeMap[workingSheetName] = mergeMap[workingSheetName] || {};
+      mergeMap[workingSheetName][workingMergeRow] = mergeMap[workingSheetName][workingMergeRow] || {};
       delete mergeMap[workingSheetName][workingMergeRow][action.payload.field];
       return Object.assign({}, state, { mergeMap, toggle: !toggle });
     }
     case MATCH_CHOICES: {
-      let dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
       const {
         workingSheetName,
         workingColumn,
+        dataFieldToChoiceMap = {},
+        fieldErrors = {},
       } = state;
-      const fieldErrors = state.fieldErrors || {};
       let unmatchedChoices = [];
       if (fieldErrors.unmatchedChoices) {
         unmatchedChoices = fieldErrors.unmatchedChoices.slice();
@@ -217,22 +225,25 @@ export default function (state = {}, action) {
         const idx = unmatchedChoices.indexOf(Object.keys(action.payload)[i]);
         if (idx !== -1) unmatchedChoices.splice(idx, 1);
       }
-      dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {}
-      dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {}
-      dataFieldToChoiceMap[workingSheetName][workingColumn] = Object.assign(dataFieldToChoiceMap[workingSheetName][workingColumn], action.payload)
+      dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {};
+      dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {};
+      dataFieldToChoiceMap[workingSheetName][workingColumn] = Object.assign(
+        dataFieldToChoiceMap[workingSheetName][workingColumn],
+        action.payload,
+      );
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
     case REMOVE_CHOICE_MATCH: {
-      const dataFieldToChoiceMap = state.dataFieldToChoiceMap || {};
       const {
         workingSheetName,
         workingColumn,
+        dataFieldToChoiceMap = {},
+        fieldErrors = {},
       } = state;
-      dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {}
-      dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {}
+      dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {};
+      dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {};
       delete dataFieldToChoiceMap[workingSheetName][workingColumn][action.payload.dataField];
-      const fieldErrors = state.fieldErrors || {};
       let unmatchedChoices = [];
       if (fieldErrors.unmatchedChoices) {
         unmatchedChoices = fieldErrors.unmatchedChoices.slice();
@@ -244,21 +255,22 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
     }
     case MATCH_FIELDS: {
-      let dataFieldToRedcapFieldMap = state.dataFieldToRedcapFieldMap || {};
-      let noMatchRedcapFields = state.noMatchRedcapFields || [];
-      noMatchRedcapFields = _.union(noMatchRedcapFields, action.payload.noMatchRedcapFields)
+      let { noMatchRedcapFields = [], dataFieldToRedcapFieldMap = {} } = state;
+      const { unmatchedDataFields } = state;
+      noMatchRedcapFields = _.union(noMatchRedcapFields, action.payload.noMatchRedcapFields);
       let unmatchedRedcapFields = [];
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
       }
-      const unmatchedDataFields = state.unmatchedDataFields;
       Object.keys(action.payload.dataFieldToRedcapFieldMap).forEach((sheet) => {
         if (state.unmatchedDataFields[sheet]) {
           unmatchedDataFields[sheet] = state.unmatchedDataFields[sheet].slice();
         }
         if (action.payload.dataFieldToRedcapFieldMap[sheet]) {
           Object.keys(action.payload.dataFieldToRedcapFieldMap[sheet]).forEach((dataField) => {
-            let idx = unmatchedRedcapFields.indexOf(action.payload.dataFieldToRedcapFieldMap[sheet][dataField]);
+            let idx = unmatchedRedcapFields.indexOf(
+              action.payload.dataFieldToRedcapFieldMap[sheet][dataField],
+            );
             if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
             idx = unmatchedDataFields[sheet].indexOf(dataField);
             if (idx !== -1) unmatchedDataFields[sheet].splice(idx, 1);
@@ -268,13 +280,21 @@ export default function (state = {}, action) {
 
       if (action.payload.noMatchRedcapFields) {
         action.payload.noMatchRedcapFields.forEach((redcapField) => {
-          let idx = unmatchedRedcapFields.indexOf(redcapField);
+          const idx = unmatchedRedcapFields.indexOf(redcapField);
           if (idx !== -1) unmatchedRedcapFields.splice(idx, 1);
         });
       }
 
-      dataFieldToRedcapFieldMap = _.merge(dataFieldToRedcapFieldMap, action.payload.dataFieldToRedcapFieldMap);
-      return Object.assign({}, state, { dataFieldToRedcapFieldMap, unmatchedRedcapFields, unmatchedDataFields, noMatchRedcapFields });
+      dataFieldToRedcapFieldMap = _.merge(
+        dataFieldToRedcapFieldMap,
+        action.payload.dataFieldToRedcapFieldMap,
+      );
+      return Object.assign({}, state, {
+        dataFieldToRedcapFieldMap,
+        unmatchedRedcapFields,
+        unmatchedDataFields,
+        noMatchRedcapFields,
+      });
     }
     case REMOVE_FIELD_MATCH: {
       const dataFieldToRedcapFieldMap = state.dataFieldToRedcapFieldMap || {};
@@ -282,12 +302,14 @@ export default function (state = {}, action) {
       if (state.unmatchedRedcapFields) {
         unmatchedRedcapFields = state.unmatchedRedcapFields.slice();
       }
-      let noMatchRedcapFields = []
+      let noMatchRedcapFields = [];
       if (state.noMatchRedcapFields) {
         noMatchRedcapFields = state.noMatchRedcapFields.slice();
       }
-      const sheet = action.payload.sheet;
-      const unmatchedDataFields = state.unmatchedDataFields;
+      const {
+        payload: { sheet },
+      } = action;
+      const { unmatchedDataFields } = state;
       if (unmatchedDataFields[sheet]) {
         unmatchedDataFields[sheet] = unmatchedDataFields[sheet].slice();
         if (!unmatchedDataFields[sheet].includes(action.payload.dataField)) {
@@ -309,20 +331,25 @@ export default function (state = {}, action) {
           delete dataFieldToRedcapFieldMap[sheet][action.payload.dataField];
         }
       }
-      return Object.assign({}, state, { dataFieldToRedcapFieldMap, unmatchedRedcapFields, unmatchedDataFields, noMatchRedcapFields });
+      return Object.assign({}, state, {
+        dataFieldToRedcapFieldMap,
+        unmatchedRedcapFields,
+        unmatchedDataFields,
+        noMatchRedcapFields,
+      });
     }
     case REMOVE_VALUE_MATCH: {
-      const originalToCorrectedValueMap = state.originalToCorrectedValueMap || {};
       const {
         workingSheetName,
         workingColumn,
+        originalToCorrectedValueMap = {},
+        fieldErrors = {},
       } = state;
-      originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {}
-      originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {}
+      originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {};
+      originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {};
       Object.keys(action.payload).forEach((originalValue) => {
         delete originalToCorrectedValueMap[workingSheetName][workingColumn][originalValue];
       });
-      const fieldErrors = state.fieldErrors || {};
       let textErrors = [];
       if (fieldErrors.textErrors) {
         textErrors = fieldErrors.textErrors.slice();

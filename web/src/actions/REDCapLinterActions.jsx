@@ -44,7 +44,6 @@ export const CHANGE_REPEATABLE_INSTRUMENTS = 'CHANGE_REPEATABLE_INSTRUMENTS';
 
 export const CHANGE_SECONDARY_UNIQUE_FIELD = 'CHANGE_SECONDARY_UNIQUE_FIELD';
 
-
 export function loadingStart() {
   return {
     type: LOADING_START,
@@ -217,7 +216,7 @@ export function saveFields(payload) {
     data.append('action', payload.action ? JSON.stringify(payload.action) : '');
     let nextPage = {};
     if (payload.action === 'continue') {
-      nextPage = { page: 'lint' }
+      nextPage = { page: 'lint' };
     }
     const request = axios({
       method: 'POST',
@@ -291,7 +290,6 @@ export function removeChoiceMatch(dataField, permissibleValue) {
   };
 }
 
-
 export function removeValueMatchSuccess(payload) {
   return {
     type: REMOVE_VALUE_MATCH,
@@ -357,7 +355,6 @@ export function changeSecondaryUniqueField(payload) {
     return dispatch(changeSecondaryUniqueFieldSuccess(payload));
   };
 }
-
 
 export function navigateToSuccess(payload) {
   return {

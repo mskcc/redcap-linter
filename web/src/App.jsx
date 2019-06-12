@@ -21,7 +21,7 @@ function App() {
           <Linter />
         </Provider>
       </div>
-      <div className="App-footer"></div>
+      <div className="App-footer" />
     </div>
   );
 }
