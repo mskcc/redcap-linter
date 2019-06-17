@@ -12,7 +12,7 @@ import { resolveRow } from '../../actions/ResolveActions';
 class ResolveRow extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
   saveChanges(e) {
@@ -80,14 +80,12 @@ class ResolveRow extends Component {
     const {
       jsonData,
       cellsWithErrors,
-      rowsInError,
       fieldToValueMap,
-      updateValue,
       workingSheetName,
       workingRow,
       csvHeaders,
+      updateValue,
       filterRow,
-      ddData,
     } = this.props;
 
     if (workingRow === -1 || workingRow === '') {
@@ -107,8 +105,8 @@ class ResolveRow extends Component {
       // TODO Figure out why date of prior visit is null
       if (!currentRowErrors[field]) {
         filtered.push({
-          'Field': field,
-          'Value': row[field] || "",
+          Field: field,
+          Value: row[field] || '',
         });
       }
       return filtered;
@@ -117,13 +115,11 @@ class ResolveRow extends Component {
     Object.keys(valueMap).forEach((field) => {
       if (valueMap[field]) {
         tableData.unshift({
-          'Field': field,
-          'Value': valueMap[field],
-        })
+          Field: field,
+          Value: valueMap[field],
+        });
       }
     });
-
-    // <button type="button" onClick={e => this.handleSkip(field, e)} className="MissingRequired-skipButton">Skip</button>
 
     return (
       <div>
@@ -146,8 +142,16 @@ class ResolveRow extends Component {
             <div style={{ clear: 'both' }} />
           </div>
           <div className="ResolveRow-saveAndContinue">
-            <button type="button" onClick={this.saveChanges.bind(this)} className="ResolveRow-save">Save</button>
-            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
+            <button type="button" onClick={this.saveChanges.bind(this)} className="ResolveRow-save">
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={this.saveAndContinue.bind(this)}
+              className="App-submitButton"
+            >
+              Save and Continue
+            </button>
           </div>
         </div>
         <div style={{ clear: 'both' }} />
@@ -157,14 +161,30 @@ class ResolveRow extends Component {
 }
 
 ResolveRow.propTypes = {
-  noMissingRequired: PropTypes.array,
-  fieldToValueMap: PropTypes.object,
+  fieldToValueMap: PropTypes.objectOf(PropTypes.object),
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
+  jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  cellsWithErrors: PropTypes.objectOf(PropTypes.array),
+  columnsInError: PropTypes.objectOf(PropTypes.array),
+  rowsInError: PropTypes.objectOf(PropTypes.array),
+  workingSheetName: PropTypes.string,
   workingRow: PropTypes.number,
 };
 
 ResolveRow.defaultProps = {
-  noMissingRequired: [],
+  ddData: [],
+  projectInfo: {},
+  jsonData: {},
+  csvHeaders: {},
+  malformedSheets: [],
+  cellsWithErrors: {},
   fieldToValueMap: {},
+  columnsInError: {},
+  rowsInError: {},
+  workingSheetName: '',
   workingRow: -1,
 };
 
@@ -176,4 +196,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveRow, filterRow, updateValue }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ResolveRow);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ResolveRow);

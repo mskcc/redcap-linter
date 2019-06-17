@@ -20,15 +20,15 @@ class TabbedDatatable extends Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     const prevSheetName = prevState.workingSheetName;
     const prevColumn = prevState.workingColumn;
-    const {
-      csvHeaders,
-      workingSheetName,
-      workingColumn,
-    } = nextProps;
+    const { csvHeaders, workingSheetName, workingColumn } = nextProps;
     const sheets = Object.keys(csvHeaders);
     if (!prevSheetName || (prevSheetName !== workingSheetName || prevColumn !== workingColumn)) {
       if (workingSheetName && workingColumn) {
-        return { activeIndex: sheets.indexOf(workingSheetName).toString(), workingSheetName, workingColumn };
+        return {
+          activeIndex: sheets.indexOf(workingSheetName).toString(),
+          workingSheetName,
+          workingColumn,
+        };
       }
       return null;
     }
@@ -44,7 +44,6 @@ class TabbedDatatable extends Component {
       csvHeaders,
       jsonData,
       ddHeaders,
-      ddData,
       ddDataRaw,
       cellsWithErrors,
       recordFieldsNotInRedcap,
@@ -52,16 +51,13 @@ class TabbedDatatable extends Component {
       matchedFieldMap,
       fieldsSaved,
       allErrors,
-      sheetsNotInRedcap,
       workingSheetName,
       workingColumn,
       filter,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const panes = [];
-    const {
-      activeIndex,
-    } = this.state;
+    const { activeIndex } = this.state;
     const workingIndex = sheets.indexOf(workingSheetName);
 
     const { filterSheet, filterRowNum } = this.props;
@@ -114,7 +110,7 @@ class TabbedDatatable extends Component {
               tableErrors={tableErrors}
               tableFieldsNotInRedcap={tableFieldsNotInRedcap}
             />
-          </TabPane>
+          </TabPane>,
         );
       }
       panes.push(
@@ -125,7 +121,7 @@ class TabbedDatatable extends Component {
             tableData={ddDataRaw}
             editable={false}
           />
-        </TabPane>
+        </TabPane>,
       );
       if (allErrors.length > 0) {
         panes.push(
@@ -137,53 +133,60 @@ class TabbedDatatable extends Component {
               sheetInError
               editable={false}
             />
-          </TabPane>
+          </TabPane>,
         );
       }
     } else {
       panes.push(
         <TabPane tab="Sheet1" key={panes.length.toString()}>
           <Datatable headers={[]} tableData={[]} />
-        </TabPane>
+        </TabPane>,
       );
     }
     const tabProps = {
-      className: "TabbedDatatable-tabs",
+      className: 'TabbedDatatable-tabs',
       animated: false,
       activeKey: activeIndex,
-      onChange: this.handleTabChange.bind(this)
+      onChange: this.handleTabChange.bind(this),
     };
-    return (<div className="TabbedDatatable-main">
-      <Tabs {...tabProps}>{ panes }</Tabs>
-    </div>);
+    return (
+      <div className="TabbedDatatable-main">
+        <Tabs {...tabProps}>{panes}</Tabs>
+      </div>
+    );
   }
 }
 
 TabbedDatatable.propTypes = {
-  csvHeaders: PropTypes.object.isRequired,
-  jsonData: PropTypes.object,
-  ddHeaders: PropTypes.array,
-  ddData: PropTypes.array,
-  cellsWithErrors: PropTypes.object,
-  recordFieldsNotInRedcap: PropTypes.object,
-  allErrors: PropTypes.array,
-  sheetsNotInRedcap: PropTypes.array,
-  dataFieldToRedcapFieldMap: PropTypes.object,
-  matchedFieldMap: PropTypes.object,
+  csvHeaders: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
+  jsonData: PropTypes.objectOf(PropTypes.array),
+  ddHeaders: PropTypes.arrayOf(PropTypes.string),
+  ddDataRaw: PropTypes.arrayOf(PropTypes.object),
+  cellsWithErrors: PropTypes.objectOf(PropTypes.array),
+  recordFieldsNotInRedcap: PropTypes.objectOf(PropTypes.array),
+  allErrors: PropTypes.arrayOf(PropTypes.object),
+  dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
+  matchedFieldMap: PropTypes.objectOf(PropTypes.object),
   fieldsSaved: PropTypes.bool,
+  workingSheetName: PropTypes.string,
+  workingColumn: PropTypes.string,
+  filter: PropTypes.string,
 };
 
 TabbedDatatable.defaultProps = {
+  csvHeaders: {},
   jsonData: {},
   ddHeaders: [],
-  ddData: [],
+  ddDataRaw: [],
   cellsWithErrors: {},
   recordFieldsNotInRedcap: {},
   allErrors: [],
-  sheetsNotInRedcap: [],
   dataFieldToRedcapFieldMap: {},
   matchedFieldMap: {},
   fieldsSaved: false,
+  workingSheetName: '',
+  workingColumn: '',
+  filter: '',
 };
 
 function mapStateToProps(state) {
@@ -194,4 +197,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ postForm }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TabbedDatatable);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(TabbedDatatable);

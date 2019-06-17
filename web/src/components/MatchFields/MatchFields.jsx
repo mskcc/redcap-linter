@@ -19,12 +19,14 @@ class MatchFields extends Component {
       loadingContinue: false,
       showModal: false,
     };
+    this.handleOk = this.handleOk.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.saveFields = this.saveFields.bind(this);
+    this.saveAndContinue = this.saveAndContinue.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const {
-      loading,
-    } = nextProps;
+    const { loading } = nextProps;
     if (!loading) {
       return { loadingSave: false, loadingContinue: false };
     }
@@ -32,18 +34,17 @@ class MatchFields extends Component {
   }
 
   handleOk(e) {
-    this.saveAndContinue(e)
+    this.saveAndContinue(e);
     this.setState({ showModal: false });
   }
 
-  handleCancel(e) {
-    console.log(e);
+  handleCancel() {
     this.setState({
       showModal: false,
     });
   }
 
-  saveFields(e) {
+  saveFields() {
     const {
       jsonData,
       dataFieldToRedcapFieldMap,
@@ -75,7 +76,7 @@ class MatchFields extends Component {
     this.setState({ loadingSave: true });
   }
 
-  saveAndContinue(e) {
+  saveAndContinue() {
     const {
       jsonData,
       dataFieldToRedcapFieldMap,
@@ -125,47 +126,46 @@ class MatchFields extends Component {
 
   render() {
     const {
-      ddData,
-      matchingHeaders,
       dataFieldToRedcapFieldMap,
-      unmatchedRedcapFields,
-      redcapFieldCandidates,
       matchedFieldMap,
       noMatchRedcapFields,
       removeFieldMatch,
     } = this.props;
+    const { loadingSave, loadingContinue, showModal } = this.state;
     let matchedFields = Object.keys(dataFieldToRedcapFieldMap).reduce((filtered, sheet) => {
       Object.keys(dataFieldToRedcapFieldMap[sheet]).forEach((dataField) => {
         if (dataField && dataFieldToRedcapFieldMap[sheet][dataField]) {
           filtered.push({
             'REDCap Field': dataFieldToRedcapFieldMap[sheet][dataField],
             'Data Field': dataField,
-            'Sheet': sheet,
+            Sheet: sheet,
           });
         }
       });
       return filtered;
     }, []);
-    matchedFields = matchedFields.concat(Object.keys(dataFieldToRedcapFieldMap).reduce((filtered, sheet) => {
-      Object.keys(dataFieldToRedcapFieldMap[sheet]).forEach((dataField) => {
-        if (dataField && !dataFieldToRedcapFieldMap[sheet][dataField]) {
-          filtered.push({
-            'REDCap Field': dataFieldToRedcapFieldMap[sheet][dataField],
-            'Data Field': dataField,
-            'Sheet': sheet,
-          });
-        }
-      });
-      return filtered;
-    }, []));
+    matchedFields = matchedFields.concat(
+      Object.keys(dataFieldToRedcapFieldMap).reduce((filtered, sheet) => {
+        Object.keys(dataFieldToRedcapFieldMap[sheet]).forEach((dataField) => {
+          if (dataField && !dataFieldToRedcapFieldMap[sheet][dataField]) {
+            filtered.push({
+              'REDCap Field': dataFieldToRedcapFieldMap[sheet][dataField],
+              'Data Field': dataField,
+              Sheet: sheet,
+            });
+          }
+        });
+        return filtered;
+      }, []),
+    );
     if (noMatchRedcapFields) {
-      matchedFields = matchedFields.concat(noMatchRedcapFields.map((redcapField) => {
-        return {
+      matchedFields = matchedFields.concat(
+        noMatchRedcapFields.map(redcapField => ({
           'REDCap Field': redcapField,
           'Data Field': '',
-          'Sheet': '',
-        }
-      }));
+          Sheet: '',
+        })),
+      );
     }
 
     let hasUnsavedFields = false;
@@ -180,12 +180,6 @@ class MatchFields extends Component {
       }
     });
 
-    const {
-      loadingSave,
-      loadingContinue,
-      showModal
-    } = this.state;
-
     let saveButtonText = 'Save';
     if (loadingSave) {
       saveButtonText = <Spin />;
@@ -195,7 +189,7 @@ class MatchFields extends Component {
     if (loadingContinue) {
       continueButtonText = <Spin />;
     }
-    let fieldMatcher = <FieldMatcher showModal={showModal} />;
+    const fieldMatcher = <FieldMatcher showModal={showModal} />;
     return (
       <div>
         <div>
@@ -205,31 +199,32 @@ class MatchFields extends Component {
             <div>
               <div className="MatchFields-matchedFields">
                 <div className="MatchFields-title">Matched Fields</div>
-                <MatchedFields
-                  removeFieldMatch={removeFieldMatch}
-                  tableData={matchedFields}
-                />
+                <MatchedFields removeFieldMatch={removeFieldMatch} tableData={matchedFields} />
               </div>
               <div className="MatchFields-unmatchedFields">
                 <div className="MatchFields-title">Unmatched Fields</div>
-                { fieldMatcher }
+                {fieldMatcher}
               </div>
               <div style={{ clear: 'both' }} />
             </div>
             <div className="MatchFields-saveAndContinue">
-              <button type="button" onClick={this.saveFields.bind(this)} className="App-actionButton">{ saveButtonText }</button>
-              <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">{ continueButtonText }</button>
+              <button type="button" onClick={this.saveFields} className="App-actionButton">
+                {saveButtonText}
+              </button>
+              <button type="button" onClick={this.saveAndContinue} className="App-submitButton">
+                {continueButtonText}
+              </button>
             </div>
             <Modal
               title="Confirm Fields"
               width={800}
-              visible={this.state.showModal}
-              onOk={this.handleOk.bind(this)}
+              visible={showModal}
+              onOk={this.handleOk}
               okButtonProps={{ disabled: hasUnsavedFields }}
-              onCancel={this.handleCancel.bind(this)}
+              onCancel={this.handleCancel}
             >
               <p>You have unaccepted matches. Would you like to Accept or Reject these matches?</p>
-              { fieldMatcher }
+              {fieldMatcher}
             </Modal>
           </div>
           <div style={{ clear: 'both' }} />
@@ -243,25 +238,33 @@ class MatchFields extends Component {
 }
 
 MatchFields.propTypes = {
-  matchingHeaders: PropTypes.array,
-  unmatchedRedcapFields: PropTypes.array,
-  noMatchRedcapFields: PropTypes.array,
-  existingRecords: PropTypes.array,
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  jsonData: PropTypes.objectOf(PropTypes.array),
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  noMatchRedcapFields: PropTypes.arrayOf(PropTypes.string),
+  existingRecords: PropTypes.arrayOf(PropTypes.object),
+  dateColumns: PropTypes.arrayOf(PropTypes.string),
   recordidField: PropTypes.string,
-  redcapFieldCandidates: PropTypes.object,
-  dataFieldToRedcapFieldMap: PropTypes.object,
-  matchedFieldMap: PropTypes.object,
+  dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
+  matchedFieldMap: PropTypes.objectOf(PropTypes.object),
+  token: PropTypes.string,
+  env: PropTypes.string,
 };
 
 MatchFields.defaultProps = {
-  matchingHeaders: [],
-  unmatchedRedcapFields: [],
+  projectInfo: {},
+  jsonData: {},
+  csvHeaders: {},
+  ddData: [],
   noMatchRedcapFields: [],
   existingRecords: [],
-  redcapFieldCandidates: {},
+  dateColumns: [],
   dataFieldToRedcapFieldMap: {},
   matchedFieldMap: {},
   recordidField: '',
+  token: '',
+  env: '',
 };
 
 function mapStateToProps(state) {
@@ -272,4 +275,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ saveFields, removeFieldMatch }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MatchFields);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(MatchFields);

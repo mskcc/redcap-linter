@@ -1,7 +1,8 @@
-@import "color";
+@import 'color';
 
 // Font Family - By default, we use system fonts
-$font: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+$font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+  'Helvetica Neue', sans-serif;
 
 // Font Size
 $f-size: (
@@ -9,29 +10,29 @@ $f-size: (
   2: 0.815rem,
   3: 1rem,
   4: 1.125rem,
-  5: 1.266rem
+  5: 1.266rem,
 );
 
 // Font weight
 $f-weight: (
   1: 300,
   2: 400,
-  3: 500
+  3: 500,
 );
 
 // Breakpoint
 $bp: (
-  sm:   20rem,
-  med:  36rem,
-  lg:   51.5rem,
-  xl:   67rem,
-  xxl:  82.5rem
+  sm: 20rem,
+  med: 36rem,
+  lg: 51.5rem,
+  xl: 67rem,
+  xxl: 82.5rem,
 );
 
 // Line Height
 $l-height: (
   1: 1.25,
-  2: 1.5
+  2: 1.5,
 );
 
 // Spacing
@@ -54,5 +55,5 @@ $anim-ease: ease-in-out;
 $border-radius: 2px;
 
 // Spacing
-$margin:  map-get($spacing,1);
-$space:   map-get($spacing,2);
+$margin: map-get($spacing, 1);
+$space: map-get($spacing, 2);

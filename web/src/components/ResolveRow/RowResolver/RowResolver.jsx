@@ -15,121 +15,119 @@ class RowResolver extends Component {
     this.state = {
       valueMap: {},
       search: '',
-      columns: [{
-        title: 'Field',
-        key: 'Field',
-        render: (text, record) => (this.renderCell('Field', record)),
-      },
-      {
-        title: 'Validation',
-        key: 'Validation',
-        width: '300px',
-        render: (text, record) => (this.renderValidation('Field', record)),
-      },
-      {
-        title: 'Current',
-        key: 'Current',
-        width: '100px',
-        render: (text, record) => (this.renderCell('Value', record)),
-      },
-      {
-        title: 'Value',
-        key: 'Value',
-        width: '200px',
-        render: (text, record) => (this.renderInput(record)),
-      },
-      {
-        title: 'Action',
-        key: 'Action',
-        render: (text, record) => (this.renderMatchButton(record)),
-      }],
+      columns: [
+        {
+          title: 'Field',
+          key: 'Field',
+          render: (text, record) => this.renderCell('Field', record),
+        },
+        {
+          title: 'Validation',
+          key: 'Validation',
+          width: '300px',
+          render: (text, record) => this.renderValidation('Field', record),
+        },
+        {
+          title: 'Current',
+          key: 'Current',
+          width: '100px',
+          render: (text, record) => this.renderCell('Value', record),
+        },
+        {
+          title: 'Value',
+          key: 'Value',
+          width: '200px',
+          render: (text, record) => this.renderInput(record),
+        },
+        {
+          title: 'Action',
+          key: 'Action',
+          render: (text, record) => this.renderMatchButton(record),
+        },
+      ],
     };
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const {
-      workingRow,
-      workingSheetName,
-    } = prevState;
+    const { workingRow, workingSheetName } = prevState;
     if (nextProps.workingRow !== workingRow || nextProps.workingSheetName !== workingSheetName) {
-      return { valueMap: {}, workingRow: nextProps.workingRow, workingSheetName: nextProps.workingSheetName };
+      return {
+        valueMap: {},
+        workingRow: nextProps.workingRow,
+        workingSheetName: nextProps.workingSheetName,
+      };
     }
     return null;
   }
 
   onFocus(e) {
-    const {
-      workingSheetName,
-      workingRow,
-      filterRow,
-    } = this.props;
+    const { workingSheetName, workingRow, filterRow } = this.props;
     filterRow(workingSheetName, workingRow);
   }
 
   onBlur(e) {
-    const {
-      workingSheetName,
-      filterRow,
-    } = this.props;
+    const { workingSheetName, filterRow } = this.props;
     filterRow(workingSheetName, '');
   }
 
   handleUpdateAll() {
-    const {
-      valueMap,
-    } = this.state;
-    const {
-      updateValue,
-    } = this.props;
+    const { valueMap } = this.state;
+    const { updateValue } = this.props;
     updateValue(valueMap);
   }
 
   handleUpdate(field, e) {
-    const {
-      valueMap,
-    } = this.state;
-    const {
-      updateValue,
-    } = this.props;
+    const { valueMap } = this.state;
+    const { updateValue } = this.props;
     const payload = {};
     payload[field] = valueMap[field];
     updateValue(payload);
   }
 
   handleSelectChange(field, e) {
-    const {
-      valueMap,
-    } = this.state;
+    const { valueMap } = this.state;
     valueMap[field] = e.value;
     this.setState({ valueMap });
   }
 
   handleChange(field, e) {
-    const {
-      valueMap,
-    } = this.state;
+    const { valueMap } = this.state;
     valueMap[field] = e.target.value;
     this.setState({ valueMap });
   }
 
   renderValidation(header, record) {
-    const {
-      ddData,
-    } = this.props;
-    const fieldName = record['Field'];
+    const { ddData } = this.props;
+    const fieldName = record.Field;
     const ddField = ddData.find(field => field.field_name === fieldName);
     if (!ddField.text_validation) {
       return 'None';
     }
     return (
       <div className="RowResolver-textValidation">
-        <span className="RowResolver-textValidationRange"><b>Validation</b>: { ddField.text_validation }</span>
+        <span className="RowResolver-textValidationRange">
+          <b>Validation</b>
+:
+          {ddField.text_validation}
+        </span>
         |
-        <span className="RowResolver-textValidationRange"><b>Required</b>: { ddField.required ? 'True' : 'False' }</span>
+        <span className="RowResolver-textValidationRange">
+          <b>Required</b>
+:
+          {ddField.required ? 'True' : 'False'}
+        </span>
         <br />
-        <span className="RowResolver-textValidationRange"><b>Min</b>: { ddField.text_min || 'None' }</span>
+        <span className="RowResolver-textValidationRange">
+          <b>Min</b>
+:
+          {ddField.text_min || 'None'}
+        </span>
         |
-        <span className="RowResolver-textValidationRange"><b>Max</b>: { ddField.text_max || 'None' }</span>
+        <span className="RowResolver-textValidationRange">
+          <b>Max</b>
+:
+          {ddField.text_max || 'None'}
+        </span>
       </div>
     );
   }
@@ -139,26 +137,14 @@ class RowResolver extends Component {
     if (header == 'Value') {
       hasError = true;
     }
-    return (
-      <Cell
-        cellData={record[header]}
-        editable={false}
-        hasError={hasError}
-      />
-    );
+    return <Cell cellData={record[header]} editable={false} hasError={hasError} />;
   }
 
   renderInput(record) {
-    const {
-      valueMap,
-    } = this.state;
-    const {
-      ddData,
-    } = this.props;
-    const fieldName = record['Field'];
-    const ddField = ddData.find((field) => {
-      return field.field_name === fieldName;
-    });
+    const { valueMap } = this.state;
+    const { ddData } = this.props;
+    const fieldName = record.Field;
+    const ddField = ddData.find(field => field.field_name === fieldName);
 
     // TODO Get value from sheet data if exists
     const value = valueMap[fieldName] || '';
@@ -167,8 +153,16 @@ class RowResolver extends Component {
       Object.keys(ddField.choices_dict).forEach((choice) => {
         options.push({
           value: choice,
-          label: <span><b>{choice}</b> | <span style={{ fontWeight: 'lighter' }}>{ddField.choices_dict[choice]}</span></span>,
-        })
+          label: (
+            <span>
+              <b>{choice}</b>
+              {' '}
+|
+              {' '}
+              <span style={{ fontWeight: 'lighter' }}>{ddField.choices_dict[choice]}</span>
+            </span>
+          ),
+        });
       });
       const selectStyles = {
         control: provided => ({
@@ -205,35 +199,31 @@ class RowResolver extends Component {
   }
 
   renderMatchButton(record) {
-    const field = record['Field'];
-    const {
-      valueMap,
-    } = this.state;
+    const field = record.Field;
+    const { valueMap } = this.state;
     let disabled = true;
     if (valueMap[field]) {
       disabled = false;
     }
     return (
       <div className="RowResolver-buttons">
-        <button type="button" disabled={disabled} onClick={e => this.handleUpdate(field, e)} className="App-submitButton">Update</button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={e => this.handleUpdate(field, e)}
+          className="App-submitButton"
+        >
+          Update
+        </button>
       </div>
     );
   }
 
   render() {
     const {
-      workingSheetName,
-      workingRow,
-      cellsWithErrors,
-      jsonData,
-      rowsInError,
-      fieldToValueMap,
+      workingSheetName, workingRow, cellsWithErrors, jsonData, fieldToValueMap,
     } = this.props;
-    const {
-      search,
-      columns,
-      valueMap,
-    } = this.state;
+    const { search, columns, valueMap } = this.state;
 
     const row = jsonData[workingSheetName][workingRow];
     const currentRowErrors = cellsWithErrors[workingSheetName][workingRow];
@@ -244,18 +234,21 @@ class RowResolver extends Component {
     }
 
     const tableData = Object.keys(row).reduce((filtered, field) => {
-      if ((currentRowErrors[field] && !savedValueMap[field]) || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])) {
+      if (
+        (currentRowErrors[field] && !savedValueMap[field])
+        || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])
+      ) {
         filtered.push({
-          'Field': field,
-          'Value': row[field],
-        })
+          Field: field,
+          Value: row[field],
+        });
       }
       return filtered;
     }, []);
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Field'].includes(search));
+      data = data.filter(row => row.Field.includes(search));
     }
 
     let disabled = true;
@@ -267,22 +260,50 @@ class RowResolver extends Component {
       <div className="RowResolver-table">
         <div className="RowResolver-tableTitle">
           <div className="RowResolver-searchBar">
-            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search:
+            {' '}
+            <Input
+              className="App-tableSearchBar"
+              value={this.state.search}
+              onChange={e => this.setState({ search: e.target.value })}
+            />
           </div>
-          <button type="button" disabled={disabled} onClick={this.handleUpdateAll.bind(this)} className="App-submitButton RowResolver-updateAll">Update All</button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={this.handleUpdateAll.bind(this)}
+            className="App-submitButton RowResolver-updateAll"
+          >
+            Update All
+          </button>
         </div>
-        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
+        <Table
+          size="small"
+          columns={columns}
+          dataSource={data}
+          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+        />
       </div>
     );
   }
 }
 
 RowResolver.propTypes = {
-  fieldToValueMap: PropTypes.object,
+  fieldToValueMap: PropTypes.objectOf(PropTypes.object),
+  jsonData: PropTypes.arrayOf(PropTypes.object),
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  cellsWithErrors: PropTypes.objectOf(PropTypes.array),
+  workingSheetName: PropTypes.string,
+  workingRow: PropTypes.number,
 };
 
 RowResolver.defaultProps = {
   fieldToValueMap: {},
+  jsonData: [],
+  ddData: [],
+  cellsWithErrors: {},
+  workingSheetName: '',
+  workingRow: -1,
 };
 
 function mapStateToProps(state) {
@@ -293,4 +314,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ updateValue, filterRow }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RowResolver);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(RowResolver);

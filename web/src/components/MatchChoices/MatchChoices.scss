@@ -4,7 +4,7 @@
 
 .MatchChoices-container {
   width: 80%;
-	float: right;
+  float: right;
   margin-right: 2.5%;
   padding-top: 10px;
   margin-top: -35px;
@@ -44,13 +44,14 @@
 }
 
 .MatchChoices-save {
-	background: transparent;
+  background: transparent;
   border-color: color(blue500);
   border-style: solid;
   border-width: 1px;
   color: color(blue500);
   transition: border-color 0.25s ease-in-out, color 0.25s ease-in-out;
-	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+    'Helvetica Neue', sans-serif;
   font-size: 13px;
   min-width: 82px;
   margin-left: 7px;

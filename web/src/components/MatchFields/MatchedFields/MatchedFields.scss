@@ -1,21 +1,21 @@
 @import '../../Utilities/color';
 
 .MatchedFields-headerError {
-	color: color(red500);
+  color: color(red500);
 }
 
 .MatchedFields-cellError {
-	color: color(red500);
+  color: color(red500);
 }
 
 .MatchedFields-cell {
-	width: 70%;
-	display: inline-block;
-	overflow-wrap: break-word;
+  width: 70%;
+  display: inline-block;
+  overflow-wrap: break-word;
 }
 
 .MatchedFields-cancel {
-	width: 25px;
-	opacity: 0.6;
-	float: right;
+  width: 25px;
+  opacity: 0.6;
+  float: right;
 }

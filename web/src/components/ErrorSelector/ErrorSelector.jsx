@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
-import { Menu, Icon, Button } from 'antd';
 import { navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn, resolveRow, resolveMergeRow } from '../../actions/ResolveActions';
 
@@ -16,15 +15,20 @@ class ErrorSelector extends Component {
       workingColumn: '',
       workingSheetName: '',
     };
+    this.changeResolve = this.changeResolve.bind(this);
+    this.changeMergeResolve = this.changeMergeResolve.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const {
-      workingColumn,
-      workingSheetName,
-    } = prevState;
-    if (nextProps.workingColumn !== workingColumn || nextProps.workingSheetName !== workingSheetName) {
-      return { workingColumn: nextProps.workingColumn, workingSheetName: nextProps.workingSheetName};
+    const { workingColumn, workingSheetName } = prevState;
+    if (
+      nextProps.workingColumn !== workingColumn
+      || nextProps.workingSheetName !== workingSheetName
+    ) {
+      return {
+        workingColumn: nextProps.workingColumn,
+        workingSheetName: nextProps.workingSheetName,
+      };
     }
     return null;
   }
@@ -81,11 +85,8 @@ class ErrorSelector extends Component {
     resolveMergeRow(payload);
   }
 
-
   goTo(page) {
-    const {
-      navigateTo,
-    } = this.props;
+    const { navigateTo } = this.props;
     navigateTo(page);
   }
 
@@ -112,7 +113,7 @@ class ErrorSelector extends Component {
       const subOptions = [];
       columnsInError[sheet].forEach((columnInError) => {
         subOptions.push({
-          value: { sheet: sheet, column: columnInError },
+          value: { sheet, column: columnInError },
           label: columnInError,
         });
       });
@@ -121,10 +122,10 @@ class ErrorSelector extends Component {
         if (!columnsInError[sheet].includes(column)) {
           // All errors in column are resolved
           filtered.push({
-            value: { sheet: sheet, column: column },
+            value: { sheet, column },
             label: column,
             color: '#237804',
-          })
+          });
         }
         return filtered;
       }, subOptions);
@@ -134,10 +135,10 @@ class ErrorSelector extends Component {
         if (!columnsInError[sheet].includes(column)) {
           // All errors in column are resolved
           filtered.push({
-            value: { sheet: sheet, column: column },
+            value: { sheet, column },
             label: column,
             color: '#237804',
-          })
+          });
         }
         return filtered;
       }, subOptions);
@@ -153,8 +154,8 @@ class ErrorSelector extends Component {
       const subOptions = [];
       rowsInError[sheet].forEach((rowNumber) => {
         subOptions.push({
-          value: { sheet: sheet, rowNum: rowNumber },
-          label: rowNumber+2,
+          value: { sheet, rowNum: rowNumber },
+          label: rowNumber + 2,
         });
       });
       const valueMap = fieldToValueMap[sheet] || {};
@@ -163,10 +164,10 @@ class ErrorSelector extends Component {
         if (!rowsInError[sheet].includes(rowNum)) {
           // All errors in column are resolved
           filtered.push({
-            value: { sheet: sheet, rowNum: rowNum },
+            value: { sheet, rowNum },
             label: rowNum + 2,
             color: '#237804',
-          })
+          });
         }
         return filtered;
       }, subOptions);
@@ -182,7 +183,7 @@ class ErrorSelector extends Component {
       mergeConflicts[sheet].forEach((row) => {
         const rowNum = Number(row);
         subOptions.push({
-          value: { sheet: sheet, rowNum: rowNum },
+          value: { sheet, rowNum },
           label: rowNum + 2,
         });
       });
@@ -202,12 +203,12 @@ class ErrorSelector extends Component {
     } else if (workingRow >= 0) {
       selectedValue = {
         value: { sheet: workingSheetName, rowNum: workingRow },
-        label: workingRow+2,
+        label: workingRow + 2,
       };
     } else if (workingMergeRow >= 0) {
       selectedMergeValue = {
         value: { sheet: workingSheetName, rowNum: workingMergeRow },
-        label: workingMergeRow+2,
+        label: workingMergeRow + 2,
       };
     }
 
@@ -224,83 +225,91 @@ class ErrorSelector extends Component {
         ...provided,
         minWidth: `${selectWidth}px`,
       }),
-      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-        return {
-          ...styles,
-          color: data.color,
-        };
-      },
+      option: (styles, { data }) => ({
+        ...styles,
+        color: data.color,
+      }),
     };
 
     let errorSelector = '';
     if (page === 'lint') {
-      errorSelector = (<div className="ErrorSelector-selector">
-        <div className="ErrorSelector-label">
-          <b>Choose Column or Row</b>
-        </div>
-        <div className="ErrorSelector-select">
-          <div className="ErrorSelector-sheetName">
-            { workingSheetName }
+      errorSelector = (
+        <div className="ErrorSelector-selector">
+          <div className="ErrorSelector-label">
+            <b>Choose Column or Row</b>
           </div>
-          <Select
-            className="ErrorSelector-elevate"
-            options={options}
-            isSearchable
-            value={selectedValue}
-            styles={selectStyles}
-            onChange={this.changeResolve.bind(this)}
-          />
+          <div className="ErrorSelector-select">
+            <div className="ErrorSelector-sheetName">{workingSheetName}</div>
+            <Select
+              className="ErrorSelector-elevate"
+              options={options}
+              isSearchable
+              value={selectedValue}
+              styles={selectStyles}
+              onChange={this.changeResolve}
+            />
+          </div>
         </div>
-      </div>);
+      );
     } else if (page === 'merge') {
-      errorSelector = (<div className="ErrorSelector-selector">
-        <div className="ErrorSelector-label">
-          <b>Choose Row</b>
-        </div>
-        <div className="ErrorSelector-select">
-          <div className="ErrorSelector-sheetName">
-            { workingSheetName }
+      errorSelector = (
+        <div className="ErrorSelector-selector">
+          <div className="ErrorSelector-label">
+            <b>Choose Row</b>
           </div>
-          <Select
-            className="ErrorSelector-elevate"
-            options={mergeConflictOptions}
-            isSearchable
-            value={selectedMergeValue}
-            styles={selectStyles}
-            onChange={this.changeMergeResolve.bind(this)}
-          />
+          <div className="ErrorSelector-select">
+            <div className="ErrorSelector-sheetName">{workingSheetName}</div>
+            <Select
+              className="ErrorSelector-elevate"
+              options={mergeConflictOptions}
+              isSearchable
+              value={selectedMergeValue}
+              styles={selectStyles}
+              onChange={this.changeMergeResolve}
+            />
+          </div>
         </div>
-      </div>);
+      );
     }
 
-    return (
-      <div className="ErrorSelector-column">
-        { errorSelector }
-      </div>
-    );
+    return <div className="ErrorSelector-column">{errorSelector}</div>;
   }
 }
 
 ErrorSelector.propTypes = {
-  fieldErrors: PropTypes.object,
-  dataFieldToChoiceMap: PropTypes.object,
-  noMatchRedcapFields: PropTypes.array,
-  originalToCorrectedValueMap: PropTypes.object,
-  columnsInError: PropTypes.object,
-  rowsInError: PropTypes.object,
-  mergeConflicts: PropTypes.object,
-  fieldToValueMap: PropTypes.object,
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
+  originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
+  fieldToValueMap: PropTypes.objectOf(PropTypes.object),
+  columnsInError: PropTypes.objectOf(PropTypes.array),
+  rowsInError: PropTypes.objectOf(PropTypes.array),
+  mergeConflicts: PropTypes.objectOf(PropTypes.array),
+  workingSheetName: PropTypes.string,
+  workingColumn: PropTypes.string,
+  workingRow: PropTypes.number,
+  workingMergeRow: PropTypes.number,
+  page: PropTypes.string,
 };
 
 ErrorSelector.defaultProps = {
-  fieldErrors: {},
+  ddData: [],
+  jsonData: {},
+  csvHeaders: {},
+  projectInfo: {},
   columnsInError: {},
   rowsInError: {},
   mergeConflicts: {},
   dataFieldToChoiceMap: {},
-  noMatchRedcapFields: [],
   originalToCorrectedValueMap: {},
   fieldToValueMap: {},
+  workingSheetName: '',
+  workingColumn: '',
+  workingRow: -1,
+  workingMergeRow: -1,
+  page: '',
 };
 
 function mapStateToProps(state) {
@@ -308,7 +317,18 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, resolveRow, resolveMergeRow, navigateTo }, dispatch);
+  return bindActionCreators(
+    {
+      resolveColumn,
+      resolveRow,
+      resolveMergeRow,
+      navigateTo,
+    },
+    dispatch,
+  );
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ErrorSelector);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ErrorSelector);

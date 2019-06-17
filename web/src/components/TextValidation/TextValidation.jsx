@@ -12,7 +12,7 @@ import { resolveColumn } from '../../actions/ResolveActions';
 class TextValidation extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
   saveChanges(e) {
@@ -92,7 +92,10 @@ class TextValidation extends Component {
     }
 
     let correctedValues = [];
-    if (originalToCorrectedValueMap[workingSheetName] && originalToCorrectedValueMap[workingSheetName][workingColumn]) {
+    if (
+      originalToCorrectedValueMap[workingSheetName]
+      && originalToCorrectedValueMap[workingSheetName][workingColumn]
+    ) {
       const valueMap = originalToCorrectedValueMap[workingSheetName][workingColumn];
       correctedValues = Object.keys(valueMap).map(originalValue => ({
         'Original Value': originalValue,
@@ -107,10 +110,7 @@ class TextValidation extends Component {
           <div>
             <div className="TextValidation-matchedChoices">
               <div className="TextValidation-title">Corrected Values</div>
-              <ResolvedTextErrors
-                removeValueMatch={removeValueMatch}
-                tableData={correctedValues}
-              />
+              <ResolvedTextErrors removeValueMatch={removeValueMatch} tableData={correctedValues} />
             </div>
             <div className="TextValidation-unmatchedChoices">
               <div className="TextValidation-title">Values in Error</div>
@@ -119,8 +119,20 @@ class TextValidation extends Component {
             <div style={{ clear: 'both' }} />
           </div>
           <div className="TextValidation-saveAndContinue">
-            <button type="button" onClick={this.saveChanges.bind(this)} className="TextValidation-save">Save</button>
-            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
+            <button
+              type="button"
+              onClick={this.saveChanges.bind(this)}
+              className="TextValidation-save"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={this.saveAndContinue.bind(this)}
+              className="App-submitButton"
+            >
+              Save and Continue
+            </button>
           </div>
         </div>
         <div style={{ clear: 'both' }} />
@@ -130,15 +142,29 @@ class TextValidation extends Component {
 }
 
 TextValidation.propTypes = {
-  fieldErrors: PropTypes.object,
-  dataFieldToChoiceMap: PropTypes.object,
-  originalToCorrectedValueMap: PropTypes.object,
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  jsonData: PropTypes.arrayOf(PropTypes.object),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
+  columnsInError: PropTypes.objectOf(PropTypes.array),
+  rowsInError: PropTypes.objectOf(PropTypes.array),
+  workingSheetName: PropTypes.string,
+  workingColumn: PropTypes.string,
 };
 
 TextValidation.defaultProps = {
-  fieldErrors: {},
-  dataFieldToChoiceMap: {},
+  ddData: [],
+  jsonData: [],
+  malformedSheets: [],
+  projectInfo: {},
+  csvHeaders: {},
+  columnsInError: {},
+  rowsInError: {},
   originalToCorrectedValueMap: {},
+  workingSheetName: '',
+  workingColumn: '',
 };
 
 function mapStateToProps(state) {
@@ -149,4 +175,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveColumn, filterTable, removeValueMatch }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TextValidation);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(TextValidation);

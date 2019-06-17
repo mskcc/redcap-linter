@@ -17,7 +17,7 @@ class ResolveMergeConflicts extends Component {
     super(props);
     this.state = {
       loading: false,
-      mode: 'CHOOSE_RECONCILIATION_COLUMNS'
+      mode: 'CHOOSE_RECONCILIATION_COLUMNS',
     };
   }
 
@@ -48,10 +48,12 @@ class ResolveMergeConflicts extends Component {
       if (mergeConflicts[sheet] && mergeConflicts[sheet].length > 0) {
         hasMergeConflicts = true;
       }
-    })
+    });
     if (workingMergeRow < 0 && hasMergeConflicts) {
       let nextSheetName = null;
-      nextSheetName = Object.keys(mergeConflicts).find(sheet => mergeConflicts[sheet] && mergeConflicts[sheet].length > 0);
+      nextSheetName = Object.keys(mergeConflicts).find(
+        sheet => mergeConflicts[sheet] && mergeConflicts[sheet].length > 0,
+      );
       const nextMergeRow = mergeConflicts[nextSheetName][0];
       const payload = {
         jsonData,
@@ -76,32 +78,32 @@ class ResolveMergeConflicts extends Component {
   }
 
   continue() {
-    const {
-      navigateTo,
-    } = this.props;
+    const { navigateTo } = this.props;
 
     navigateTo('finish');
   }
 
   render() {
-    const {
-      mergeConflicts,
-      workingMergeRow,
-    } = this.props;
-    const {
-      loading,
-      mode,
-    } = this.state;
+    const { mergeConflicts, workingMergeRow } = this.props;
+    const { loading, mode } = this.state;
     let content = '';
     let hasMergeConflicts = false;
     Object.keys(mergeConflicts).forEach((sheet) => {
       if (mergeConflicts[sheet] && mergeConflicts[sheet].length > 0) {
         hasMergeConflicts = true;
       }
-    })
+    });
     let backButton = null;
     if (workingMergeRow >= 0) {
-      backButton = (<button type="button" onClick={this.back.bind(this)} className="App-actionButton ResolveMergeConflicts-back">Select Reconciliation Column(s)</button>);
+      backButton = (
+        <button
+          type="button"
+          onClick={this.back.bind(this)}
+          className="App-actionButton ResolveMergeConflicts-back"
+        >
+          Select Reconciliation Column(s)
+        </button>
+      );
     }
     if (loading) {
       content = <Spin tip="Loading..." />;
@@ -110,13 +112,15 @@ class ResolveMergeConflicts extends Component {
         content = (
           <div className="ResolveMergeConflicts-selector">
             <RepeatSelector />
-            <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">Continue</button>
+            <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">
+              Continue
+            </button>
           </div>
         );
       } else if (mode === 'MERGE') {
         content = (
           <div>
-            { backButton }
+            {backButton}
             <MergeRecords />
           </div>
         );
@@ -125,13 +129,15 @@ class ResolveMergeConflicts extends Component {
       content = (
         <div>
           <p>Nothing to Merge</p>
-          <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">Continue</button>
+          <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
+            Continue
+          </button>
         </div>
       );
     }
     return (
       <div className="ResolveMergeConflicts-container">
-        { content }
+        {content}
         <TabbedDatatable />
       </div>
     );
@@ -139,11 +145,21 @@ class ResolveMergeConflicts extends Component {
 }
 
 ResolveMergeConflicts.propTypes = {
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  jsonData: PropTypes.arrayOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
   workingMergeRow: PropTypes.number,
-  mergeConflicts: PropTypes.object,
+  mergeConflicts: PropTypes.objectOf(PropTypes.array),
 };
 
 ResolveMergeConflicts.defaultProps = {
+  ddData: {},
+  jsonData: {},
+  projectInfo: {},
+  csvHeaders: {},
+  malformedSheets: [],
   workingMergeRow: -1,
   mergeConflicts: {},
 };
@@ -156,4 +172,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveMergeRow, navigateTo }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ResolveMergeConflicts);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ResolveMergeConflicts);

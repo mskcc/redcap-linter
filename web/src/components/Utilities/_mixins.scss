@@ -5,7 +5,7 @@
  */
 
 //  Define background and font color of an element
-@mixin bg-font-color($bg-color, $f-color){
+@mixin bg-font-color($bg-color, $f-color) {
   background-color: $bg-color;
   color: $f-color;
 

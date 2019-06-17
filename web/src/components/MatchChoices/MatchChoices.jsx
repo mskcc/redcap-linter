@@ -12,7 +12,7 @@ import { resolveColumn } from '../../actions/ResolveActions';
 class MatchChoices extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
   saveChanges(e) {
@@ -40,7 +40,7 @@ class MatchChoices extends Component {
       rowsInError,
       ddData,
       csvHeaders,
-      action: 'save'
+      action: 'save',
     };
     resolveColumn(payload);
   }
@@ -70,7 +70,7 @@ class MatchChoices extends Component {
       rowsInError,
       ddData,
       csvHeaders,
-      action: 'continue'
+      action: 'continue',
     };
     resolveColumn(payload);
   }
@@ -90,31 +90,38 @@ class MatchChoices extends Component {
 
     let matchedChoices = fieldErrors.matchedChoices || [];
     let choiceMap = {};
-    if (dataFieldToChoiceMap[workingSheetName] && dataFieldToChoiceMap[workingSheetName][workingColumn]) {
+    if (
+      dataFieldToChoiceMap[workingSheetName]
+      && dataFieldToChoiceMap[workingSheetName][workingColumn]
+    ) {
       choiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
     }
     matchedChoices = matchedChoices.map(header => ({
       'Data Field': header,
       'Permissible Value': header,
     }));
-    matchedChoices = matchedChoices.concat(Object.keys(choiceMap).reduce((filtered, dataField) => {
-      if (choiceMap[dataField]) {
-        filtered.push({
-          'Data Field': dataField,
-          'Permissible Value': choiceMap[dataField],
-        });
-      }
-      return filtered;
-    }, []));
-    matchedChoices = matchedChoices.concat(Object.keys(choiceMap).reduce((filtered, dataField) => {
-      if (!choiceMap[dataField]) {
-        filtered.push({
-          'Data Field': dataField,
-          'Permissible Value': choiceMap[dataField],
-        });
-      }
-      return filtered;
-    }, []));
+    matchedChoices = matchedChoices.concat(
+      Object.keys(choiceMap).reduce((filtered, dataField) => {
+        if (choiceMap[dataField]) {
+          filtered.push({
+            'Data Field': dataField,
+            'Permissible Value': choiceMap[dataField],
+          });
+        }
+        return filtered;
+      }, []),
+    );
+    matchedChoices = matchedChoices.concat(
+      Object.keys(choiceMap).reduce((filtered, dataField) => {
+        if (!choiceMap[dataField]) {
+          filtered.push({
+            'Data Field': dataField,
+            'Permissible Value': choiceMap[dataField],
+          });
+        }
+        return filtered;
+      }, []),
+    );
 
     return (
       <div>
@@ -123,10 +130,7 @@ class MatchChoices extends Component {
           <div>
             <div className="MatchChoices-matchedChoices">
               <div className="MatchChoices-title">Matched Choices</div>
-              <MatchedChoices
-                removeChoiceMatch={removeChoiceMatch}
-                tableData={matchedChoices}
-              />
+              <MatchedChoices removeChoiceMatch={removeChoiceMatch} tableData={matchedChoices} />
             </div>
             <div className="MatchChoices-unmatchedChoices">
               <div className="MatchChoices-title">Unmatched Choices</div>
@@ -135,8 +139,20 @@ class MatchChoices extends Component {
             <div style={{ clear: 'both' }} />
           </div>
           <div className="MatchChoices-saveAndContinue">
-            <button type="button" onClick={this.saveChanges.bind(this)} className="MatchChoices-save">Save</button>
-            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
+            <button
+              type="button"
+              onClick={this.saveChanges.bind(this)}
+              className="MatchChoices-save"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={this.saveAndContinue.bind(this)}
+              className="App-submitButton"
+            >
+              Save and Continue
+            </button>
           </div>
         </div>
         <div style={{ clear: 'both' }} />
@@ -146,13 +162,31 @@ class MatchChoices extends Component {
 }
 
 MatchChoices.propTypes = {
-  fieldErrors: PropTypes.object,
-  dataFieldToChoiceMap: PropTypes.object,
+  fieldErrors: PropTypes.objectOf(PropTypes.any),
+  dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
+  jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  columnsInError: PropTypes.objectOf(PropTypes.array),
+  rowsInError: PropTypes.objectOf(PropTypes.array),
+  workingSheetName: PropTypes.string,
+  workingColumn: PropTypes.string,
 };
 
 MatchChoices.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
+  ddData: [],
+  jsonData: [],
+  projectInfo: {},
+  malformedSheets: [],
+  csvHeaders: {},
+  columnsInError: {},
+  rowsInError: {},
+  workingSheetName: '',
+  workingColumn: '',
 };
 
 function mapStateToProps(state) {
@@ -163,4 +197,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveColumn, removeChoiceMatch }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MatchChoices);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(MatchChoices);

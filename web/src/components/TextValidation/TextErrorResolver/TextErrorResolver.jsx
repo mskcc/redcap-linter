@@ -7,10 +7,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Cell from '../../Cell/Cell';
 
-import {
-  correctValue,
-  filterTable,
-} from '../../../actions/REDCapLinterActions';
+import { correctValue, filterTable } from '../../../actions/REDCapLinterActions';
 
 class TextErrorResolver extends Component {
   constructor(props) {
@@ -19,96 +16,73 @@ class TextErrorResolver extends Component {
       valueMap: {},
       removedValue: '',
       search: '',
-      columns: [{
-        title: 'Original Value',
-        key: 'Original Value',
-        render: (text, record) => (this.renderCell('Original Value', record)),
-      },
-      {
-        title: 'Corrected Value',
-        key: 'Corrected Value',
-        width: '200px',
-        render: (text, record) => (this.renderInput(record)),
-      },
-      {
-        title: 'Action',
-        key: 'Action',
-        render: (text, record) => (this.renderMatchButton(record)),
-      }],
+      columns: [
+        {
+          title: 'Original Value',
+          key: 'Original Value',
+          render: (text, record) => this.renderCell('Original Value', record),
+        },
+        {
+          title: 'Corrected Value',
+          key: 'Corrected Value',
+          width: '200px',
+          render: (text, record) => this.renderInput(record),
+        },
+        {
+          title: 'Action',
+          key: 'Action',
+          render: (text, record) => this.renderMatchButton(record),
+        },
+      ],
     };
   }
 
   // TODO Add button to batch this
 
   onBlur(e) {
-    const {
-      filterTable,
-    } = this.props;
+    const { filterTable } = this.props;
     filterTable('');
   }
 
   onFocus(originalValue, e) {
-    const {
-      filterTable,
-    } = this.props;
+    const { filterTable } = this.props;
     filterTable(originalValue);
   }
 
   handleCorrectAll() {
-    const {
-      valueMap,
-    } = this.state;
-    const {
-      correctValue,
-    } = this.props;
+    const { valueMap } = this.state;
+    const { correctValue } = this.props;
     correctValue(valueMap);
   }
 
   handleCorrect(originalValue) {
-    const {
-      valueMap,
-    } = this.state;
-    const {
-      correctValue,
-    } = this.props;
+    const { valueMap } = this.state;
+    const { correctValue } = this.props;
     const payload = {};
     payload[originalValue] = valueMap[originalValue];
     correctValue(payload);
   }
 
   handleRemove(originalValue) {
-    const {
-      removedValue,
-    } = this.state;
-    const {
-      correctValue,
-    } = this.props;
-    let payload = {};
+    const { removedValue } = this.state;
+    const { correctValue } = this.props;
+    const payload = {};
     payload[originalValue] = removedValue;
     correctValue(payload);
   }
 
   handleChange(originalValue, e) {
-    const {
-      valueMap,
-    } = this.state;
+    const { valueMap } = this.state;
     valueMap[originalValue] = e.target.value;
     this.setState({ valueMap });
   }
 
   renderCell(header, record) {
-    return (
-      <Cell
-        cellData={record[header]}
-        editable={false}
-      />
-    );
+    return <Cell cellData={record[header]} editable={false} />;
   }
 
   renderInput(record) {
-    const {
-      valueMap,
-    } = this.state;
+    const { valueMap } = this.state;
     const originalValue = record['Original Value'];
     const value = valueMap[originalValue] || '';
     return (
@@ -126,17 +100,28 @@ class TextErrorResolver extends Component {
 
   renderMatchButton(record) {
     const originalValue = record['Original Value'];
-    const {
-      valueMap,
-    } = this.state;
+    const { valueMap } = this.state;
     let disabled = true;
     if (valueMap[originalValue]) {
       disabled = false;
     }
     return (
       <div className="TextErrorResolver-buttons">
-        <button type="button" disabled={disabled} onClick={e => this.handleCorrect(originalValue, e)} className="App-submitButton">Correct</button>
-        <button type="button" onClick={e => this.handleRemove(originalValue, e)} className="TextErrorResolver-noMatchButton">Remove</button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={e => this.handleCorrect(originalValue, e)}
+          className="App-submitButton"
+        >
+          Correct
+        </button>
+        <button
+          type="button"
+          onClick={e => this.handleRemove(originalValue, e)}
+          className="TextErrorResolver-noMatchButton"
+        >
+          Remove
+        </button>
       </div>
     );
   }
@@ -146,18 +131,15 @@ class TextErrorResolver extends Component {
       workingSheetName,
       workingColumn,
       originalToCorrectedValueMap,
-      columnsInError,
-      rowsInError,
       fieldErrors,
     } = this.props;
-    const {
-      search,
-      columns,
-      valueMap,
-    } = this.state;
+    const { search, columns, valueMap } = this.state;
 
     let currentMap = {};
-    if (originalToCorrectedValueMap[workingSheetName] && originalToCorrectedValueMap[workingSheetName][workingColumn]) {
+    if (
+      originalToCorrectedValueMap[workingSheetName]
+      && originalToCorrectedValueMap[workingSheetName][workingColumn]
+    ) {
       currentMap = originalToCorrectedValueMap[workingSheetName][workingColumn];
     }
 
@@ -184,33 +166,71 @@ class TextErrorResolver extends Component {
       <div className="TextErrorResolver-table">
         <div className="TextErrorResolver-tableTitle">
           <div className="TextErrorResolver-searchBar">
-            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search:
+            {' '}
+            <Input
+              className="App-tableSearchBar"
+              value={search}
+              onChange={e => this.setState({ search: e.target.value })}
+            />
           </div>
           <div className="TextErrorResolver-textValidation">
-            <span className="TextErrorResolver-textValidationRange"><b>Validation</b>: { fieldErrors.textValidation }</span>
+            <span className="TextErrorResolver-textValidationRange">
+              <b>Validation</b>
+:
+              {fieldErrors.textValidation}
+            </span>
             |
-            <span className="TextErrorResolver-textValidationRange"><b>Required</b>: { fieldErrors.required ? 'True' : 'False' }</span>
+            <span className="TextErrorResolver-textValidationRange">
+              <b>Required</b>
+:
+              {fieldErrors.required ? 'True' : 'False'}
+            </span>
             <br />
-            <span className="TextErrorResolver-textValidationRange"><b>Min</b>: { fieldErrors.textValidationMin || 'None' }</span>
+            <span className="TextErrorResolver-textValidationRange">
+              <b>Min</b>
+:
+              {fieldErrors.textValidationMin || 'None'}
+            </span>
             |
-            <span className="TextErrorResolver-textValidationRange"><b>Max</b>: { fieldErrors.textValidationMax || 'None' }</span>
+            <span className="TextErrorResolver-textValidationRange">
+              <b>Max</b>
+:
+              {fieldErrors.textValidationMax || 'None'}
+            </span>
           </div>
-          <button type="button" disabled={disabled} onClick={this.handleCorrectAll.bind(this)} className="App-submitButton TextErrorResolver-correctAll">Correct All</button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={this.handleCorrectAll.bind(this)}
+            className="App-submitButton TextErrorResolver-correctAll"
+          >
+            Correct All
+          </button>
         </div>
-        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
+        <Table
+          size="small"
+          columns={columns}
+          dataSource={data}
+          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+        />
       </div>
     );
   }
 }
 
 TextErrorResolver.propTypes = {
-  fieldErrors: PropTypes.object,
-  originalToCorrectedValueMap: PropTypes.object,
+  fieldErrors: PropTypes.objectOf(PropTypes.any),
+  originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
+  workingSheetName: PropTypes.string,
+  workingColumn: PropTypes.string,
 };
 
 TextErrorResolver.defaultProps = {
   fieldErrors: {},
   originalToCorrectedValueMap: {},
+  workingSheetName: '',
+  workingColumn: '',
 };
 
 function mapStateToProps(state) {
@@ -221,4 +241,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ correctValue, filterTable }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TextErrorResolver);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(TextErrorResolver);

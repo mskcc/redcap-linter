@@ -1,11 +1,11 @@
 @import '../../Utilities/color';
 
 .FieldMatcher-headerError {
-	color: color(red500);
+  color: color(red500);
 }
 
 .FieldMatcher-cellError {
-	color: color(red500);
+  color: color(red500);
 }
 
 .FieldMatcher-dropdown {
@@ -13,32 +13,32 @@
 }
 
 .FieldMatcher-buttons {
-	text-align: center;
+  text-align: center;
 }
 
 .FieldMatcher-tableActions {
-	position: relative;
-	text-align: center;
-	height: 36px;
+  position: relative;
+  text-align: center;
+  height: 36px;
 }
 
 .FieldMatcher-tableSearch {
-	position: absolute;
+  position: absolute;
 }
 
 .FieldMatcher-matchAll {
-	position: absolute;
-	left: calc(100% - 125px);
+  position: absolute;
+  left: calc(100% - 125px);
 }
 
 .FieldMatcher-switch {
-	margin-top: 7px;
-	display: inline-block;
+  margin-top: 7px;
+  display: inline-block;
 }
 
 .FieldMatcher-switchButton {
-	height: 25px;
-	min-width: 40px;
-	margin-right: 5px;
-	vertical-align: middle;
+  height: 25px;
+  min-width: 40px;
+  margin-right: 5px;
+  vertical-align: middle;
 }

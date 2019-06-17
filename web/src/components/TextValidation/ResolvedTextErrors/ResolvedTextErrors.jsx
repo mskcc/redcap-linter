@@ -9,28 +9,27 @@ class ResolvedTextErrors extends Component {
     super(props);
     this.state = {
       search: '',
-      columns: [{
-        title: 'Original Value',
-        key: 'Original Value',
-        render: (text, record) => (this.renderCell('Original Value', record)),
-      },
-      {
-        title: 'Corrected Value',
-        key: 'Corrected Value',
-        render: (text, record) => (this.renderCell('Corrected Value', record)),
-      }],
+      columns: [
+        {
+          title: 'Original Value',
+          key: 'Original Value',
+          render: (text, record) => this.renderCell('Original Value', record),
+        },
+        {
+          title: 'Corrected Value',
+          key: 'Corrected Value',
+          render: (text, record) => this.renderCell('Corrected Value', record),
+        },
+      ],
     };
   }
 
   removeValueMatch(record) {
-    const {
-      removeValueMatch,
-    } = this.props;
+    const { removeValueMatch } = this.props;
     const payload = {};
     payload[record['Original Value']] = record['Corrected Value'];
     removeValueMatch(payload);
   }
-
 
   renderCell(header, record) {
     let className = 'ResolvedTextErrors-cell';
@@ -49,42 +48,48 @@ class ResolvedTextErrors extends Component {
     }
     return (
       <div className="ResolvedTextErrors-cellContainer">
-        <div className={className}>
-          { record[header] }
-        </div>
-        { cancelButton }
+        <div className={className}>{record[header]}</div>
+        {cancelButton}
       </div>
     );
   }
 
   render() {
-    const {
-      tableData,
-    } = this.props;
-    const {
-      search,
-      columns,
-    } = this.state;
+    const { tableData } = this.props;
+    const { search, columns } = this.state;
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row['Original Value'].includes(search) || row['Corrected Value'].includes(search));
+      data = data.filter(
+        row => row['Original Value'].includes(search) || row['Corrected Value'].includes(search),
+      );
     }
     return (
       <div className="ResolvedTextErrors-table">
         <div className="ResolvedTextErrors-tableTitle">
           <span className="ResolvedTextErrors-searchBar">
-            Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={e => this.setState({search: e.target.value})} />
+            Search:
+            {' '}
+            <Input
+              className="App-tableSearchBar"
+              value={this.state.search}
+              onChange={e => this.setState({ search: e.target.value })}
+            />
           </span>
         </div>
-        <Table size="small" columns={columns} dataSource={data} pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }} />
+        <Table
+          size="small"
+          columns={columns}
+          dataSource={data}
+          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+        />
       </div>
     );
   }
 }
 
 ResolvedTextErrors.propTypes = {
-  tableData: PropTypes.array,
+  tableData: PropTypes.arrayOf(PropTypes.object),
 };
 
 ResolvedTextErrors.defaultProps = {
