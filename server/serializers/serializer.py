@@ -96,22 +96,23 @@ def decode_sheet(data_dictionary, project_info, records):
     # TODO implement this
     # if project_info['repeatable_instruments']:
     #     data_dictionary = [field for field in data_dictionary if field.form_name not in project_info['repeatable_instruments']]
-    decoded_row = {}
-    logging.warning(records)
+    decoded_rows = []
 
-    dd_fields = [field.field_name for field in data_dictionary]
-    for field in data_dictionary:
-        if field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
-            choices_dict = {v: k for k, v in field.choices_dict.items()}
-            decoded_row[field.field_name] = choices_dict.get(records[field.field_name])
-        elif field.field_type in ['checkbox']:
-            selected_choices = []
-            checkbox_items = [str(f).lower() for f in field.choices_dict.keys()]
-            for item in checkbox_items:
-                if records['{0}___{1}'.format(field.field_name, item)] == '1':
-                    selected_choices.append(item)
-            decoded_row[field.field_name] = ','.join(selected_choices)
-        else:
-            decoded_row[field.field_name] = records[field.field_name]
-    logging.warning(decoded_row)
-    return decoded_row
+    for record in records:
+        decoded_row = {}
+        dd_fields = [field.field_name for field in data_dictionary]
+        for field in data_dictionary:
+            if field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
+                choices_dict = {v: k for k, v in field.choices_dict.items()}
+                decoded_row[field.field_name] = choices_dict.get(record[field.field_name])
+            elif field.field_type in ['checkbox']:
+                selected_choices = []
+                checkbox_items = [str(f).lower() for f in field.choices_dict.keys()]
+                for item in checkbox_items:
+                    if record['{0}___{1}'.format(field.field_name, item)] == '1':
+                        selected_choices.append(item)
+                decoded_row[field.field_name] = ','.join(selected_choices)
+            else:
+                decoded_row[field.field_name] = record[field.field_name]
+        decoded_rows.append(decoded_row)
+    return decoded_rows

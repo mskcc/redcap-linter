@@ -1,11 +1,11 @@
 @import '../../Utilities/color';
 
 .RecordMerger-headerError {
-	color: color(red500);
+  color: color(red500);
 }
 
 .RecordMerger-cellError {
-	color: color(red500);
+  color: color(red500);
 }
 
 .RecordMerger-dropdown {
@@ -13,7 +13,7 @@
 }
 
 .RecordMerger-buttons {
-	text-align: center;
+  text-align: center;
 }
 
 .RecordMerger-tableTitle {
@@ -30,30 +30,30 @@
 }
 
 .RecordMerger-elevate {
-	z-index: 10;
+  z-index: 10;
 }
 
 .RecordMerger-matchAll {
-	float: right;
-	margin-right: 5px;
-	height: 38px;
+  float: right;
+  margin-right: 5px;
+  height: 38px;
 }
 
 .RecordMerger-accept {
-	width: 25px;
-	opacity: 0.6;
-	text-align: right;
-	align-self: center;
-	display: inline-block;
-	margin-left: 5px;
+  width: 25px;
+  opacity: 0.6;
+  text-align: right;
+  align-self: center;
+  display: inline-block;
+  margin-left: 5px;
 }
 
 .RecordMerger-cellContainer {
-	display: flex;
+  display: flex;
 }
 
 .RecordMerger-cell {
-	width: 80%;
-	display: inline-block;
-	overflow-wrap: break-word;
+  width: 80%;
+  display: inline-block;
+  overflow-wrap: break-word;
 }

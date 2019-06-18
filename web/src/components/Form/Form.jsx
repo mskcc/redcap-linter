@@ -41,11 +41,15 @@ class Form extends Component {
     const { form } = this.state;
     const { submitForm } = this.props;
     if (!form.token && !form.dataDictionary) {
-      if (!errorText) { errorText += '<ul>'; }
+      if (!errorText) {
+        errorText += '<ul>';
+      }
       errorText += '<li>Either token and environment or Data-Dictionary is required.</li>';
     }
     if (!form.dataFile) {
-      if (!errorText) { errorText += '<ul>'; }
+      if (!errorText) {
+        errorText += '<ul>';
+      }
       errorText += '<li>Datafile is required.</li>';
     }
     if (errorText) {
@@ -83,12 +87,7 @@ class Form extends Component {
   render() {
     const { form, loading } = this.state;
     let { errorText } = this.state;
-    const {
-      error,
-      projectInfo,
-      ddData,
-      malformedSheets,
-    } = this.props;
+    const { error } = this.props;
     let buttonText = 'Submit';
     if (loading) {
       buttonText = <Spin />;
@@ -100,7 +99,9 @@ class Form extends Component {
     return (
       <div className="App-fieldsetColumn">
         <fieldset className="App-fieldset">
-          <label className="App-fieldsetLabel"><span className="Form-label">Environment</span></label>
+          <label className="App-fieldsetLabel">
+            <span className="Form-label">Environment</span>
+          </label>
           <label className="App-fieldsetRadioLabel" htmlFor="development">
             <Input
               className="App-fieldsetRadio"
@@ -169,7 +170,9 @@ class Form extends Component {
 
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="mappingsFile">
-            <span className="Form-label">Mappings File</span> (Optional)
+            <span className="Form-label">Mappings File</span>
+            {' '}
+(Optional)
             <input
               className="App-fieldsetInput"
               type="file"
@@ -212,12 +215,11 @@ class Form extends Component {
         </fieldset>
 
         <div className="Form-submitButtonDiv">
-          <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">{ buttonText }</button>
+          <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">
+            {buttonText}
+          </button>
         </div>
-        <div
-          className="Form-errorText"
-          dangerouslySetInnerHTML={{ __html: errorText }}
-        />
+        <div className="Form-errorText" dangerouslySetInnerHTML={{ __html: errorText }} />
       </div>
     );
   }
@@ -225,15 +227,12 @@ class Form extends Component {
 
 Form.propTypes = {
   submitForm: PropTypes.func.isRequired,
-  projectInfo: PropTypes.object,
-  error: PropTypes.string,
+  error: PropTypes.objectOf(PropTypes.any),
 };
 
 Form.defaultProps = {
-  error: '',
-  projectInfo: {},
+  error: null,
 };
-
 
 function mapStateToProps(state) {
   return state;
@@ -243,4 +242,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ submitForm: postForm }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Form);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Form);

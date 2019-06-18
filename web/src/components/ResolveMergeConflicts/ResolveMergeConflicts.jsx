@@ -10,7 +10,7 @@ import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 // Remove this depencency
 import { navigateTo } from '../../actions/REDCapLinterActions';
-import { resolveMergeRow } from '../../actions/ResolveActions';
+import { calculateMergeConflicts } from '../../actions/ResolveActions';
 
 class ResolveMergeConflicts extends Component {
   constructor(props) {
@@ -34,41 +34,30 @@ class ResolveMergeConflicts extends Component {
       projectInfo,
       ddData,
       csvHeaders,
+      decodedRecords,
+      existingRecords,
+      recordidField,
       workingMergeRow,
       malformedSheets,
       mergeConflicts,
-      resolveMergeRow,
+      calculateMergeConflicts,
     } = this.props;
     if (workingMergeRow >= 0) {
       this.setState({ mode: 'MERGE' });
       return;
     }
-    let hasMergeConflicts = false;
-    Object.keys(mergeConflicts).forEach((sheet) => {
-      if (mergeConflicts[sheet] && mergeConflicts[sheet].length > 0) {
-        hasMergeConflicts = true;
-      }
-    });
-    if (workingMergeRow < 0 && hasMergeConflicts) {
-      let nextSheetName = null;
-      nextSheetName = Object.keys(mergeConflicts).find(
-        sheet => mergeConflicts[sheet] && mergeConflicts[sheet].length > 0,
-      );
-      const nextMergeRow = mergeConflicts[nextSheetName][0];
-      const payload = {
-        jsonData,
-        projectInfo,
-        ddData,
-        csvHeaders,
-        mergeConflicts,
-        malformedSheets,
-        nextSheetName,
-        nextMergeRow,
-        action: 'continue',
-      };
-      // TODO Call on resolveRow if there are no column errors
-      resolveMergeRow(payload);
-    }
+    const payload = {
+      jsonData,
+      projectInfo,
+      ddData,
+      csvHeaders,
+      existingRecords,
+      decodedRecords,
+      recordidField,
+      mergeConflicts,
+      malformedSheets,
+    };
+    calculateMergeConflicts(payload);
 
     this.setState({ mode: 'MERGE' });
   }
@@ -146,9 +135,12 @@ class ResolveMergeConflicts extends Component {
 
 ResolveMergeConflicts.propTypes = {
   ddData: PropTypes.arrayOf(PropTypes.object),
-  jsonData: PropTypes.arrayOf(PropTypes.object),
+  jsonData: PropTypes.objectOf(PropTypes.array),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
+  recordidField: PropTypes.string,
+  existingRecords: PropTypes.arrayOf(PropTypes.object),
+  decodedRecords: PropTypes.objectOf(PropTypes.array),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   workingMergeRow: PropTypes.number,
   mergeConflicts: PropTypes.objectOf(PropTypes.array),
@@ -159,6 +151,9 @@ ResolveMergeConflicts.defaultProps = {
   jsonData: {},
   projectInfo: {},
   csvHeaders: {},
+  recordidField: '',
+  existingRecords: [],
+  decodedRecords: {},
   malformedSheets: [],
   workingMergeRow: -1,
   mergeConflicts: {},
@@ -169,7 +164,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveMergeRow, navigateTo }, dispatch);
+  return bindActionCreators({ calculateMergeConflicts, navigateTo }, dispatch);
 }
 
 export default connect(

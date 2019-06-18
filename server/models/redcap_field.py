@@ -1,6 +1,12 @@
 import logging
 import json
 
+def get_from_data_dictionary(data_dictionary, field_name, col):
+    cell = list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])
+    if len(cell) > 0:
+        return list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])[0]
+    else:
+        return None
 
 class RedcapField(object):
     yesno_dict = {'Yes': '1', 'No': '0', 'Y': '1', 'N': '0', '1': '1', '0': '0', 'True': '1', 'False': '0'}
@@ -65,10 +71,3 @@ class RedcapField(object):
 
     def __str__(self):
         return json.dumps(self.__dict__)
-
-    def get_from_data_dictionary(data_dictionary, field_name, col):
-        cell = list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])
-        if len(cell) > 0:
-            return list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])[0]
-        else:
-            return None

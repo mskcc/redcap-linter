@@ -113,10 +113,10 @@ def save_fields():
     records_to_reconcile = {}
     if existing_records:
         for record in existing_records:
-            if not record['redcap_repeat_instrument']:
-                # TODO implement merging logic
-                if record.get(recordid_field):
-                    records_to_reconcile[record[recordid_field]] = record
+            if not records_to_reconcile.get(record[recordid_field]):
+                records_to_reconcile[record[recordid_field]] = []
+            if record.get(recordid_field):
+                records_to_reconcile[record[recordid_field]].append(record)
 
     # TODO Get list of rows with merge conflicts
     merge_conflicts = {}
@@ -127,14 +127,15 @@ def save_fields():
         sheet = records.get(sheet_name)
         for index, row in sheet.iterrows():
             if row.get(recordid_field):
+                recordid = row[recordid_field]
                 if isinstance(row.get(recordid_field), float) and row.get(recordid_field).is_integer():
                     # Excel reads this in as a float :/
                     recordid = str(int(row[recordid_field]))
-                    if records_to_reconcile.get(recordid):
-                        # TODO Logic to determine if there is a merge conflict
-                        merge_conflicts[sheet_name].append(int(index))
-                        decoded_row = serializer.decode_sheet(dd, project_info, records_to_reconcile.get(recordid))
-                        decoded_records[recordid] = decoded_row
+                if records_to_reconcile.get(recordid):
+                    # TODO Logic to determine if there is a merge conflict
+                    merge_conflicts[sheet_name].append(int(index))
+                    decoded_rows = serializer.decode_sheet(dd, project_info, records_to_reconcile.get(recordid))
+                    decoded_records[recordid] = decoded_rows
 
     results = {
         'jsonData':                   json_data,
@@ -142,6 +143,7 @@ def save_fields():
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
+        'recordsToReconcile':         records_to_reconcile,
         'existingRecords':            existing_records,
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
@@ -261,6 +263,8 @@ def post_form():
         elif dataDictionaryName.endswith('.xlsx') or dataDictionaryName.endswith('.xls'):
             dd_df = pd.read_excel(request.files['dataDictionary'])
         dd = [RedcapField.from_data_dictionary(dd_df, field) for field in list(dd_df['Variable / Field Name'])]
+        if dd[0].field_name == 'record_id':
+            project_info['record_autonumbering_enabled'] = 1
         if 'existingRecordsFile' in request.files:
             existing_records_file_name = form.get('existingRecordsFileName')
             existing_records =  pd.read_csv(request.files['existingRecordsFile'])
@@ -285,8 +289,8 @@ def post_form():
         form_name_to_dd_fields.get(dd_field.form_name).append(dd_field.field_name)
         form_names.add(dd_field.form_name)
 
-    recordid_field = 'recordid'
-    if not project_info.get('record_autonumbering_enabled'):
+    recordid_field = 'record_id'
+    if not project_info['record_autonumbering_enabled']:
         recordid_field = dd[0].field_name
 
     form_names = list(form_names)

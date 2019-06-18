@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { Table, Input, Icon } from 'antd';
 import Cell from '../../Cell/Cell';
 import { matchFields, highlightColumns } from '../../../actions/REDCapLinterActions';
+import { calculateSelectStyles } from '../../../utils/utils';
 
 class FieldMatcher extends Component {
   constructor(props) {
@@ -36,7 +37,7 @@ class FieldMatcher extends Component {
     };
   }
 
-  onSwitchChange(e) {
+  onSwitchChange() {
     let { mode } = this.state;
     mode = mode === 'REDCap Field' ? 'Data Field' : 'REDCap Field';
     const columns = [
@@ -112,7 +113,7 @@ class FieldMatcher extends Component {
     this.setState({ noMatchRedcapFields });
   }
 
-  acceptMatches(e) {
+  acceptMatches() {
     // TODO send noMatchRedcapFields
     const { noMatchRedcapFields } = this.state;
     const { matchedFieldMap, matchFields } = this.props;
@@ -132,18 +133,14 @@ class FieldMatcher extends Component {
       cellData = (
         <span>
           <b>{cellInfo[mode]}</b>
-          {' '}
-|
-          {ddField.form_name}
+          {` | ${ddField.form_name}`}
         </span>
       );
     } else if (mode === 'Data Field') {
       cellData = (
         <span>
           <b>{cellInfo[mode]}</b>
-          {' '}
-|
-          {cellInfo.Sheets}
+          {` | ${cellInfo.Sheets}`}
         </span>
       );
     }
@@ -176,9 +173,7 @@ class FieldMatcher extends Component {
               label: (
                 <span>
                   <b>{value}</b>
-                  {' '}
-|
-                  <span style={{ fontWeight: 'lighter' }}>{sheet}</span>
+                  <span style={{ fontWeight: 'lighter' }}>{` | ${sheet}`}</span>
                 </span>
               ),
               sheets: [sheet],
@@ -221,10 +216,7 @@ class FieldMatcher extends Component {
             label: (
               <span>
                 <b>{score.candidate}</b>
-                {' '}
-|
-                {' '}
-                <span style={{ fontWeight: 'lighter' }}>{score.sheets.toString()}</span>
+                <span style={{ fontWeight: 'lighter' }}>{` | ${score.sheets.toString()}`}</span>
               </span>
             ),
             sheets: score.sheets,
@@ -247,10 +239,7 @@ class FieldMatcher extends Component {
             label: (
               <span>
                 <b>{score.candidate}</b>
-                {' '}
-|
-                {' '}
-                <span style={{ fontWeight: 'lighter' }}>{score.form_name}</span>
+                <span style={{ fontWeight: 'lighter' }}>{` | ${score.form_name}`}</span>
               </span>
             ),
           });
@@ -263,23 +252,8 @@ class FieldMatcher extends Component {
       });
     }
 
-    const longestOption = scores
-      .map(score => score.candidate)
-      .sort((a, b) => b.length - a.length)[0];
-    const selectWidth = 8 * longestOption.length + 60;
+    const selectStyles = calculateSelectStyles(options);
 
-    const selectStyles = {
-      control: provided => ({
-        ...provided,
-      }),
-      menu: provided => ({
-        // none of react-select's styles are passed to <Control />
-        ...provided,
-        zIndex: 20,
-        overflow: 'visible',
-        minWidth: `${selectWidth}px`,
-      }),
-    };
     return (
       <Select
         options={options}

@@ -8,6 +8,7 @@ import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
 import { matchChoices } from '../../../actions/REDCapLinterActions';
+import { calculateSelectStyles } from '../../../utils/utils';
 
 class ChoiceMatcher extends Component {
   constructor(props) {
@@ -20,7 +21,7 @@ class ChoiceMatcher extends Component {
         {
           title: 'Data Field',
           key: 'Data Field',
-          render: (text, record) => this.renderCell('Data Field', record),
+          render: (text, record) => <Cell cellData={record['Data Field']} />,
         },
         {
           title: 'Candidate',
@@ -81,10 +82,6 @@ class ChoiceMatcher extends Component {
     this.setState({ choiceMap });
   }
 
-  renderCell(header, cellInfo) {
-    return <Cell cellData={cellInfo[header]} editable={false} />;
-  }
-
   renderCandidates(cellInfo) {
     const { fieldErrors, ddData, workingColumn } = this.props;
     const choiceCandidates = fieldErrors.choiceCandidates || {};
@@ -127,10 +124,7 @@ class ChoiceMatcher extends Component {
       label: (
         <span>
           <b>{score.candidate}</b>
-          {' '}
-|
-          {' '}
-          <span style={{ fontWeight: 'lighter' }}>{score.choiceValue}</span>
+          <span style={{ fontWeight: 'lighter' }}>{` | ${score.choiceValue}`}</span>
         </span>
       ),
     }));
@@ -143,16 +137,8 @@ class ChoiceMatcher extends Component {
     if (fieldErrors.fieldType === 'checkbox') {
       isMulti = true;
     }
-    const selectStyles = {
-      control: provided => ({
-        ...provided,
-      }),
-      menu: provided => ({
-        // none of react-select's styles are passed to <Control />
-        ...provided,
-        zIndex: 20,
-      }),
-    };
+
+    const selectStyles = calculateSelectStyles(options);
 
     return (
       <Select

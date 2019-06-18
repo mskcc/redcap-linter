@@ -434,40 +434,10 @@ def resolve_merge_row():
 
 @resolve.route('/calculate_merge_conflicts', methods=['GET', 'POST', 'OPTIONS'])
 def calculate_merge_conflicts():
+    form  = request.form.to_dict()
     recordid_field = json.loads(form.get('recordidField'))
     existing_records = json.loads(form.get('existingRecords'))
-    reconciliation_columns = json.loads(form.get('reconciliationColumns'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
-
-    records_to_reconcile = {}
-    if existing_records:
-        for record in existing_records:
-            if not record['redcap_repeat_instrument']:
-                # TODO implement merging logic
-                records_to_reconcile[record[recordid_field]] = record
-
-    records = {}
-    for sheet in json_data:
-        records[sheet] = pd.DataFrame(json_data[sheet])
-
-    # TODO Get list of rows with merge conflicts
-    merge_conflicts = {}
-    decoded_records = {}
-
-    for sheet_name in records.keys():
-        merge_conflicts[sheet_name] = []
-        sheet = records.get(sheet_name)
-        for index, row in sheet.iterrows():
-            if row.get(recordid_field):
-                if isinstance(row.get(recordid_field), float) and row.get(recordid_field).is_integer():
-                    # Excel reads this in as a float :/
-                    recordid = str(int(row[recordid_field]))
-                    if records_to_reconcile.get(recordid):
-                        # TODO Logic to determine if there is a merge conflict
-                        merge_conflicts[sheet_name].append(int(index))
-                        decoded_row = serializer.decode_sheet(dd, project_info, records_to_reconcile.get(recordid))
-                        decoded_records[recordid] = decoded_row
-
 
     results = {
         'mergeConflicts': [],

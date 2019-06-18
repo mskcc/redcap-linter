@@ -9,6 +9,9 @@ export const RESOLVE_ROW_FAILURE = 'RESOLVE_ROW_FAILURE';
 export const RESOLVE_MERGE_ROW_SUCCESS = 'RESOLVE_MERGE_ROW_SUCCESS';
 export const RESOLVE_MERGE_ROW_FAILURE = 'RESOLVE_MERGE_ROW_FAILURE';
 
+export const CALCULATE_MERGE_CONFLICTS_SUCCESS = 'CALCULATE_MERGE_CONFLICTS_SUCCESS';
+export const CALCULATE_MERGE_CONFLICTS_FAILURE = 'CALCULATE_MERGE_CONFLICTS_FAILURE';
+
 export function resolveColumnSuccess(payload) {
   return {
     type: RESOLVE_COLUMN_SUCCESS,
@@ -171,6 +174,47 @@ export function resolveRow(payload) {
     return request.then(
       response => dispatch(resolveRowSuccess(response)),
       err => dispatch(resolveRowError(err)),
+    );
+  };
+}
+
+export function calculateMergeConflictsFailure(payload) {
+  return {
+    type: CALCULATE_MERGE_CONFLICTS_FAILURE,
+    payload,
+  };
+}
+
+export function calculateMergeConflictsSuccess(payload) {
+  return {
+    type: CALCULATE_MERGE_CONFLICTS_SUCCESS,
+    payload,
+  };
+}
+
+export function calculateMergeConflicts(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('existingRecords', JSON.stringify(payload.existingRecords));
+    data.append('recordidField', JSON.stringify(payload.recordidField));
+    data.append('malformedSheets', JSON.stringify(payload.malformedSheets));
+    data.append('mergeConflicts', JSON.stringify(payload.mergeConflicts || []));
+    data.append('decodedRecords', JSON.stringify(payload.decodedRecords));
+    const request = axios({
+      method: 'POST',
+      url: `${process.env.REDCAP_LINTER_HOST}:${
+        process.env.REDCAP_LINTER_PORT
+      }/calculate_merge_conflicts`,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(calculateMergeConflictsSuccess(Object.assign({}, response))),
+      err => dispatch(calculateMergeConflictsFailure(err)),
     );
   };
 }

@@ -8,6 +8,7 @@ import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
 import { updateValue, filterRow } from '../../../actions/REDCapLinterActions';
+import { calculateSelectStyles } from '../../../utils/utils';
 
 class RowResolver extends Component {
   constructor(props) {
@@ -19,7 +20,7 @@ class RowResolver extends Component {
         {
           title: 'Field',
           key: 'Field',
-          render: (text, record) => this.renderCell('Field', record),
+          render: (text, record) => <Cell cellData={record.Field} hasError={false} />,
         },
         {
           title: 'Validation',
@@ -31,7 +32,7 @@ class RowResolver extends Component {
           title: 'Current',
           key: 'Current',
           width: '100px',
-          render: (text, record) => this.renderCell('Value', record),
+          render: (text, record) => <Cell cellData={record.Value} hasError />,
         },
         {
           title: 'Value',
@@ -60,12 +61,12 @@ class RowResolver extends Component {
     return null;
   }
 
-  onFocus(e) {
+  onFocus() {
     const { workingSheetName, workingRow, filterRow } = this.props;
     filterRow(workingSheetName, workingRow);
   }
 
-  onBlur(e) {
+  onBlur() {
     const { workingSheetName, filterRow } = this.props;
     filterRow(workingSheetName, '');
   }
@@ -107,37 +108,25 @@ class RowResolver extends Component {
       <div className="RowResolver-textValidation">
         <span className="RowResolver-textValidationRange">
           <b>Validation</b>
-:
-          {ddField.text_validation}
+          {`: ${ddField.text_validation}`}
         </span>
         |
         <span className="RowResolver-textValidationRange">
           <b>Required</b>
-:
-          {ddField.required ? 'True' : 'False'}
+          {`: ${ddField.required ? 'True' : 'False'}`}
         </span>
         <br />
         <span className="RowResolver-textValidationRange">
           <b>Min</b>
-:
-          {ddField.text_min || 'None'}
+          {`: ${ddField.text_min || 'None'}`}
         </span>
         |
         <span className="RowResolver-textValidationRange">
           <b>Max</b>
-:
-          {ddField.text_max || 'None'}
+          {`: ${ddField.text_max || 'None'}`}
         </span>
       </div>
     );
-  }
-
-  renderCell(header, record) {
-    let hasError = false;
-    if (header == 'Value') {
-      hasError = true;
-    }
-    return <Cell cellData={record[header]} editable={false} hasError={hasError} />;
   }
 
   renderInput(record) {
@@ -156,24 +145,14 @@ class RowResolver extends Component {
           label: (
             <span>
               <b>{choice}</b>
-              {' '}
-|
-              {' '}
-              <span style={{ fontWeight: 'lighter' }}>{ddField.choices_dict[choice]}</span>
+              <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
             </span>
           ),
         });
       });
-      const selectStyles = {
-        control: provided => ({
-          ...provided,
-        }),
-        menu: provided => ({
-          // none of react-select's styles are passed to <Control />
-          ...provided,
-          zIndex: 20,
-        }),
-      };
+
+      const selectStyles = calculateSelectStyles(options);
+
       return (
         <Select
           options={options}
@@ -290,7 +269,7 @@ class RowResolver extends Component {
 
 RowResolver.propTypes = {
   fieldToValueMap: PropTypes.objectOf(PropTypes.object),
-  jsonData: PropTypes.arrayOf(PropTypes.object),
+  jsonData: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   cellsWithErrors: PropTypes.objectOf(PropTypes.array),
   workingSheetName: PropTypes.string,
