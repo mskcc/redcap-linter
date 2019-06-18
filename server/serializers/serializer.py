@@ -44,7 +44,9 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
                         if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
                             row_to_encode[matching_field.field_name] = row[matching_field.field_name]
                         else:
-                            row_to_encode[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                            choice_match = row[matching_field.field_name]
+                            choice_match = str(int(choice_match)) if isinstance(choice_match, float) and choice_match.is_integer() else str(choice_match)
+                            row_to_encode[matching_field.field_name] = matching_field.choices_dict.get(choice_match)
                     elif matching_field.field_type in ['checkbox']:
                         permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
                         checkbox_items = [i.strip().lower() for i in row[matching_field.field_name].split(',')]
@@ -76,7 +78,9 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
                         if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
                             encoded_row[matching_field.field_name] = row[matching_field.field_name]
                         else:
-                            encoded_row[matching_field.field_name] = matching_field.choices_dict.get(row[matching_field.field_name])
+                            choice_match = row[matching_field.field_name]
+                            choice_match = str(int(choice_match)) if isinstance(choice_match, float) and choice_match.is_integer() else str(choice_match)
+                            encoded_row[matching_field.field_name] = matching_field.choices_dict.get(choice_match)
                     elif matching_field.field_type in ['checkbox']:
                         permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
                         checkbox_items = [i.strip().lower() for i in row[matching_field.field_name].split(',')]
