@@ -64,7 +64,7 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
     if project_info.get('record_autonumbering_enabled') == 1:
         record_inst = project_info.get('next_record_name')
         for index, row in records.iterrows():
-            encoded_row = {'recordid': record_inst}
+            encoded_row = {'record_id': record_inst}
             if int(index) in rows_in_error:
                 continue
             for form_name in matching_fields:

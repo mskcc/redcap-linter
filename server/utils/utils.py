@@ -182,7 +182,7 @@ def validate_text_type(list_to_validate, redcap_field):
 def get_recordid_field(data_dictionary, project_info):
     recordid_field = None
     if project_info.get('record_autonumbering_enabled') == 1:
-        recordid_field = RedcapField(field_name='recordid', field_type='text')
+        recordid_field = RedcapField(field_name='record_id', field_type='text')
     else:
         recordid_field = data_dictionary[0]
     return recordid_field
