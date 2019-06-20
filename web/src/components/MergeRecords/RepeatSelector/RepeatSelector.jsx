@@ -6,8 +6,10 @@ import Select from 'react-select';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import _ from 'lodash';
 
 import { changeReconciliationColumns } from '../../../actions/REDCapLinterActions';
+import { calculateSelectStyles } from '../../../utils/utils';
 
 class RepeatSelector extends Component {
   constructor(props) {
@@ -31,18 +33,13 @@ class RepeatSelector extends Component {
   }
 
   static renderCell(header, cellInfo) {
-    const className = 'RepeatSelector-cell';
     let cellValue = '';
     if (Array.isArray(cellInfo[header])) {
       cellValue = cellInfo[header].join(', ');
     } else {
       cellValue = cellInfo[header];
     }
-    return (
-      <div className="RepeatSelector-cellContainer">
-        <div className={className}>{cellValue}</div>
-      </div>
-    );
+    return <div className="RepeatSelector-cell">{cellValue}</div>;
   }
 
   changeColumns(instrument, selectedOptions) {
@@ -63,15 +60,27 @@ class RepeatSelector extends Component {
 
   render() {
     const {
-      projectInfo, workingSheetName, dataFieldToRedcapFieldMap, ddData,
+      projectInfo,
+      dataFieldToRedcapFieldMap,
+      ddData,
+      jsonData,
+      malformedSheets,
+      reconciliationColumns,
     } = this.props;
 
-    let matchingHeaders = [];
-    if (dataFieldToRedcapFieldMap && dataFieldToRedcapFieldMap[workingSheetName]) {
-      matchingHeaders = Object.values(dataFieldToRedcapFieldMap[workingSheetName]);
-    }
-    const repeatableInstruments = projectInfo.repeatable_instruments || [];
     const tableData = [];
+    const validSheets = _.difference(Object.keys(jsonData), malformedSheets);
+    let matchingHeaders = [];
+    validSheets.forEach((sheetName) => {
+      if (dataFieldToRedcapFieldMap && dataFieldToRedcapFieldMap[sheetName]) {
+        matchingHeaders = _.union(
+          matchingHeaders,
+          Object.values(dataFieldToRedcapFieldMap[sheetName]),
+        );
+      }
+    });
+
+    const repeatableInstruments = projectInfo.repeatable_instruments || [];
     repeatableInstruments.forEach((instrument) => {
       const ddFields = ddData.reduce((filtered, ddField) => {
         if (ddField.form_name === instrument) {
@@ -90,22 +99,23 @@ class RepeatSelector extends Component {
         }
       });
 
-      const selectStyles = {
-        control: provided => ({
-          ...provided,
-        }),
-        menu: provided => ({
-          // none of react-select's styles are passed to <Control />
-          ...provided,
-          zIndex: 20,
-        }),
-      };
+      const selectedValue = [];
+      if (reconciliationColumns && reconciliationColumns[instrument]) {
+        reconciliationColumns[instrument].forEach((field) => {
+          selectedValue.push({
+            value: field,
+            label: field,
+          });
+        });
+      }
+
+      const selectStyles = calculateSelectStyles(options);
 
       const reconciliationColumnSelector = (
         <Select
-          className="ErrorSelector-elevate"
           options={options}
           styles={selectStyles}
+          value={selectedValue}
           isSearchable
           isMulti
           onChange={e => this.changeColumns(instrument, e)}
@@ -148,15 +158,19 @@ class RepeatSelector extends Component {
 RepeatSelector.propTypes = {
   projectInfo: PropTypes.objectOf(PropTypes.any),
   ddData: PropTypes.arrayOf(PropTypes.object),
+  jsonData: PropTypes.objectOf(PropTypes.array),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
-  workingSheetName: PropTypes.string,
+  reconciliationColumns: PropTypes.objectOf(PropTypes.array),
 };
 
 RepeatSelector.defaultProps = {
   projectInfo: {},
   ddData: [],
+  jsonData: {},
   dataFieldToRedcapFieldMap: {},
-  workingSheetName: '',
+  malformedSheets: [],
+  reconciliationColumns: {},
 };
 
 function mapStateToProps(state) {

@@ -37,15 +37,11 @@ class ResolveMergeConflicts extends Component {
       decodedRecords,
       existingRecords,
       recordidField,
-      workingMergeRow,
       malformedSheets,
       mergeConflicts,
+      reconciliationColumns,
       calculateMergeConflicts,
     } = this.props;
-    if (workingMergeRow >= 0) {
-      this.setState({ mode: 'MERGE' });
-      return;
-    }
     const payload = {
       jsonData,
       projectInfo,
@@ -56,6 +52,7 @@ class ResolveMergeConflicts extends Component {
       recordidField,
       mergeConflicts,
       malformedSheets,
+      reconciliationColumns,
     };
     calculateMergeConflicts(payload);
 
@@ -73,30 +70,18 @@ class ResolveMergeConflicts extends Component {
   }
 
   render() {
-    const { mergeConflicts, workingMergeRow } = this.props;
+    const { mergeConflicts, calculatedMergeConflicts } = this.props;
     const { loading, mode } = this.state;
     let content = '';
     let hasMergeConflicts = false;
     Object.keys(mergeConflicts).forEach((sheet) => {
-      if (mergeConflicts[sheet] && mergeConflicts[sheet].length > 0) {
+      if (mergeConflicts[sheet] && Object.keys(mergeConflicts[sheet]).length > 0) {
         hasMergeConflicts = true;
       }
     });
-    let backButton = null;
-    if (workingMergeRow >= 0) {
-      backButton = (
-        <button
-          type="button"
-          onClick={this.back.bind(this)}
-          className="App-actionButton ResolveMergeConflicts-back"
-        >
-          Select Reconciliation Column(s)
-        </button>
-      );
-    }
     if (loading) {
       content = <Spin tip="Loading..." />;
-    } else if (hasMergeConflicts) {
+    } else if (!calculatedMergeConflicts || hasMergeConflicts) {
       if (mode === 'CHOOSE_RECONCILIATION_COLUMNS') {
         content = (
           <div className="ResolveMergeConflicts-selector">
@@ -109,7 +94,13 @@ class ResolveMergeConflicts extends Component {
       } else if (mode === 'MERGE') {
         content = (
           <div>
-            {backButton}
+            <button
+              type="button"
+              onClick={this.back.bind(this)}
+              className="App-actionButton ResolveMergeConflicts-back"
+            >
+              Select Reconciliation Column(s)
+            </button>
             <MergeRecords />
           </div>
         );
@@ -139,11 +130,12 @@ ResolveMergeConflicts.propTypes = {
   projectInfo: PropTypes.objectOf(PropTypes.any),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
   recordidField: PropTypes.string,
+  reconciliationColumns: PropTypes.objectOf(PropTypes.array),
   existingRecords: PropTypes.arrayOf(PropTypes.object),
   decodedRecords: PropTypes.objectOf(PropTypes.array),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
-  workingMergeRow: PropTypes.number,
-  mergeConflicts: PropTypes.objectOf(PropTypes.array),
+  mergeConflicts: PropTypes.objectOf(PropTypes.object),
+  calculatedMergeConflicts: PropTypes.bool,
 };
 
 ResolveMergeConflicts.defaultProps = {
@@ -152,11 +144,12 @@ ResolveMergeConflicts.defaultProps = {
   projectInfo: {},
   csvHeaders: {},
   recordidField: '',
+  reconciliationColumns: {},
   existingRecords: [],
   decodedRecords: {},
   malformedSheets: [],
-  workingMergeRow: -1,
   mergeConflicts: {},
+  calculatedMergeConflicts: false,
 };
 
 function mapStateToProps(state) {

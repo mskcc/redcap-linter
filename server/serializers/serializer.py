@@ -118,5 +118,7 @@ def decode_sheet(data_dictionary, project_info, records):
                 decoded_row[field.field_name] = ','.join(selected_choices)
             else:
                 decoded_row[field.field_name] = record[field.field_name]
+        decoded_row['redcap_repeat_instrument'] = record['redcap_repeat_instrument']
+        decoded_row['redcap_repeat_instance'] = record['redcap_repeat_instance']
         decoded_rows.append(decoded_row)
     return decoded_rows

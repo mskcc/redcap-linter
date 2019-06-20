@@ -7,7 +7,10 @@ export function calculateSelectStyles(options) {
   const longestOption = options
     .map(option => option.value)
     .sort((a, b) => (a === null) - (b === null) || b.length - a.length)[0];
-  const selectWidth = 8 * longestOption.length + 60;
+  let selectWidth = 200;
+  if (longestOption) {
+    selectWidth = 8 * longestOption.length + 60;
+  }
 
   const selectStyles = {
     control: provided => ({

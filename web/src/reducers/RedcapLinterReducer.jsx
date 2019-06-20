@@ -33,6 +33,8 @@ import {
   RESOLVE_ROW_FAILURE,
   RESOLVE_MERGE_ROW_SUCCESS,
   RESOLVE_MERGE_ROW_FAILURE,
+  CALCULATE_MERGE_CONFLICTS_SUCCESS,
+  CALCULATE_MERGE_CONFLICTS_FAILURE,
 } from '../actions/ResolveActions';
 
 export default function (state = {}, action) {
@@ -62,7 +64,13 @@ export default function (state = {}, action) {
       if (action.payload && action.payload.page) {
         nextPage = { page: action.payload.page, new: false };
       }
-      return Object.assign({}, state, { loading: false }, nextPage, action.payload.data);
+      return Object.assign(
+        {},
+        state,
+        { loading: false, fieldsSaved: true },
+        nextPage,
+        action.payload.data,
+      );
     }
     case SAVE_FIELDS_FAILURE: {
       return Object.assign({}, state, {
@@ -130,6 +138,19 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { workingColumn: '', workingRow: -1 }, action.payload.data);
     }
     case RESOLVE_MERGE_ROW_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case CALCULATE_MERGE_CONFLICTS_SUCCESS: {
+      return Object.assign(
+        {},
+        state,
+        { workingColumn: '', workingRow: -1, calculatedMergeConflicts: true },
+        action.payload.data,
+      );
+    }
+    case CALCULATE_MERGE_CONFLICTS_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

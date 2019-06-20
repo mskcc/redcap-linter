@@ -198,11 +198,13 @@ export function calculateMergeConflicts(payload) {
     data.append('jsonData', JSON.stringify(payload.jsonData));
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('existingRecords', JSON.stringify(payload.existingRecords));
     data.append('recordidField', JSON.stringify(payload.recordidField));
     data.append('malformedSheets', JSON.stringify(payload.malformedSheets));
     data.append('mergeConflicts', JSON.stringify(payload.mergeConflicts || []));
     data.append('decodedRecords', JSON.stringify(payload.decodedRecords));
+    data.append('reconciliationColumns', JSON.stringify(payload.reconciliationColumns));
     const request = axios({
       method: 'POST',
       url: `${process.env.REDCAP_LINTER_HOST}:${

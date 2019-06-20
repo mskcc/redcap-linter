@@ -28,7 +28,6 @@ app.register_blueprint(resolve)
 app.register_blueprint(export)
 app.logger.setLevel(logging.INFO)
 
-# TODO Remove from Selected Columns once saved
 @app.route('/save_fields', methods=['GET', 'POST', 'OPTIONS'])
 def save_fields():
     form  = request.form.to_dict()
@@ -46,9 +45,6 @@ def save_fields():
     records = {}
     for sheet in json_data:
         matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
-        # for data_field in matched_field_dict.keys():
-        #     if selected_columns.get(sheet) and data_field in selected_columns.get(sheet):
-        #         selected_columns.get(sheet).remove(data_field)
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet] if c not in matched_field_dict or matched_field_dict.get(c)]
         fields_to_drop = [data_field for data_field in matched_field_dict.keys() if not matched_field_dict.get(data_field)]
         df = pd.DataFrame(json_data[sheet])
@@ -72,7 +68,6 @@ def save_fields():
                         if record.get(project_info['secondary_unique_field']):
                             secondary_unique_field_values.add(utils.get_record_id(record.get(project_info['secondary_unique_field'])))
                 secondary_unique_field_values = list(secondary_unique_field_values)
-                # TODO figure out filter logic implementation
                 options = {
                     'secondary_unique_field': project_info['secondary_unique_field'],
                     'secondary_unique_field_values': secondary_unique_field_values
@@ -118,12 +113,9 @@ def save_fields():
             if record.get(recordid_field):
                 records_to_reconcile[record[recordid_field]].append(record)
 
-    # TODO Get list of rows with merge conflicts
-    merge_conflicts = {}
     decoded_records = {}
 
     for sheet_name in records.keys():
-        merge_conflicts[sheet_name] = []
         sheet = records.get(sheet_name)
         for index, row in sheet.iterrows():
             if row.get(recordid_field):
@@ -132,8 +124,6 @@ def save_fields():
                     # Excel reads this in as a float :/
                     recordid = str(int(row[recordid_field]))
                 if records_to_reconcile.get(recordid):
-                    # TODO Logic to determine if there is a merge conflict
-                    merge_conflicts[sheet_name].append(int(index))
                     decoded_rows = serializer.decode_sheet(dd, project_info, records_to_reconcile.get(recordid))
                     decoded_records[recordid] = decoded_rows
 
@@ -148,7 +138,6 @@ def save_fields():
         'columnsInError':             columns_in_error,
         'encodedRecords':             output_records,
         'decodedRecords':             decoded_records,
-        'mergeConflicts':             merge_conflicts,
         'fieldsSaved':                True,
     }
     response = flask.jsonify(results)
@@ -342,7 +331,6 @@ def post_form():
 
     selected_columns = {}
 
-    # TODO Reconcile this with dataFieldToRedcapFieldMap
     matched_redcap_fields = []
     matched_redcap_fields += no_match_redcap_fields
     for sheet_name, field_map in data_field_to_redcap_field_map.items():
@@ -355,7 +343,6 @@ def post_form():
             for f2 in csv_headers[sheet]:
                 if not redcap_field_candidates.get(f1):
                     redcap_field_candidates[f1] = []
-                # existing_candidate = [item for item in redcap_field_candidates[f1] if item['candidate'] == f2]
                 redcap_field_candidates[f1].append({
                     'candidate': f2,
                     'sheets': [sheet],

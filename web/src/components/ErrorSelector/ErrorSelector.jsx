@@ -180,7 +180,7 @@ class ErrorSelector extends Component {
 
     Object.keys(mergeConflicts).forEach((sheet) => {
       const subOptions = [];
-      mergeConflicts[sheet].forEach((row) => {
+      Object.keys(mergeConflicts[sheet]).forEach((row) => {
         const rowNum = Number(row);
         subOptions.push({
           value: { sheet, rowNum },
@@ -286,7 +286,7 @@ ErrorSelector.propTypes = {
   fieldToValueMap: PropTypes.objectOf(PropTypes.object),
   columnsInError: PropTypes.objectOf(PropTypes.array),
   rowsInError: PropTypes.objectOf(PropTypes.array),
-  mergeConflicts: PropTypes.objectOf(PropTypes.array),
+  mergeConflicts: PropTypes.objectOf(PropTypes.object),
   workingSheetName: PropTypes.string,
   workingColumn: PropTypes.string,
   workingRow: PropTypes.number,

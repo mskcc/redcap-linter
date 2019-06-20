@@ -77,10 +77,9 @@ class RecordMerger extends Component {
 
   render() {
     const {
-      decodedRecords,
       workingSheetName,
       workingMergeRow,
-      recordidField,
+      mergeConflicts,
       jsonData,
       dataFieldToRedcapFieldMap,
       mergeMap,
@@ -88,7 +87,7 @@ class RecordMerger extends Component {
     const { search, columns } = this.state;
 
     const row = jsonData[workingSheetName][workingMergeRow];
-    const existingRecord = decodedRecords[row[recordidField]];
+    const existingRecord = mergeConflicts[workingSheetName][workingMergeRow];
 
     let rowMergeMap = {};
     if (mergeMap[workingSheetName] && mergeMap[workingSheetName][workingMergeRow]) {
@@ -149,8 +148,7 @@ RecordMerger.propTypes = {
   mergeMap: PropTypes.objectOf(PropTypes.object),
   jsonData: PropTypes.objectOf(PropTypes.array),
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
-  decodedRecords: PropTypes.objectOf(PropTypes.object),
-  recordidField: PropTypes.string,
+  mergeConflicts: PropTypes.objectOf(PropTypes.object),
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
 };
@@ -159,8 +157,7 @@ RecordMerger.defaultProps = {
   mergeMap: {},
   jsonData: {},
   dataFieldToRedcapFieldMap: {},
-  decodedRecords: {},
-  recordidField: '',
+  mergeConflicts: {},
   workingSheetName: '',
   workingMergeRow: -1,
 };

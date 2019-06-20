@@ -352,10 +352,11 @@ def resolve_merge_row():
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
     malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     merge_map = json.loads(form.get('mergeMap'))
+    merge_conflicts = json.loads(form.get('mergeConflicts'))
+    project_info = json.loads(form.get('projectInfo'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
     dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
-
 
     row_merge_map = {}
     if working_sheet_name in merge_map and str(working_merge_row) in merge_map[working_sheet_name]:
@@ -377,16 +378,14 @@ def resolve_merge_row():
                 df.iloc[working_merge_row, df.columns.get_loc(field)] = value
         records[sheet] = df
 
-    merge_conflicts = json.loads(form.get('mergeConflicts'))
-    project_info = json.loads(form.get('projectInfo'))
-
     next_sheet = False
     for sheet in merge_conflicts:
         if next_sheet and merge_conflicts[sheet]:
             next_sheet_name = sheet
             next_merge_row = merge_conflicts[sheet][0]
         if sheet == working_sheet_name:
-            sheet_merge_conflicts = merge_conflicts[sheet]
+            sheet_merge_conflicts = list(map(int, merge_conflicts[sheet].keys()))
+            sheet_merge_conflicts.sort()
             if sheet == working_sheet_name and working_merge_row == sheet_merge_conflicts[-1]:
                 next_sheet = True
             elif sheet == working_sheet_name:
@@ -397,7 +396,8 @@ def resolve_merge_row():
                     next_merge_row = sheet_merge_conflicts[sheet_merge_conflicts.index(working_merge_row)+1]
 
     if working_sheet_name and merge_conflicts and merge_conflicts[working_sheet_name]:
-        merge_conflicts[working_sheet_name].remove(working_merge_row)
+        merge_map[working_sheet_name][str(working_merge_row)]['matching_repeat_instances'] = merge_conflicts[working_sheet_name][str(working_merge_row)]['matching_repeat_instances']
+        del merge_conflicts[working_sheet_name][str(working_merge_row)]
 
     datafile_errors = linter.lint_datafile(dd, records, project_info)
     cells_with_errors = datafile_errors['cells_with_errors']
@@ -421,6 +421,7 @@ def resolve_merge_row():
     results = {
         'jsonData':         json_data,
         'allErrors':        all_errors,
+        'mergeMap':         merge_map,
         'mergeConflicts':   merge_conflicts,
         'cellsWithErrors':  cells_with_errors,
         'encodedRecords':   output_records,
@@ -438,9 +439,64 @@ def calculate_merge_conflicts():
     recordid_field = json.loads(form.get('recordidField'))
     existing_records = json.loads(form.get('existingRecords'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+    dd_data = json.loads(form.get('ddData'))
+    csv_headers = json.loads(form.get('csvHeaders'))
+    merge_conflicts = json.loads(form.get('mergeConflicts'))
+    decoded_records = json.loads(form.get('decodedRecords'))
+    project_info = json.loads(form.get('projectInfo'))
+    malformed_sheets = json.loads(form.get('malformedSheets'))
+    reconciliation_columns = json.loads(form.get('reconciliationColumns'))
+
+    next_sheet_name = None
+    next_merge_row = -1
+    merge_conflicts = {}
+    records = {}
+    for sheet in json_data:
+        df = pd.DataFrame(json_data[sheet])
+        df.fillna('', inplace=True)
+        df = df[csv_headers[sheet]]
+        records[sheet] = df
+
+    for sheet_name, sheet in records.items():
+        if sheet_name in malformed_sheets:
+            continue
+
+        if not merge_conflicts.get(sheet_name):
+            merge_conflicts[sheet_name] = {}
+        for index, record in sheet.iterrows():
+            recordid = str(record.get(recordid_field))
+            if recordid:
+                if isinstance(recordid, float) and recordid.is_integer():
+                    # Excel reads this in as a float :/
+                    recordid = str(int(row[recordid_field]))
+                record_to_merge = {}
+                if decoded_records.get(recordid):
+                    flat_record = [r for r in decoded_records.get(recordid) if not r['redcap_repeat_instance']][0]
+                    record_to_merge = flat_record
+                    record_to_merge['matching_repeat_instances'] = {}
+                    for instrument in project_info['repeatable_instruments']:
+                        instrument_fields = [d for d in dd_data if d['form_name'] == instrument]
+                        primary_key = reconciliation_columns.get(instrument)
+                        matching_record = None
+                        for r in decoded_records.get(recordid):
+                            is_matching = True
+                            for key in primary_key:
+                                if record.get(key) != r.get(key):
+                                    is_matching = False
+                                    break
+                            matching_record = r
+                        for field in instrument_fields:
+                            record_to_merge[field['field_name']] = matching_record[field['field_name']]
+                        record_to_merge['matching_repeat_instances'][instrument] = matching_record['redcap_repeat_instance']
+                    merge_conflicts[sheet_name][index] = record_to_merge
+                    if next_sheet_name is None:
+                        next_sheet_name = sheet_name
+                        next_merge_row = index
 
     results = {
-        'mergeConflicts': [],
+        'mergeConflicts': merge_conflicts,
+        'workingSheetName': next_sheet_name,
+        'workingMergeRow': next_merge_row,
     }
     response = flask.jsonify(results)
     response.headers.add('Access-Control-Allow-Origin', '*')

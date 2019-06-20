@@ -11,10 +11,10 @@ import { resolveMergeRow } from '../../actions/ResolveActions';
 class MergeRecords extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
-  saveChanges(e) {
+  saveChanges() {
     const {
       jsonData,
       mergeMap,
@@ -37,12 +37,12 @@ class MergeRecords extends Component {
       mergeConflicts,
       ddData,
       csvHeaders,
-      action: 'save'
+      action: 'save',
     };
     resolveMergeRow(payload);
   }
 
-  saveAndContinue(e) {
+  saveAndContinue() {
     const {
       jsonData,
       mergeMap,
@@ -65,15 +65,13 @@ class MergeRecords extends Component {
       mergeConflicts,
       ddData,
       csvHeaders,
-      action: 'continue'
+      action: 'continue',
     };
     resolveMergeRow(payload);
   }
 
   render() {
-    const {
-      workingMergeRow,
-    } = this.props;
+    const { workingMergeRow } = this.props;
 
     if (workingMergeRow < 0) {
       return null;
@@ -95,8 +93,20 @@ class MergeRecords extends Component {
             <div style={{ clear: 'both' }} />
           </div>
           <div className="MergeRecords-saveAndContinue">
-            <button type="button" onClick={this.saveChanges.bind(this)} className="MergeRecords-save">Save</button>
-            <button type="button" onClick={this.saveAndContinue.bind(this)} className="App-submitButton">Save and Continue</button>
+            <button
+              type="button"
+              onClick={this.saveChanges.bind(this)}
+              className="MergeRecords-save"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={this.saveAndContinue.bind(this)}
+              className="App-submitButton"
+            >
+              Save and Continue
+            </button>
           </div>
         </div>
         <div style={{ clear: 'both' }} />
@@ -106,13 +116,25 @@ class MergeRecords extends Component {
 }
 
 MergeRecords.propTypes = {
-  csvHeaders: PropTypes.object,
-  jsonData: PropTypes.object,
+  csvHeaders: PropTypes.objectOf(PropTypes.array),
+  jsonData: PropTypes.objectOf(PropTypes.array),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  mergeConflicts: PropTypes.objectOf(PropTypes.object),
+  malformedSheets: PropTypes.arrayOf(PropTypes.string),
+  workingSheetName: PropTypes.string,
+  workingMergeRow: PropTypes.number,
 };
 
 MergeRecords.defaultProps = {
   csvHeaders: {},
   jsonData: {},
+  projectInfo: {},
+  ddData: [],
+  mergeConflicts: {},
+  malformedSheets: [],
+  workingSheetName: '',
+  workingMergeRow: -1,
 };
 
 function mapStateToProps(state) {
@@ -123,4 +145,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ resolveMergeRow }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MergeRecords);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(MergeRecords);
