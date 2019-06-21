@@ -20,6 +20,7 @@ from api.resolve import RESOLVE
 from api.export import EXPORT
 
 app = flask.Flask(__name__)
+CORS(app)
 app.register_blueprint(RESOLVE)
 app.register_blueprint(EXPORT)
 
@@ -132,9 +133,7 @@ def save_fields():
         'decodedRecords':             decoded_records,
         'fieldsSaved':                True,
     }
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return flask.jsonify(results)
 
 @app.route('/import_records', methods=['GET', 'POST', 'OPTIONS'])
 def import_records():
@@ -153,9 +152,7 @@ def import_records():
     results = {
         'importErrors': errors
     }
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return flask.jsonify(results)
 
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
@@ -406,7 +403,4 @@ def post_form():
         results['noMatchRedcapFields'] = no_match_redcap_fields
 
     response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
-
-CORS(app, expose_headers='Authorization')

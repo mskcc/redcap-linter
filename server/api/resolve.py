@@ -113,9 +113,7 @@ def resolve_column():
         if next_row:
             results['workingRow'] = next_row
 
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return flask.jsonify(results)
 
 @RESOLVE.route('/resolve_row', methods=['GET', 'POST', 'OPTIONS'])
 def resolve_row():
@@ -214,9 +212,7 @@ def resolve_row():
         if next_column:
             results['workingColumn'] = next_column
             results['fieldErrors'] = field_errors
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return flask.jsonify(results)
 
 
 @RESOLVE.route('/resolve_merge_row', methods=['GET', 'POST', 'OPTIONS'])
@@ -305,9 +301,7 @@ def resolve_merge_row():
     if action == 'continue':
         results['workingMergeRow'] = next_merge_row
         results['workingSheetName'] = next_sheet_name
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return flask.jsonify(results)
 
 @RESOLVE.route('/calculate_merge_conflicts', methods=['GET', 'POST', 'OPTIONS'])
 def calculate_merge_conflicts():
@@ -375,9 +369,7 @@ def calculate_merge_conflicts():
         'workingSheetName': next_sheet_name,
         'workingMergeRow': next_merge_row,
     }
-    response = flask.jsonify(results)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return flask.jsonify(results)
 
 def calculate_field_errors(column, sheet_name, data_dictionary, records):
     field_errors = {}
