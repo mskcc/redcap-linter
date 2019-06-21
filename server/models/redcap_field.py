@@ -1,15 +1,23 @@
-import logging
 import json
+
 
 def get_from_data_dictionary(data_dictionary, field_name, col):
     cell = list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])
-    if len(cell) > 0:
-        return list(data_dictionary.loc[data_dictionary['Variable / Field Name'] == field_name, col])[0]
-    else:
-        return None
+    if cell:
+        return cell[0]
+
 
 class RedcapField(object):
-    yesno_dict = {'Yes': '1', 'No': '0', 'Y': '1', 'N': '0', '1': '1', '0': '0', 'True': '1', 'False': '0'}
+    yesno_dict = {
+        'Yes': '1',
+        'No': '0',
+        'Y': '1',
+        'N': '0',
+        '1': '1',
+        '0': '0',
+        'True': '1',
+        'False': '0'
+    }
 
     def __init__(self, **kwargs):
         self.field_name = kwargs.get('field_name')
@@ -41,10 +49,10 @@ class RedcapField(object):
             field['choices_dict'] = cls.yesno_dict
         elif field['field_type'] in ['radio', 'dropdown', 'checkbox']:
             c = [choice.split(',', 1) for choice in field['choices'].split('|')]
-            field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c if len(choice) == 2}
+            field['choices_dict'] = {choice[1].strip(): choice[0].strip()
+                                     for choice in c if len(choice) == 2}
 
         return cls(**field)
-
 
     @classmethod
     def from_json(cls, field_json):
@@ -65,7 +73,8 @@ class RedcapField(object):
             field['choices_dict'] = cls.yesno_dict
         elif field_json['field_type'] in ['radio', 'dropdown', 'checkbox']:
             c = [choice.split(',', 1) for choice in field.get('choices').split('|')]
-            field['choices_dict'] = {choice[1].strip(): choice[0].strip() for choice in c if len(choice) == 2}
+            field['choices_dict'] = {choice[1].strip(): choice[0].strip()
+                                     for choice in c if len(choice) == 2}
 
         return cls(**field)
 

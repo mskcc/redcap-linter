@@ -1,31 +1,22 @@
-import flask
-from flask import request, Blueprint
-import logging
 import json
 import io
 import os
 import ntpath
-import numbers
-import pandas as pd
 from datetime import datetime
 from collections import OrderedDict
-import collections
-from fuzzywuzzy import fuzz
-from flask_cors import CORS, cross_origin
+
+import flask
+from flask import request, Blueprint
+import pandas as pd
+
 from models.redcap_field import RedcapField
-from api.redcap.redcap_api import RedcapApi
 from linter import linter
-from utils import utils
-from serializers import serializer
-from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
-import textwrap
 
-export = Blueprint('export', __name__)
+EXPORT = Blueprint('export', __name__)
 
-@export.route('/download_progress', methods=['GET', 'POST', 'OPTIONS'])
+@EXPORT.route('/download_progress', methods=['GET', 'POST', 'OPTIONS'])
 def download_progress():
-    form  = request.form.to_dict()
+    form = request.form.to_dict()
     datafile_name = form.get('dataFileName')
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
@@ -48,22 +39,22 @@ def download_progress():
         matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         error_df = pd.DataFrame(cells_with_errors[sheet])
-        df = pd.DataFrame(json_data[sheet])
-        df.fillna('', inplace=True)
-        df.rename(columns=matched_field_dict, inplace=True)
+        frame = pd.DataFrame(json_data[sheet])
+        frame.fillna('', inplace=True)
+        frame.rename(columns=matched_field_dict, inplace=True)
         error_df.rename(columns=matched_field_dict, inplace=True)
-        df = df[csv_headers[sheet]]
+        frame = frame[csv_headers[sheet]]
         error_df = error_df[csv_headers[sheet]]
-        df.to_excel(writer, sheet_name=sheet, index=False)
+        frame.to_excel(writer, sheet_name=sheet, index=False)
 
         instrument_fields_not_in_redcap = record_fields_not_in_redcap[sheet]
 
         data_worksheet = writer.sheets[sheet]
         for j, col in enumerate(error_df.columns):
             if instrument_fields_not_in_redcap is not None and col in instrument_fields_not_in_redcap:
-                data_worksheet.write(0, j, df.columns[j], missing_column_format)
+                data_worksheet.write(0, j, frame.columns[j], missing_column_format)
                 continue
-            for index, row in error_df.iterrows():
+            for index, _ in error_df.iterrows():
                 error_cell = error_df.iloc[index][col]
                 required = False
                 dd_field = [f for f in dd if f.field_name == col]
@@ -72,7 +63,7 @@ def download_progress():
                 if error_cell is None and required:
                     data_worksheet.write(index + 1, j, '', empty_format)
                 elif error_cell:
-                    cell = df.iloc[index][df.columns[j]]
+                    cell = frame.iloc[index][frame.columns[j]]
                     target_string = cell or ''
                     cell_format = None
                     if cell:
@@ -82,11 +73,11 @@ def download_progress():
                     data_worksheet.write(index + 1, j, target_string, cell_format)
     writer.close()
     output.seek(0)
-    return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
+    return flask.send_file(output, attachment_filename=new_datafile_name, as_attachment=True)
 
-@export.route('/download_mappings', methods=['GET', 'POST', 'OPTIONS'])
+@EXPORT.route('/download_mappings', methods=['GET', 'POST', 'OPTIONS'])
 def download_mappings():
-    form  = request.form.to_dict()
+    form = request.form.to_dict()
     datafile_name = form.get('dataFileName')
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
@@ -100,21 +91,19 @@ def download_mappings():
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
-    wb  = writer.book
+    frame = pd.DataFrame({'dataFieldToRedcapFieldMap': [json.dumps(data_field_to_redcap_field_map)],
+                          'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)],
+                          'originalToCorrectedValueMap': [json.dumps(original_to_correct_value_map)],
+                          'noMatchRedcapFields': [json.dumps(no_match_redcap_fields)]})
 
-    df = pd.DataFrame({'dataFieldToRedcapFieldMap': [json.dumps(data_field_to_redcap_field_map)],
-                        'dataFieldToChoiceMap': [json.dumps(data_field_to_choice_map)],
-                        'originalToCorrectedValueMap': [json.dumps(original_to_correct_value_map)],
-                        'noMatchRedcapFields': [json.dumps(no_match_redcap_fields)]})
-
-    df.to_excel(writer, index=False)
+    frame.to_excel(writer, index=False)
     writer.close()
     output.seek(0)
-    return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
+    return flask.send_file(output, attachment_filename=new_datafile_name, as_attachment=True)
 
-@export.route('/download_output', methods=['GET', 'POST', 'OPTIONS'])
+@EXPORT.route('/download_output', methods=['GET', 'POST', 'OPTIONS'])
 def download_output():
-    form  = request.form.to_dict()
+    form = request.form.to_dict()
     datafile_name = form.get('dataFileName')
     csv_headers = json.loads(form.get('csvHeaders'))
     project_info = json.loads(form.get('projectInfo'))
@@ -127,14 +116,13 @@ def download_output():
 
     records = {}
     for sheet in json_data:
-        df = pd.DataFrame(json_data[sheet])
-        df.replace('nan', '', inplace=True)
-        df = df[csv_headers[sheet]]
-        records[sheet] = df
+        frame = pd.DataFrame(json_data[sheet])
+        frame.replace('nan', '', inplace=True)
+        frame = frame[csv_headers[sheet]]
+        records[sheet] = frame
 
     output_records = linter.encode_datafile(dd, records, project_info)
 
-    # TODO Merge the different sheets
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     for sheet, form in output_records.items():
@@ -143,4 +131,4 @@ def download_output():
         form.to_excel(writer, sheet_name=sheet, index=False)
     writer.close()
     output.seek(0)
-    return flask.send_file(output,attachment_filename=new_datafile_name,as_attachment=True)
+    return flask.send_file(output, attachment_filename=new_datafile_name, as_attachment=True)

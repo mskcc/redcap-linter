@@ -1,11 +1,10 @@
 import logging
 import re
-import numbers
-
-from models.redcap_field import RedcapField
 
 import pandas as pd
 from dateutil import parser
+
+from models.redcap_field import RedcapField
 
 def write_errors_to_excel(original_records, errors, error_cols):
     writer = pd.ExcelWriter('datafile_errors.xlsx', engine='xlsxwriter')
@@ -24,7 +23,7 @@ def write_errors_to_excel(original_records, errors, error_cols):
             if error_cols.get(instrument) is not None and col in error_cols.get(instrument):
                 data_worksheet.write(0, j, df.columns[j], missing_column_format)
                 continue
-            for index, row in instrument_errors.iterrows():
+            for index, _ in instrument_errors.iterrows():
                 error_cell = instrument_errors.iloc[index][col]
                 if error_cell is None:
                     data_worksheet.write(index + 1, j, '', empty_format)
@@ -37,9 +36,9 @@ def write_errors_to_excel(original_records, errors, error_cols):
 
 def validate_numbers(numbers_list, number_format, number_min, number_max, required):
     formatted_numbers = []
-    if number_min and (isinstance(number_min, str) or isinstance(number_min, unicode)):
+    if number_min and isinstance(number_min, str):
         number_min = float(number_min)
-    if number_max and (isinstance(number_max, str) or isinstance(number_max, unicode)):
+    if number_max and isinstance(number_max, str):
         number_max = float(number_max)
     for d in numbers_list:
         if not d or pd.isnull(d):
@@ -76,9 +75,9 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
 def validate_dates(date_list, date_format, date_min, date_max, required):
     formatted_dates = []
 
-    if date_min and (isinstance(date_min, str) or isinstance(date_min, unicode)):
+    if date_min and isinstance(date_min, str):
         date_min = parser.parse(date_min)
-    if date_max and (isinstance(date_max, str) or isinstance(date_max, unicode)):
+    if date_max and isinstance(date_max, str):
         date_max = parser.parse(date_max)
 
     if date_min:
@@ -92,7 +91,7 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
             else:
                 formatted_dates.append(None)
             continue
-        if isinstance(d, str) or isinstance(d, unicode):
+        if isinstance(d, str):
             d = parser.parse(d)
         d = d.replace(tzinfo=None)
         if ((date_min and d < date_min) or (date_max and d > date_max)):
@@ -114,7 +113,7 @@ def format_dates(date_list, date_format):
         if not d or pd.isnull(d):
             formatted_dates.append(None)
             continue
-        if isinstance(d, str) or isinstance(d, unicode):
+        if isinstance(d, str):
             d = parser.parse(d)
         try:
             if date_format == 'date_mdy':
@@ -209,7 +208,6 @@ def read_spreadsheet(filename, **kwargs):
         records = pd.read_csv(filename, dtype=str)
         records.fillna('', inplace=True)
     elif filename.endswith('.xlsx') or filename.endswith('.xls'):
-        excel = pd.ExcelFile(filename)
         records = pd.read_excel(filename, sheet_name=None, dtype=str)
         for key in records:
             records.get(key).replace('nan', '', inplace=True)

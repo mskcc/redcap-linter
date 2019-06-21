@@ -1,11 +1,15 @@
-import requests
-import yaml
+"""This module provides an interface to the REDCap api."""
 import json
 import logging
+
+import requests
+import yaml
+
 from definitions import ROOT_DIR
 
 
-class RedcapApi(object):
+class RedcapApi():
+    """This class is an interface to the REDCap api."""
     def __init__(self, env, **kwargs):
         output_format = kwargs.get("format")
         if output_format is not None and output_format in ["csv", "json"]:
@@ -26,8 +30,8 @@ class RedcapApi(object):
         r = requests.post(self.base_url, data=payload)
         if r.status_code != 200:
             raise Exception(
-                "Failed to retrieve data dictionary. REDCap responded with status code {0}".format(
-                    r.status_code
+                "REDCap responded with status code {0}: {1}".format(
+                    r.status_code, r.text
                 )
             )
         return r.json()
@@ -40,11 +44,10 @@ class RedcapApi(object):
             "returnFormat": self.format,
         }
         r = requests.post(self.base_url, data=payload)
-        logging.warning(r.text)
         if r.status_code != 200:
             raise Exception(
-                "Failed to retrieve repeatable instruments. REDCap responded with status code {0}".format(
-                    r.status_code
+                "REDCap responded with status code {0}: {1}".format(
+                    r.status_code, r.text
                 )
             )
         return r.json()
@@ -59,14 +62,13 @@ class RedcapApi(object):
         r = requests.post(self.base_url, data=payload)
         if r.status_code != 200:
             raise Exception(
-                "Failed to retrieve project info. REDCap responded with status code {0}".format(
-                    r.status_code
+                "REDCap responded with status code {0}: {1}".format(
+                    r.status_code, r.text
                 )
             )
         return r.json()
 
     def import_records(self, token, records):
-        logging.warning(records)
         payload = {
             "token": token,
             "content": "record",
@@ -89,7 +91,7 @@ class RedcapApi(object):
         return r.json()
 
     # filterLogic
-    def export_records(self, token, options = {}):
+    def export_records(self, token, options={}):
         payload = {
             "token": token,
             "content": "record",
@@ -132,8 +134,8 @@ class RedcapApi(object):
         r = requests.post(self.base_url, data=payload)
         if r.status_code != 200:
             raise Exception(
-                "Failed to generate next record name. REDCap responded with status code {0}".format(
-                    r.status_code
+                "REDCap responded with status code {0}: {1}".format(
+                    r.status_code, r.text
                 )
             )
         return r.json()

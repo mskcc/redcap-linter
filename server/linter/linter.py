@@ -1,16 +1,9 @@
-import pandas as pd
-import logging
-import datetime
-import os
-import numbers
-from models.redcap_field import RedcapField
-from api.redcap.redcap_api import RedcapApi
-from utils import utils
-import flask
-from serializers import serializer
+"""This module scans the datafile to find cells that violate the data dictionary"""
 
-app = flask.Flask(__name__)
-app.logger.setLevel(logging.INFO)
+import pandas as pd
+
+from utils import utils
+from serializers import serializer
 
 def lint_sheet(data_dictionary, project_info, records):
     instrument_errors = pd.DataFrame().reindex_like(records)
@@ -18,8 +11,6 @@ def lint_sheet(data_dictionary, project_info, records):
 
     all_errors = []
     rows_in_error = []
-
-    total_error_count = 0
 
     recordid_field = utils.get_recordid_field(data_dictionary, project_info)
 
@@ -58,24 +49,18 @@ def lint_sheet(data_dictionary, project_info, records):
                 errors = []
                 for idx, item in enumerate(current_list):
                     if not item:
-                        has_error = None
-                        if redcap_field.required:
-                            has_error = True
+                        has_error = True if redcap_field.required else None
                         errors.append(has_error)
                     else:
-                        if is_encoded:
-                            errors.append(False)
-                        else:
-                            errors.append(item not in choices_dict)
+                        has_error = False if is_encoded else (item not in choices_dict)
+                        errors.append(has_error)
                 instrument_errors[redcap_field.field_name] = errors
             elif redcap_field.field_type in ['checkbox']:
                 current_list = [str(item) for item in current_list]
                 errors = []
                 for idx, item in enumerate(current_list):
                     if not item:
-                        has_error = None
-                        if redcap_field.required:
-                            has_error = True
+                        has_error = True if redcap_field.required else None
                         errors.append(has_error)
                     else:
                         permissible_values = [str(i).lower() for i in redcap_field.choices_dict.keys()]
@@ -92,15 +77,10 @@ def lint_sheet(data_dictionary, project_info, records):
             else:
                 raise Exception('Unrecognized field_type: {0}'.format(redcap_field.field_type))
 
-            total_error_count += len([d for d in instrument_errors[redcap_field.field_name] if d is True])
-
-    instrument_errors = instrument_errors if total_error_count > 0 else None
-
     rows_in_error = list(set(rows_in_error))
     rows_in_error.sort()
 
     output_records = serializer.encode_sheet(data_dictionary, project_info, records, rows_in_error)
-    # logging.warning(rows_in_error)
 
     return {
         'encoded_records': output_records,
@@ -137,12 +117,9 @@ def lint_datafile(data_dictionary, records, project_info):
             results = lint_sheet(data_dictionary, project_info, sheet)
             all_errors += results['all_errors']
             encoded_records[sheet_name] = results['encoded_records']
-
-            if len(results['rows_in_error']) > 0:
+            cells_with_errors[sheet_name] = results['instrument_errors']
+            if results['rows_in_error']:
                 rows_in_error[sheet_name] = results['rows_in_error']
-            errors = results['instrument_errors']
-            if errors is not None:
-                cells_with_errors[sheet_name] = errors
 
     return {
         'encoded_records': encoded_records,

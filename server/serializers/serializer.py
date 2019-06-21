@@ -1,6 +1,6 @@
 import pandas as pd
+
 from utils import utils
-import logging
 
 def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
     encoded_fields = {}
@@ -97,14 +97,10 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
     return output_records
 
 def decode_sheet(data_dictionary, project_info, records):
-    # TODO implement this
-    # if project_info['repeatable_instruments']:
-    #     data_dictionary = [field for field in data_dictionary if field.form_name not in project_info['repeatable_instruments']]
     decoded_rows = []
 
     for record in records:
         decoded_row = {}
-        dd_fields = [field.field_name for field in data_dictionary]
         for field in data_dictionary:
             if field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
                 choices_dict = {v: k for k, v in field.choices_dict.items()}
