@@ -42,10 +42,8 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
         number_max = float(number_max)
     for d in numbers_list:
         if not d or pd.isnull(d):
-            if required:
-                formatted_numbers.append(False)
-            else:
-                formatted_numbers.append(None)
+            is_valid = False if required else None
+            formatted_numbers.append(is_valid)
             continue
         try:
             d = float(d)
@@ -86,10 +84,8 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
         date_max = date_max.replace(tzinfo=None)
     for d in date_list:
         if not d or pd.isnull(d):
-            if required:
-                formatted_dates.append(False)
-            else:
-                formatted_dates.append(None)
+            is_valid = False if required else None
+            formatted_dates.append(is_valid)
             continue
         if isinstance(d, str):
             d = parser.parse(d)
@@ -139,7 +135,7 @@ def get_columns_with_errors(cells_with_errors, records):
             has_error = True in list(cells_with_errors[sheet_name][f])
             if has_error:
                 sheet_columns_in_error.append(f)
-        if len(sheet_columns_in_error) > 0:
+        if sheet_columns_in_error:
             columns_in_error[sheet_name] = sheet_columns_in_error
     return columns_in_error
 
@@ -153,12 +149,10 @@ def get_matching_fields(data_dictionary, records, recordid_field):
         grouped_data_dictionary[form] = [field for field in data_dictionary if field.form_name == form or field.field_name == recordid_field.field_name]
 
     matching_fields = {}
-    matching_field_names = []
     for form_name in grouped_data_dictionary:
         form_fields = [f for f in grouped_data_dictionary[form_name] if f.field_name in records.columns]
-        if len(form_fields) > 0:
+        if form_fields:
             matching_fields[form_name] = form_fields
-            matching_field_names += [f.field_name for f in matching_fields[form_name]]
     return matching_fields
 
 def validate_text_type(list_to_validate, redcap_field):

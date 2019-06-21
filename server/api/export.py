@@ -20,7 +20,7 @@ def download_progress():
     datafile_name = form.get('dataFileName')
     data_field_to_redcap_field_map = json.loads(form.get('dataFieldToRedcapFieldMap'))
     csv_headers = json.loads(form.get('csvHeaders'))
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
     cells_with_errors = json.loads(form.get('cellsWithErrors'))
     record_fields_not_in_redcap = json.loads(form.get('recordFieldsNotInRedcap'))
 
@@ -36,7 +36,7 @@ def download_progress():
     empty_format = writer.book.add_format({'bg_color': '#FFE300'}) # Yellow
     missing_column_format = writer.book.add_format({'bg_color': '#E5153E'}) # Red
     for sheet in json_data:
-        matched_field_dict = data_field_to_redcap_field_map.get(sheet) or {}
+        matched_field_dict = data_field_to_redcap_field_map.get(sheet, {})
         csv_headers[sheet] = [matched_field_dict.get(c) or c for c in csv_headers[sheet]]
         error_df = pd.DataFrame(cells_with_errors[sheet])
         frame = pd.DataFrame(json_data[sheet])
@@ -47,17 +47,15 @@ def download_progress():
         error_df = error_df[csv_headers[sheet]]
         frame.to_excel(writer, sheet_name=sheet, index=False)
 
-        instrument_fields_not_in_redcap = record_fields_not_in_redcap[sheet]
-
         data_worksheet = writer.sheets[sheet]
         for j, col in enumerate(error_df.columns):
-            if instrument_fields_not_in_redcap is not None and col in instrument_fields_not_in_redcap:
+            if col in record_fields_not_in_redcap.get(sheet, []):
                 data_worksheet.write(0, j, frame.columns[j], missing_column_format)
                 continue
             for index, _ in error_df.iterrows():
                 error_cell = error_df.iloc[index][col]
                 required = False
-                dd_field = [f for f in dd if f.field_name == col]
+                dd_field = [f for f in data_dictionary if f.field_name == col]
                 if dd_field:
                     required = dd_field[0].required
                 if error_cell is None and required:
@@ -108,7 +106,7 @@ def download_output():
     csv_headers = json.loads(form.get('csvHeaders'))
     project_info = json.loads(form.get('projectInfo'))
     malformed_sheets = json.loads(form.get('malformedSheets') or '""')
-    dd = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Encoded.xlsx'
@@ -121,7 +119,7 @@ def download_output():
         frame = frame[csv_headers[sheet]]
         records[sheet] = frame
 
-    output_records = linter.encode_datafile(dd, records, project_info)
+    output_records = linter.encode_datafile(data_dictionary, records, project_info)
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')

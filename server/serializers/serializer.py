@@ -35,29 +35,9 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
             else:
                 repeat_instance_dict[row[recordid_field.field_name]] += 1
             for form_name in matching_fields:
-                encoded_repeatable_row = {}
-                row_to_encode = encoded_row
+                encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
                 if form_name in project_info.get('repeatable_instruments'):
-                    row_to_encode = encoded_repeatable_row
-                for matching_field in matching_fields[form_name]:
-                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
-                        if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
-                            row_to_encode[matching_field.field_name] = row[matching_field.field_name]
-                        else:
-                            choice_match = row[matching_field.field_name]
-                            choice_match = str(int(choice_match)) if isinstance(choice_match, float) and choice_match.is_integer() else str(choice_match)
-                            row_to_encode[matching_field.field_name] = matching_field.choices_dict.get(choice_match)
-                    elif matching_field.field_type in ['checkbox']:
-                        permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
-                        checkbox_items = [i.strip().lower() for i in row[matching_field.field_name].split(',')]
-                        for permissible_value in permissible_values:
-                            if permissible_value in checkbox_items:
-                                row_to_encode['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 1
-                            else:
-                                row_to_encode['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 0
-                    else:
-                        row_to_encode[matching_field.field_name] = row[matching_field.field_name]
-                if form_name in project_info.get('repeatable_instruments'):
+                    row_to_encode = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name])
                     row_to_encode['redcap_repeat_instrument'] = form_name
                     row_to_encode['redcap_repeat_instance'] = repeat_instance_dict.get(row[recordid_field.field_name])
                     output_records = output_records.append(row_to_encode, ignore_index=True)
@@ -73,24 +53,7 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
                 # Cannot do repeatable instruments if autonumbered for now
                 if form_name in project_info.get('repeatable_instruments'):
                     continue
-                for matching_field in matching_fields[form_name]:
-                    if matching_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
-                        if encoded_fields[form_name] and matching_field.field_name in encoded_fields[form_name]:
-                            encoded_row[matching_field.field_name] = row[matching_field.field_name]
-                        else:
-                            choice_match = row[matching_field.field_name]
-                            choice_match = str(int(choice_match)) if isinstance(choice_match, float) and choice_match.is_integer() else str(choice_match)
-                            encoded_row[matching_field.field_name] = matching_field.choices_dict.get(choice_match)
-                    elif matching_field.field_type in ['checkbox']:
-                        permissible_values = [str(i).lower() for i in matching_field.choices_dict.keys()]
-                        checkbox_items = [i.strip().lower() for i in row[matching_field.field_name].split(',')]
-                        for permissible_value in permissible_values:
-                            if permissible_value in checkbox_items:
-                                encoded_row['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 1
-                            else:
-                                encoded_row['{0}___{1}'.format(matching_field.field_name, permissible_value)] = 0
-                    else:
-                        encoded_row[matching_field.field_name] = row[matching_field.field_name]
+                encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
             output_records = output_records.append(encoded_row, ignore_index=True)
             record_inst += 1
 
@@ -118,3 +81,24 @@ def decode_sheet(data_dictionary, project_info, records):
         decoded_row['redcap_repeat_instance'] = record['redcap_repeat_instance']
         decoded_rows.append(decoded_row)
     return decoded_rows
+
+def encode_row(row, dd_fields, encoded_fields=[], encoded_row={}):
+    for field in dd_fields:
+        if field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
+            if field.field_name in encoded_fields:
+                encoded_row[field.field_name] = row[field.field_name]
+            else:
+                choice_match = row[field.field_name]
+                choice_match = str(int(choice_match)) if isinstance(choice_match, float) and choice_match.is_integer() else str(choice_match)
+                encoded_row[field.field_name] = field.choices_dict.get(choice_match)
+        elif field.field_type in ['checkbox']:
+            permissible_values = [str(i).lower() for i in field.choices_dict.keys()]
+            checkbox_items = [i.strip().lower() for i in row[field.field_name].split(',')]
+            for permissible_value in permissible_values:
+                if permissible_value in checkbox_items:
+                    encoded_row['{0}___{1}'.format(field.field_name, permissible_value)] = 1
+                else:
+                    encoded_row['{0}___{1}'.format(field.field_name, permissible_value)] = 0
+        else:
+            encoded_row[field.field_name] = row[field.field_name]
+        return encoded_row
