@@ -101,11 +101,7 @@ class RecordMerger extends Component {
     const matchingHeaders = Object.values(dataFieldToRedcapFieldMap[workingSheetName]);
     const tableData = matchingHeaders.reduce((filtered, field) => {
       if (!rowMergeMap[field]) {
-        if (
-          String(row[field]) !== String(existingRecord[field])
-          && row[field]
-          && existingRecord[field]
-        ) {
+        if (String(row[field]) !== String(existingRecord[field]) && existingRecord[field]) {
           filtered.push({
             Field: field,
             'Value in Datafile': row[field] || '',

@@ -76,10 +76,9 @@ def save_fields():
             options = {'records': record_ids}
             existing_records = redcap_api.export_records(token, options)
 
-    datafile_errors = linter.lint_datafile(dd, records, project_info)
+    datafile_errors = linter.lint_datafile(dd, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
-    encoded_records = datafile_errors['encoded_records']
 
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
@@ -92,11 +91,6 @@ def save_fields():
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
-
-    for sheet_name in encoded_records:
-        if malformed_sheets and sheet_name in malformed_sheets:
-            continue
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     records_to_reconcile = {}
     if existing_records:
@@ -117,8 +111,15 @@ def save_fields():
                     # Excel reads this in as a float :/
                     recordid = str(int(row[recordid_field]))
                 if records_to_reconcile.get(recordid):
-                    decoded_rows = serializer.decode_sheet(dd, project_info, records_to_reconcile.get(recordid))
+                    decoded_rows = serializer.decode_sheet(dd, records_to_reconcile.get(recordid))
                     decoded_records[recordid] = decoded_rows
+
+    encoded_records = serializer.encode_datafile(dd, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records})
+
+    for sheet_name in encoded_records:
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':                   json_data,
@@ -319,10 +320,9 @@ def post_form():
     unmatched_redcap_fields = [f for f in all_field_names if f not in matched_redcap_fields and f != 'record_id']
     for f1 in all_field_names:
         dd_field = [f for f in dd_data if f['field_name'] == f1][0]
+        redcap_field_candidates[f1] = []
         for sheet in csv_headers:
             for f2 in csv_headers[sheet]:
-                if not redcap_field_candidates.get(f1):
-                    redcap_field_candidates[f1] = []
                 redcap_field_candidates[f1].append({
                     'candidate': f2,
                     'sheets': [sheet],
@@ -343,7 +343,6 @@ def post_form():
                 })
 
     malformed_sheets = []
-    all_errors = []
 
     form_names = [redcap_field.form_name for redcap_field in dd]
     form_names = list(set(form_names))
@@ -355,15 +354,6 @@ def post_form():
         matching_fields = [f for f in sheet.columns if f in redcap_field_names]
         if not matching_fields and not data_field_to_redcap_field_map.get(sheet_name):
             malformed_sheets.append(sheet_name)
-
-        redcap_fields_not_in_data = [f for f in redcap_field_names if f not in sheet.columns]
-
-        sheet_fields_not_in_redcap = [f for f in sheet.columns if f not in redcap_field_names]
-
-        if sheet_fields_not_in_redcap:
-            all_errors.append("Fields in Instrument {0} not present in REDCap: {1}".format(sheet_name, str(sheet_fields_not_in_redcap)))
-        if redcap_fields_not_in_data:
-            all_errors.append("Fields in REDCap not present in Instrument {0}: {1}".format(sheet_name, str(redcap_fields_not_in_data)))
 
     json_data = {}
 

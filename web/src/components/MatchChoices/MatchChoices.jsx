@@ -55,6 +55,7 @@ class MatchChoices extends Component {
       projectInfo,
       ddData,
       csvHeaders,
+      decodedRecords,
       columnsInError,
       rowsInError,
       resolveColumn,
@@ -66,6 +67,7 @@ class MatchChoices extends Component {
       workingColumn,
       workingSheetName,
       malformedSheets,
+      decodedRecords,
       columnsInError,
       rowsInError,
       ddData,
@@ -164,6 +166,7 @@ class MatchChoices extends Component {
 MatchChoices.propTypes = {
   fieldErrors: PropTypes.objectOf(PropTypes.any),
   dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
+  decodedRecords: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
@@ -178,6 +181,7 @@ MatchChoices.propTypes = {
 MatchChoices.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
+  decodedRecords: {},
   ddData: [],
   jsonData: [],
   projectInfo: {},

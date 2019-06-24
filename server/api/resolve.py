@@ -1,5 +1,6 @@
 import json
 import numbers
+import logging
 from collections import OrderedDict
 import flask
 from flask import request, Blueprint
@@ -7,6 +8,7 @@ import pandas as pd
 from fuzzywuzzy import fuzz
 from models.redcap_field import RedcapField
 from linter import linter
+from serializers import serializer
 from utils import utils
 
 RESOLVE = Blueprint('resolve', __name__)
@@ -21,6 +23,7 @@ def resolve_column():
     working_column = json.loads(form.get('workingColumn') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
     malformed_sheets = json.loads(form.get('malformedSheets') or '""')
+    decoded_records = json.loads(form.get('decodedRecords'))
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
@@ -77,10 +80,10 @@ def resolve_column():
     if next_column:
         field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
 
-    datafile_errors = linter.lint_datafile(data_dictionary, records, project_info)
+    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
-    encoded_records = datafile_errors['encoded_records']
+    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records})
 
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
@@ -126,6 +129,7 @@ def resolve_row():
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
     malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     field_to_value_map = json.loads(form.get('fieldToValueMap'))
+    decoded_records = json.loads(form.get('decodedRecords'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
     data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
@@ -179,10 +183,10 @@ def resolve_row():
     if next_column:
         field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
 
-    datafile_errors = linter.lint_datafile(data_dictionary, records, project_info)
+    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
-    encoded_records = datafile_errors['encoded_records']
+    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records})
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -220,12 +224,13 @@ def resolve_merge_row():
     form = request.form.to_dict()
     csv_headers = json.loads(form.get('csvHeaders'))
     # Working column is the column being saved
-    action = json.loads(form.get('action') or '""')
-    next_merge_row = json.loads(form.get('nextMergeRow') or '""')
-    next_sheet_name = json.loads(form.get('nextSheetName') or '""')
-    working_merge_row = json.loads(form.get('workingMergeRow') or '""')
-    working_sheet_name = json.loads(form.get('workingSheetName') or '""')
-    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
+    action = json.loads(form.get('action', '""'))
+    next_merge_row = json.loads(form.get('nextMergeRow', '-1'))
+    next_sheet_name = json.loads(form.get('nextSheetName', '""'))
+    working_merge_row = json.loads(form.get('workingMergeRow', '-1'))
+    working_sheet_name = json.loads(form.get('workingSheetName', '""'))
+    malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
+    decoded_records = json.loads(form.get('decodedRecords'))
     merge_map = json.loads(form.get('mergeMap'))
     merge_conflicts = json.loads(form.get('mergeConflicts'))
     project_info = json.loads(form.get('projectInfo'))
@@ -272,9 +277,11 @@ def resolve_merge_row():
         merge_map[working_sheet_name][str(working_merge_row)]['matching_repeat_instances'] = merge_conflicts[working_sheet_name][str(working_merge_row)]['matching_repeat_instances']
         del merge_conflicts[working_sheet_name][str(working_merge_row)]
 
-    datafile_errors = linter.lint_datafile(data_dictionary, records, project_info)
+    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
-    encoded_records = datafile_errors['encoded_records']
+    rows_in_error = datafile_errors['rows_in_error']
+
+    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records, 'merge_map': merge_map})
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -341,28 +348,44 @@ def calculate_merge_conflicts():
                 recordid = str(recordid)
                 record_to_merge = {}
                 if decoded_records.get(recordid):
-                    flat_record = [r for r in decoded_records.get(recordid) if not r['redcap_repeat_instance']][0]
-                    record_to_merge = flat_record
+                    flat_record = [r for r in decoded_records.get(recordid) if not r['redcap_repeat_instance']]
+                    if flat_record:
+                        record_to_merge = flat_record[0].copy()
                     record_to_merge['matching_repeat_instances'] = {}
                     for instrument in project_info['repeatable_instruments']:
                         instrument_fields = [d for d in dd_data if d['form_name'] == instrument]
                         primary_key = reconciliation_columns.get(instrument)
                         matching_record = None
                         for r in decoded_records.get(recordid):
+                            if r['redcap_repeat_instrument'] != instrument:
+                                continue
                             is_matching = True
+                            # TODO Make sure dates are formatted the same way
                             for key in primary_key:
                                 if record.get(key) != r.get(key):
                                     is_matching = False
                                     break
                             if is_matching:
                                 matching_record = r
-                        for field in instrument_fields:
-                            record_to_merge[field['field_name']] = matching_record[field['field_name']]
-                        record_to_merge['matching_repeat_instances'][instrument] = matching_record['redcap_repeat_instance']
-                    merge_conflicts[sheet_name][index] = record_to_merge
-                    if next_sheet_name is None:
-                        next_sheet_name = sheet_name
-                        next_merge_row = index
+                        if matching_record:
+                            for field in instrument_fields:
+                                record_to_merge[field['field_name']] = matching_record[field['field_name']]
+                            record_to_merge['matching_repeat_instances'][instrument] = matching_record['redcap_repeat_instance']
+                    exact_match = True
+                    for dd_field in dd_data:
+                        if record_to_merge[dd_field['field_name']] and str(record.get(dd_field['field_name'])) != record_to_merge[dd_field['field_name']]:
+                            # logging.warning(record.get(recordid_field))
+                            # logging.warning(dd_field['field_name'])
+                            # logging.warning("Datafile: " + str(record.get(dd_field['field_name'])))
+                            # logging.warning("Existing: " + record_to_merge[dd_field['field_name']])
+                            exact_match = False
+                    if not exact_match:
+                        logging.warning(index)
+                        logging.warning(record_to_merge)
+                        merge_conflicts[sheet_name][index] = record_to_merge
+                        if next_sheet_name is None:
+                            next_sheet_name = sheet_name
+                            next_merge_row = index
 
     results = {
         'mergeConflicts': merge_conflicts,

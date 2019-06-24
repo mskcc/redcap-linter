@@ -213,7 +213,7 @@ export function saveFields(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('dateColumns', JSON.stringify(payload.dateColumns));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
+    data.append('action', JSON.stringify(payload.action || ''));
     let nextPage = {};
     if (payload.action === 'continue') {
       nextPage = { page: 'lint' };

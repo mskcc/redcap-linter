@@ -143,7 +143,7 @@ class TextValidation extends Component {
 
 TextValidation.propTypes = {
   ddData: PropTypes.arrayOf(PropTypes.object),
-  jsonData: PropTypes.arrayOf(PropTypes.object),
+  jsonData: PropTypes.objectOf(PropTypes.array),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   csvHeaders: PropTypes.objectOf(PropTypes.array),

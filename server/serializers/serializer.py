@@ -1,13 +1,35 @@
+from dateutil.parser import parse
+import logging
+
 import pandas as pd
 
 from utils import utils
 
-def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
+def encode_datafile(data_dictionary, project_info, records, options={}):
+    encoded_records = {}
+
+    for sheet_name, sheet in records.items():
+        if sheet is not None:
+            sheet_options = {
+                'rows_in_error': options.get('rows_in_error', {}).get(sheet_name, []),
+                'merge_map': options.get('merge_map', {}).get(sheet_name, {}),
+                'decoded_records': options.get('decoded_records', {}),
+            }
+
+            encoded_records[sheet_name] = encode_sheet(data_dictionary, project_info, sheet, sheet_options)
+
+    return encoded_records
+
+def encode_sheet(data_dictionary, project_info, records, options={}):
     encoded_fields = {}
 
     recordid_field = utils.get_recordid_field(data_dictionary, project_info)
 
     matching_fields = utils.get_matching_fields(data_dictionary, records, recordid_field)
+
+    rows_in_error = options.get('rows_in_error', [])
+    merge_map = options.get('merge_map', {})
+    decoded_records = options.get('decoded_records', {})
 
     for form_name in matching_fields:
         encoded_fields[form_name] = []
@@ -24,23 +46,34 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
     output_records.insert(1, 'redcap_repeat_instrument', None)
     output_records.insert(2, 'redcap_repeat_instance', None)
 
+    # Counts repeats of recordid in the datafile
     repeat_instance_dict = {}
     if recordid_field.field_name in list(records.columns):
         for index, row in records.iterrows():
             encoded_row = {}
             if int(index) in rows_in_error:
                 continue
+            # TODO need a way to get the max instance number per repeatable instrument
             if not repeat_instance_dict.get(row[recordid_field.field_name]):
                 repeat_instance_dict[row[recordid_field.field_name]] = 1
             else:
                 repeat_instance_dict[row[recordid_field.field_name]] += 1
             for form_name in matching_fields:
-                encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
                 if form_name in project_info.get('repeatable_instruments'):
-                    row_to_encode = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name])
+                    row_to_encode = {}
+                    row_to_encode = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=row_to_encode)
                     row_to_encode['redcap_repeat_instrument'] = form_name
-                    row_to_encode['redcap_repeat_instance'] = repeat_instance_dict.get(row[recordid_field.field_name])
+                    max_instance_number = 0
+                    for decoded_record in decoded_records.get(str(row.get(recordid_field.field_name)), []):
+                        if decoded_record['redcap_repeat_instrument'] == form_name and int(decoded_record['redcap_repeat_instance']) > max_instance_number:
+                            max_instance_number = int(decoded_record['redcap_repeat_instance'])
+                    repeat_instance = max_instance_number + repeat_instance_dict.get(row[recordid_field.field_name])
+                    if merge_map.get(str(index)) and merge_map.get(str(index)).get('matching_repeat_instances', {}).get(form_name):
+                        repeat_instance = merge_map.get(str(index)).get('matching_repeat_instances', {}).get(form_name)
+                    row_to_encode['redcap_repeat_instance'] = repeat_instance
                     output_records = output_records.append(row_to_encode, ignore_index=True)
+                else:
+                    encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
             output_records = output_records.append(encoded_row, ignore_index=True)
 
     if project_info.get('record_autonumbering_enabled') == 1:
@@ -59,7 +92,7 @@ def encode_sheet(data_dictionary, project_info, records, rows_in_error=[]):
 
     return output_records
 
-def decode_sheet(data_dictionary, project_info, records):
+def decode_sheet(data_dictionary, records):
     decoded_rows = []
 
     for record in records:
@@ -76,7 +109,15 @@ def decode_sheet(data_dictionary, project_info, records):
                         selected_choices.append(item)
                 decoded_row[field.field_name] = ','.join(selected_choices)
             else:
-                decoded_row[field.field_name] = record[field.field_name]
+                if record[field.field_name] and field.text_validation in ['date_dmy', 'date_mdy', 'date_ymd']:
+                    decoded_value = record[field.field_name]
+                    try:
+                        decoded_value = parse(record[field.field_name]).strftime('%m/%d/%Y')
+                    except:
+                        logging.warning(decoded_value)
+                    decoded_row[field.field_name] = decoded_value
+                else:
+                    decoded_row[field.field_name] = record[field.field_name]
         decoded_row['redcap_repeat_instrument'] = record['redcap_repeat_instrument']
         decoded_row['redcap_repeat_instance'] = record['redcap_repeat_instance']
         decoded_rows.append(decoded_row)
@@ -101,4 +142,4 @@ def encode_row(row, dd_fields, encoded_fields=[], encoded_row={}):
                     encoded_row['{0}___{1}'.format(field.field_name, permissible_value)] = 0
         else:
             encoded_row[field.field_name] = row[field.field_name]
-        return encoded_row
+    return encoded_row

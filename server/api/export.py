@@ -11,6 +11,7 @@ import pandas as pd
 
 from models.redcap_field import RedcapField
 from linter import linter
+from serializers import serializer
 
 EXPORT = Blueprint('export', __name__)
 
@@ -119,7 +120,7 @@ def download_output():
         frame = frame[csv_headers[sheet]]
         records[sheet] = frame
 
-    output_records = linter.encode_datafile(data_dictionary, records, project_info)
+    output_records = serializer.encode_datafile(data_dictionary, project_info, records)
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')

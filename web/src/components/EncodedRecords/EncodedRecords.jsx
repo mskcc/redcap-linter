@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Tabs } from 'antd';
-import { Tab } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import Datatable from '../Datatable/Datatable';
 import './EncodedRecords.scss';
@@ -13,17 +12,12 @@ const { TabPane } = Tabs;
 class EncodedRecords extends Component {
   constructor(props) {
     super(props);
-    this.state = { };
+    this.state = {};
   }
 
   render() {
     const {
-      encodedRecords,
-      formNameToDdFields,
-      ddData,
-      projectInfo,
-      recordidField,
-      importErrors,
+      encodedRecords, ddData, recordidField, importErrors,
     } = this.props;
 
     const tabProps = {
@@ -33,10 +27,8 @@ class EncodedRecords extends Component {
 
     const sheets = Object.keys(encodedRecords);
     const panes = [];
-    if (sheets && sheets.length > 0) {
-      for (let i = 0; i < sheets.length; i++) {
-        const sheetName = sheets[i];
-
+    if (sheets.length > 0) {
+      sheets.forEach((sheetName) => {
         const tData = encodedRecords[sheetName];
 
         const ddFields = [];
@@ -55,7 +47,6 @@ class EncodedRecords extends Component {
             }
           });
 
-          // Change this later to account for repeatable instruments, this prepends with recordid field
           encodedHeaders.forEach((header) => {
             if (!ddFields.includes(header) && header !== recordidField) {
               headers.unshift(header);
@@ -67,72 +58,66 @@ class EncodedRecords extends Component {
 
         panes.push(
           <TabPane tab={sheetName} key={panes.length.toString()}>
-            <Datatable
-              sheetName={`${sheetName}`}
-              headers={headers}
-              tableData={tData}
-            />
-          </TabPane>
+            <Datatable sheetName={`${sheetName}`} headers={headers} tableData={tData} />
+          </TabPane>,
         );
-      }
+      });
 
       const importErrs = [];
 
       let hasError = false;
       Object.keys(importErrors).forEach((sheet) => {
-        if (importErrors[sheet]['error']) {
+        if (importErrors[sheet].error) {
           hasError = true;
         }
       });
 
       if (hasError) {
         Object.keys(importErrors).forEach((sheet) => {
-          if (importErrors[sheet]['error']) {
-            importErrors[sheet]['error'].split('\n').forEach((err) => {
-              importErrs.push({ sheet: sheet, error: err });
+          if (importErrors[sheet].error) {
+            importErrors[sheet].error.split('\n').forEach((err) => {
+              importErrs.push({ sheet, error: err });
             });
           }
         });
 
-
         panes.push(
-          <TabPane tab={<span className="EncodedRecords-errorTab">Import Errors</span>} key={panes.length.toString()}>
+          <TabPane
+            tab={<span className="EncodedRecords-errorTab">Import Errors</span>}
+            key={panes.length.toString()}
+          >
             <Datatable
-              sheetName={'Import Errors'}
+              sheetName="Import Errors"
               sheetInError
               headers={['sheet', 'error']}
               tableData={importErrs}
             />
-          </TabPane>
+          </TabPane>,
         );
       }
     } else {
       panes.push(
         <TabPane tab="Sheet1" key={panes.length.toString()}>
           <Datatable headers={[]} tableData={[]} />
-        </TabPane>
+        </TabPane>,
       );
     }
 
-    return <Tabs {...tabProps}>{ panes }</Tabs>;
+    return <Tabs {...tabProps}>{panes}</Tabs>;
   }
 }
 
 EncodedRecords.propTypes = {
-  encodedRecords: PropTypes.object,
-  encodedRecordsHeaders: PropTypes.object,
-  formNameToDdFields: PropTypes.object,
-  projectInfo: PropTypes.object,
-  ddData: PropTypes.array,
+  encodedRecords: PropTypes.objectOf(PropTypes.array),
+  encodedRecordsHeaders: PropTypes.objectOf(PropTypes.array),
+  ddData: PropTypes.arrayOf(PropTypes.object),
   recordidField: PropTypes.string,
-  importErrors: PropTypes.object,
+  importErrors: PropTypes.objectOf(PropTypes.object),
 };
 
 EncodedRecords.defaultProps = {
   encodedRecords: {},
   encodedRecordsHeaders: {},
-  formNameToDdFields: {},
-  projectInfo: {},
   ddData: [],
   recordidField: '',
   importErrors: {},
@@ -146,4 +131,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ postForm }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(EncodedRecords);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(EncodedRecords);
