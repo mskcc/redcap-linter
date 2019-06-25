@@ -14,7 +14,7 @@ class MergeRecords extends Component {
     this.state = {};
   }
 
-  saveChanges() {
+  saveChanges(action) {
     const {
       jsonData,
       mergeMap,
@@ -39,37 +39,7 @@ class MergeRecords extends Component {
       mergeConflicts,
       ddData,
       csvHeaders,
-      action: 'save',
-    };
-    resolveMergeRow(payload);
-  }
-
-  saveAndContinue() {
-    const {
-      jsonData,
-      mergeMap,
-      workingMergeRow,
-      workingSheetName,
-      malformedSheets,
-      decodedRecords,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      mergeConflicts,
-      resolveMergeRow,
-    } = this.props;
-    const payload = {
-      jsonData,
-      mergeMap,
-      projectInfo,
-      workingMergeRow,
-      workingSheetName,
-      malformedSheets,
-      mergeConflicts,
-      decodedRecords,
-      ddData,
-      csvHeaders,
-      action: 'continue',
+      action,
     };
     resolveMergeRow(payload);
   }
@@ -99,14 +69,14 @@ class MergeRecords extends Component {
           <div className="MergeRecords-saveAndContinue">
             <button
               type="button"
-              onClick={this.saveChanges.bind(this)}
-              className="MergeRecords-save"
+              onClick={this.saveChanges.bind(this, 'save')}
+              className="App-actionButton"
             >
               Save
             </button>
             <button
               type="button"
-              onClick={this.saveAndContinue.bind(this)}
+              onClick={this.saveChanges.bind(this, 'continue')}
               className="App-submitButton"
             >
               Save and Continue
@@ -125,6 +95,7 @@ MergeRecords.propTypes = {
   projectInfo: PropTypes.objectOf(PropTypes.any),
   ddData: PropTypes.arrayOf(PropTypes.object),
   mergeConflicts: PropTypes.objectOf(PropTypes.object),
+  matchingRepeatInstances: PropTypes.objectOf(PropTypes.object),
   decodedRecords: PropTypes.objectOf(PropTypes.array),
   mergeMap: PropTypes.objectOf(PropTypes.object),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
@@ -138,6 +109,7 @@ MergeRecords.defaultProps = {
   projectInfo: {},
   ddData: [],
   mergeConflicts: {},
+  matchingRepeatInstances: {},
   decodedRecords: {},
   mergeMap: {},
   malformedSheets: [],

@@ -15,7 +15,7 @@ class TextValidation extends Component {
     this.state = {};
   }
 
-  saveChanges(e) {
+  saveChanges(action) {
     const {
       jsonData,
       originalToCorrectedValueMap,
@@ -23,7 +23,6 @@ class TextValidation extends Component {
       ddData,
       workingColumn,
       workingSheetName,
-      malformedSheets,
       csvHeaders,
       columnsInError,
       rowsInError,
@@ -36,44 +35,11 @@ class TextValidation extends Component {
       projectInfo,
       workingColumn,
       workingSheetName,
-      malformedSheets,
       ddData,
       columnsInError,
       rowsInError,
       csvHeaders,
-      action: 'save',
-    };
-    filterTable('');
-    resolveColumn(payload);
-  }
-
-  saveAndContinue(e) {
-    const {
-      jsonData,
-      originalToCorrectedValueMap,
-      workingColumn,
-      workingSheetName,
-      malformedSheets,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      columnsInError,
-      rowsInError,
-      resolveColumn,
-      filterTable,
-    } = this.props;
-    const payload = {
-      jsonData,
-      originalToCorrectedValueMap,
-      projectInfo,
-      workingColumn,
-      workingSheetName,
-      malformedSheets,
-      columnsInError,
-      rowsInError,
-      ddData,
-      csvHeaders,
-      action: 'continue',
+      action,
     };
     filterTable('');
     resolveColumn(payload);
@@ -121,14 +87,14 @@ class TextValidation extends Component {
           <div className="TextValidation-saveAndContinue">
             <button
               type="button"
-              onClick={this.saveChanges.bind(this)}
-              className="TextValidation-save"
+              onClick={this.saveChanges.bind(this, 'save')}
+              className="App-actionButton"
             >
               Save
             </button>
             <button
               type="button"
-              onClick={this.saveAndContinue.bind(this)}
+              onClick={this.saveChanges.bind(this, 'continue')}
               className="App-submitButton"
             >
               Save and Continue
@@ -144,7 +110,6 @@ class TextValidation extends Component {
 TextValidation.propTypes = {
   ddData: PropTypes.arrayOf(PropTypes.object),
   jsonData: PropTypes.objectOf(PropTypes.array),
-  malformedSheets: PropTypes.arrayOf(PropTypes.string),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
   originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
@@ -157,7 +122,6 @@ TextValidation.propTypes = {
 TextValidation.defaultProps = {
   ddData: [],
   jsonData: [],
-  malformedSheets: [],
   projectInfo: {},
   csvHeaders: {},
   columnsInError: {},

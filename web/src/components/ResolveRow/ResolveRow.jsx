@@ -15,7 +15,7 @@ class ResolveRow extends Component {
     this.state = {};
   }
 
-  saveChanges(e) {
+  saveChanges(action) {
     const {
       jsonData,
       fieldToValueMap,
@@ -23,8 +23,6 @@ class ResolveRow extends Component {
       ddData,
       workingRow,
       workingSheetName,
-      malformedSheets,
-      decodedRecords,
       columnsInError,
       rowsInError,
       csvHeaders,
@@ -36,47 +34,13 @@ class ResolveRow extends Component {
       projectInfo,
       workingRow,
       workingSheetName,
-      malformedSheets,
-      decodedRecords,
       columnsInError,
       rowsInError,
       ddData,
       csvHeaders,
-      action: 'save',
+      action,
     };
 
-    resolveRow(payload);
-  }
-
-  saveAndContinue(e) {
-    const {
-      jsonData,
-      fieldToValueMap,
-      workingRow,
-      workingSheetName,
-      malformedSheets,
-      decodedRecords,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      columnsInError,
-      rowsInError,
-      resolveRow,
-    } = this.props;
-    const payload = {
-      jsonData,
-      fieldToValueMap,
-      projectInfo,
-      workingRow,
-      workingSheetName,
-      malformedSheets,
-      decodedRecords,
-      columnsInError,
-      rowsInError,
-      ddData,
-      csvHeaders,
-      action: 'continue',
-    };
     resolveRow(payload);
   }
 
@@ -146,12 +110,16 @@ class ResolveRow extends Component {
             <div style={{ clear: 'both' }} />
           </div>
           <div className="ResolveRow-saveAndContinue">
-            <button type="button" onClick={this.saveChanges.bind(this)} className="ResolveRow-save">
+            <button
+              type="button"
+              onClick={this.saveChanges.bind(this, 'save')}
+              className="App-actionButton"
+            >
               Save
             </button>
             <button
               type="button"
-              onClick={this.saveAndContinue.bind(this)}
+              onClick={this.saveChanges.bind(this, 'continue')}
               className="App-submitButton"
             >
               Save and Continue
@@ -166,10 +134,8 @@ class ResolveRow extends Component {
 
 ResolveRow.propTypes = {
   fieldToValueMap: PropTypes.objectOf(PropTypes.object),
-  decodedRecords: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   projectInfo: PropTypes.objectOf(PropTypes.any),
-  malformedSheets: PropTypes.arrayOf(PropTypes.string),
   jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
   cellsWithErrors: PropTypes.objectOf(PropTypes.array),
@@ -184,10 +150,8 @@ ResolveRow.defaultProps = {
   projectInfo: {},
   jsonData: {},
   csvHeaders: {},
-  malformedSheets: [],
   cellsWithErrors: {},
   fieldToValueMap: {},
-  decodedRecords: {},
   columnsInError: {},
   rowsInError: {},
   workingSheetName: '',

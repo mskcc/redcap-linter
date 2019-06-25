@@ -22,8 +22,6 @@ def resolve_column():
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_column = json.loads(form.get('workingColumn') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
-    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
-    decoded_records = json.loads(form.get('decodedRecords'))
     data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
@@ -83,12 +81,9 @@ def resolve_column():
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
-    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records})
-
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
     json_data = {}
-    output_records = {}
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -96,18 +91,12 @@ def resolve_column():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
-    for sheet_name in encoded_records:
-        if malformed_sheets and sheet_name in malformed_sheets:
-            continue
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
-
     results = {
         'jsonData':        json_data,
         'cellsWithErrors': cells_with_errors,
         'columnsInError':  columns_in_error,
         'allErrors':       all_errors,
         'rowsInError':     rows_in_error,
-        'encodedRecords':  output_records,
     }
     if action == 'continue':
         results['workingColumn'] = next_column
@@ -127,9 +116,7 @@ def resolve_row():
     next_sheet_name = json.loads(form.get('nextSheetName') or '""')
     working_row = json.loads(form.get('workingRow') or '""')
     working_sheet_name = json.loads(form.get('workingSheetName') or '""')
-    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     field_to_value_map = json.loads(form.get('fieldToValueMap'))
-    decoded_records = json.loads(form.get('decodedRecords'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
     data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
@@ -186,28 +173,20 @@ def resolve_row():
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = datafile_errors['rows_in_error']
-    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records})
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
-    json_data   = {}
-    output_records = {}
+    json_data = {}
 
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
-
-    for sheet_name in encoded_records:
-        if malformed_sheets and sheet_name in malformed_sheets:
-            continue
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':         json_data,
         'allErrors':        all_errors,
         'rowsInError':      rows_in_error,
         'cellsWithErrors':  cells_with_errors,
-        'encodedRecords':   output_records,
     }
     if action == 'continue':
         results['workingRow'] = next_row
@@ -229,8 +208,6 @@ def resolve_merge_row():
     next_sheet_name = json.loads(form.get('nextSheetName', '""'))
     working_merge_row = json.loads(form.get('workingMergeRow', '-1'))
     working_sheet_name = json.loads(form.get('workingSheetName', '""'))
-    malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
-    decoded_records = json.loads(form.get('decodedRecords'))
     merge_map = json.loads(form.get('mergeMap'))
     merge_conflicts = json.loads(form.get('mergeConflicts'))
     project_info = json.loads(form.get('projectInfo'))
@@ -274,28 +251,18 @@ def resolve_merge_row():
                     next_merge_row = sheet_merge_conflicts[sheet_merge_conflicts.index(working_merge_row)+1]
 
     if working_sheet_name and merge_conflicts and merge_conflicts[working_sheet_name]:
-        merge_map[working_sheet_name][str(working_merge_row)]['matching_repeat_instances'] = merge_conflicts[working_sheet_name][str(working_merge_row)]['matching_repeat_instances']
         del merge_conflicts[working_sheet_name][str(working_merge_row)]
 
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
-    rows_in_error = datafile_errors['rows_in_error']
-
-    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records, 'merge_map': merge_map})
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     json_data = {}
-    output_records = {}
 
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
-
-    for sheet_name in encoded_records:
-        if malformed_sheets and sheet_name in malformed_sheets:
-            continue
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
 
     results = {
         'jsonData':         json_data,
@@ -303,7 +270,6 @@ def resolve_merge_row():
         'mergeMap':         merge_map,
         'mergeConflicts':   merge_conflicts,
         'cellsWithErrors':  cells_with_errors,
-        'encodedRecords':   output_records,
     }
     if action == 'continue':
         results['workingMergeRow'] = next_merge_row
@@ -326,6 +292,7 @@ def calculate_merge_conflicts():
     next_sheet_name = None
     next_merge_row = -1
     merge_conflicts = {}
+    matching_repeat_instances = {}
     records = {}
     for sheet in json_data:
         df = pd.DataFrame(json_data[sheet])
@@ -339,6 +306,8 @@ def calculate_merge_conflicts():
 
         if not merge_conflicts.get(sheet_name):
             merge_conflicts[sheet_name] = {}
+        if not matching_repeat_instances.get(sheet_name):
+            matching_repeat_instances[sheet_name] = {}
         for index, record in sheet.iterrows():
             recordid = record.get(recordid_field)
             if recordid:
@@ -351,7 +320,6 @@ def calculate_merge_conflicts():
                     flat_record = [r for r in decoded_records.get(recordid) if not r['redcap_repeat_instance']]
                     if flat_record:
                         record_to_merge = flat_record[0].copy()
-                    record_to_merge['matching_repeat_instances'] = {}
                     for instrument in project_info['repeatable_instruments']:
                         instrument_fields = [d for d in dd_data if d['form_name'] == instrument]
                         primary_key = reconciliation_columns.get(instrument)
@@ -370,7 +338,9 @@ def calculate_merge_conflicts():
                         if matching_record:
                             for field in instrument_fields:
                                 record_to_merge[field['field_name']] = matching_record[field['field_name']]
-                            record_to_merge['matching_repeat_instances'][instrument] = matching_record['redcap_repeat_instance']
+                            if not matching_repeat_instances[sheet_name].get(index):
+                                matching_repeat_instances[sheet_name][index] = {}
+                            matching_repeat_instances[sheet_name][index][instrument] = matching_record['redcap_repeat_instance']
                     exact_match = True
                     for dd_field in dd_data:
                         if record_to_merge[dd_field['field_name']] and str(record.get(dd_field['field_name'])) != record_to_merge[dd_field['field_name']]:
@@ -380,8 +350,6 @@ def calculate_merge_conflicts():
                             # logging.warning("Existing: " + record_to_merge[dd_field['field_name']])
                             exact_match = False
                     if not exact_match:
-                        logging.warning(index)
-                        logging.warning(record_to_merge)
                         merge_conflicts[sheet_name][index] = record_to_merge
                         if next_sheet_name is None:
                             next_sheet_name = sheet_name
@@ -391,6 +359,7 @@ def calculate_merge_conflicts():
         'mergeConflicts': merge_conflicts,
         'workingSheetName': next_sheet_name,
         'workingMergeRow': next_merge_row,
+        'matchingRepeatInstances': matching_repeat_instances,
     }
     return flask.jsonify(results)
 
@@ -444,3 +413,41 @@ def calculate_field_errors(column, sheet_name, data_dictionary, records):
         field_errors['textValidationMin'] = dd_field.text_min
         field_errors['textValidationMax'] = dd_field.text_max
     return field_errors
+
+
+@RESOLVE.route('/encode_records', methods=['GET', 'POST', 'OPTIONS'])
+def encode_records():
+    form = request.form.to_dict()
+    csv_headers = json.loads(form.get('csvHeaders'))
+    malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
+    decoded_records = json.loads(form.get('decodedRecords'))
+    matching_repeat_instances = json.loads(form.get('matchingRepeatInstances'))
+    project_info = json.loads(form.get('projectInfo'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    records = {}
+    for sheet in json_data:
+        frame = pd.DataFrame(json_data[sheet])
+        frame = frame[csv_headers[sheet]]
+        frame.fillna('', inplace=True)
+        records[sheet] = frame
+
+    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
+    rows_in_error = datafile_errors['rows_in_error']
+
+    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records, 'matching_repeat_instances': matching_repeat_instances})
+
+    json_data = {}
+    output_records = {}
+
+    for sheet_name in encoded_records:
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
+
+    results = {
+        'encodedRecords': output_records,
+    }
+    return flask.jsonify(results)

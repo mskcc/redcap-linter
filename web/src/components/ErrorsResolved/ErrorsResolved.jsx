@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import PropTypes from 'prop-types';
-import { Icon } from 'antd';
+import { Icon, Spin } from 'antd';
 import EncodedRecords from '../EncodedRecords/EncodedRecords';
 
-import { importRecords } from '../../actions/REDCapLinterActions';
+import { importRecords, encodeRecords } from '../../actions/REDCapLinterActions';
 
 class ErrorsResolved extends Component {
   constructor(props) {
@@ -16,6 +16,29 @@ class ErrorsResolved extends Component {
     this.state = {
       selectedValue: '',
     };
+  }
+
+  componentDidMount() {
+    const {
+      jsonData,
+      projectInfo,
+      ddData,
+      csvHeaders,
+      malformedSheets,
+      decodedRecords,
+      matchingRepeatInstances,
+      encodeRecords,
+    } = this.props;
+    const payload = {
+      jsonData,
+      projectInfo,
+      malformedSheets,
+      matchingRepeatInstances,
+      ddData,
+      decodedRecords,
+      csvHeaders,
+    };
+    encodeRecords(payload);
   }
 
   handleChange(e) {
@@ -47,6 +70,7 @@ class ErrorsResolved extends Component {
       malformedSheets,
       token,
       importErrors,
+      loading,
     } = this.props;
 
     const { selectedValue } = this.state;
@@ -118,6 +142,12 @@ class ErrorsResolved extends Component {
       errorText = (
         <div className="ErrorsResolved-errorText">There were errors on upload to REDCap.</div>
       );
+    }
+    let content = '';
+    if (loading) {
+      content = <Spin tip="Loading..." />;
+    } else {
+      content = <EncodedRecords />;
     }
 
     return (
@@ -199,9 +229,7 @@ class ErrorsResolved extends Component {
           {uploadToRedcapButton}
           {errorText}
         </div>
-        <div className="ErrorsResolved-container">
-          <EncodedRecords />
-        </div>
+        <div className="ErrorsResolved-container">{content}</div>
       </div>
     );
   }
@@ -212,11 +240,14 @@ ErrorsResolved.propTypes = {
   ddData: PropTypes.arrayOf(PropTypes.object),
   csvHeaders: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
+  decodedRecords: PropTypes.objectOf(PropTypes.array),
+  matchingRepeatInstances: PropTypes.objectOf(PropTypes.object),
   jsonData: PropTypes.objectOf(PropTypes.array),
   encodedRecords: PropTypes.objectOf(PropTypes.array),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   dataFileName: PropTypes.string,
+  loading: PropTypes.bool,
   token: PropTypes.string,
   env: PropTypes.string,
 };
@@ -228,9 +259,12 @@ ErrorsResolved.defaultProps = {
   dataFieldToRedcapFieldMap: {},
   jsonData: {},
   encodedRecords: {},
+  decodedRecords: {},
+  matchingRepeatInstances: {},
   projectInfo: {},
   malformedSheets: [],
   dataFileName: '',
+  loading: false,
   token: '',
   env: '',
 };
@@ -240,7 +274,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ importRecords }, dispatch);
+  return bindActionCreators({ importRecords, encodeRecords }, dispatch);
 }
 
 export default connect(

@@ -15,7 +15,7 @@ class MatchChoices extends Component {
     this.state = {};
   }
 
-  saveChanges(e) {
+  saveChanges(action) {
     const {
       jsonData,
       dataFieldToChoiceMap,
@@ -23,7 +23,6 @@ class MatchChoices extends Component {
       ddData,
       workingColumn,
       workingSheetName,
-      malformedSheets,
       columnsInError,
       rowsInError,
       csvHeaders,
@@ -35,44 +34,11 @@ class MatchChoices extends Component {
       projectInfo,
       workingColumn,
       workingSheetName,
-      malformedSheets,
       columnsInError,
       rowsInError,
       ddData,
       csvHeaders,
-      action: 'save',
-    };
-    resolveColumn(payload);
-  }
-
-  saveAndContinue(e) {
-    const {
-      jsonData,
-      dataFieldToChoiceMap,
-      workingColumn,
-      workingSheetName,
-      malformedSheets,
-      projectInfo,
-      ddData,
-      csvHeaders,
-      decodedRecords,
-      columnsInError,
-      rowsInError,
-      resolveColumn,
-    } = this.props;
-    const payload = {
-      jsonData,
-      dataFieldToChoiceMap,
-      projectInfo,
-      workingColumn,
-      workingSheetName,
-      malformedSheets,
-      decodedRecords,
-      columnsInError,
-      rowsInError,
-      ddData,
-      csvHeaders,
-      action: 'continue',
+      action,
     };
     resolveColumn(payload);
   }
@@ -143,14 +109,14 @@ class MatchChoices extends Component {
           <div className="MatchChoices-saveAndContinue">
             <button
               type="button"
-              onClick={this.saveChanges.bind(this)}
-              className="MatchChoices-save"
+              onClick={this.saveChanges.bind(this, 'save')}
+              className="App-actionButton"
             >
               Save
             </button>
             <button
               type="button"
-              onClick={this.saveAndContinue.bind(this)}
+              onClick={this.saveChanges.bind(this, 'continue')}
               className="App-submitButton"
             >
               Save and Continue
@@ -166,10 +132,8 @@ class MatchChoices extends Component {
 MatchChoices.propTypes = {
   fieldErrors: PropTypes.objectOf(PropTypes.any),
   dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
-  decodedRecords: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   projectInfo: PropTypes.objectOf(PropTypes.any),
-  malformedSheets: PropTypes.arrayOf(PropTypes.string),
   jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
   columnsInError: PropTypes.objectOf(PropTypes.array),
@@ -181,11 +145,9 @@ MatchChoices.propTypes = {
 MatchChoices.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
-  decodedRecords: {},
   ddData: [],
   jsonData: [],
   projectInfo: {},
-  malformedSheets: [],
   csvHeaders: {},
   columnsInError: {},
   rowsInError: {},

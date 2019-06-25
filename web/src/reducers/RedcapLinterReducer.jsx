@@ -13,6 +13,9 @@ import {
   REMOVE_MERGE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
+  ENCODE_RECORDS_START,
+  ENCODE_RECORDS_SUCCESS,
+  ENCODE_RECORDS_FAILURE,
   IMPORT_RECORDS_SUCCESS,
   IMPORT_RECORDS_FAILURE,
   NAVIGATE_TO_SUCCESS,
@@ -73,6 +76,17 @@ export default function (state = {}, action) {
       );
     }
     case SAVE_FIELDS_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
+    case ENCODE_RECORDS_START: {
+      return Object.assign({}, state, { loading: true, page: 'finish' });
+    }
+    case ENCODE_RECORDS_SUCCESS: {
+      return Object.assign({}, state, { loading: false }, action.payload.data);
+    }
+    case ENCODE_RECORDS_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });

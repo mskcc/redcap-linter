@@ -12,7 +12,7 @@ def encode_datafile(data_dictionary, project_info, records, options={}):
         if sheet is not None:
             sheet_options = {
                 'rows_in_error': options.get('rows_in_error', {}).get(sheet_name, []),
-                'merge_map': options.get('merge_map', {}).get(sheet_name, {}),
+                'matching_repeat_instances': options.get('matching_repeat_instances', {}).get(sheet_name, {}),
                 'decoded_records': options.get('decoded_records', {}),
             }
 
@@ -28,8 +28,10 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
     matching_fields = utils.get_matching_fields(data_dictionary, records, recordid_field)
 
     rows_in_error = options.get('rows_in_error', [])
-    merge_map = options.get('merge_map', {})
     decoded_records = options.get('decoded_records', {})
+    matching_repeat_instances = options.get('matching_repeat_instances', {})
+
+    logging.warning(matching_repeat_instances)
 
     for form_name in matching_fields:
         encoded_fields[form_name] = []
@@ -68,8 +70,8 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
                         if decoded_record['redcap_repeat_instrument'] == form_name and int(decoded_record['redcap_repeat_instance']) > max_instance_number:
                             max_instance_number = int(decoded_record['redcap_repeat_instance'])
                     repeat_instance = max_instance_number + repeat_instance_dict.get(row[recordid_field.field_name])
-                    if merge_map.get(str(index)) and merge_map.get(str(index)).get('matching_repeat_instances', {}).get(form_name):
-                        repeat_instance = merge_map.get(str(index)).get('matching_repeat_instances', {}).get(form_name)
+                    if matching_repeat_instances.get(str(index), {}).get(form_name):
+                        repeat_instance = matching_repeat_instances.get(str(index), {}).get(form_name)
                     row_to_encode['redcap_repeat_instance'] = repeat_instance
                     output_records = output_records.append(row_to_encode, ignore_index=True)
                 else:

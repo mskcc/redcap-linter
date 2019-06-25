@@ -32,7 +32,6 @@ def save_fields():
     existing_records = json.loads(form.get('existingRecords'))
     recordid_field = json.loads(form.get('recordidField'))
     project_info = json.loads(form.get('projectInfo'))
-    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
     token = json.loads(form.get('token'))
     env = json.loads(form.get('env'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
@@ -85,7 +84,6 @@ def save_fields():
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     json_data = {}
-    output_records = {}
 
     # logging.warning(encoded_records)
     for sheet_name, sheet in records.items():
@@ -114,13 +112,6 @@ def save_fields():
                     decoded_rows = serializer.decode_sheet(dd, records_to_reconcile.get(recordid))
                     decoded_records[recordid] = decoded_rows
 
-    encoded_records = serializer.encode_datafile(dd, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records})
-
-    for sheet_name in encoded_records:
-        if malformed_sheets and sheet_name in malformed_sheets:
-            continue
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
-
     results = {
         'jsonData':                   json_data,
         'rowsInError':                rows_in_error,
@@ -130,7 +121,6 @@ def save_fields():
         'recordsToReconcile':         records_to_reconcile,
         'existingRecords':            existing_records,
         'columnsInError':             columns_in_error,
-        'encodedRecords':             output_records,
         'decodedRecords':             decoded_records,
         'fieldsSaved':                True,
     }

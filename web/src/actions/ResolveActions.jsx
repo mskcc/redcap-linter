@@ -38,8 +38,6 @@ export function resolveColumn(payload) {
       'originalToCorrectedValueMap',
       JSON.stringify(payload.originalToCorrectedValueMap || {}),
     );
-    data.append('decodedRecords', JSON.stringify(payload.decodedRecords || {}));
-    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append('nextColumn', payload.nextColumn ? JSON.stringify(payload.nextColumn) : '');
     data.append('nextSheetName', JSON.stringify(payload.nextSheetName || ''));
     data.append(
@@ -87,8 +85,6 @@ export function resolveMergeRow(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('mergeMap', JSON.stringify(payload.mergeMap || {}));
-    data.append('decodedRecords', JSON.stringify(payload.decodedRecords || {}));
-    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append(
       'nextMergeRow',
       payload.nextMergeRow >= 0 ? JSON.stringify(payload.nextMergeRow) : '-1',
@@ -138,8 +134,6 @@ export function resolveRow(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
-    data.append('decodedRecords', JSON.stringify(payload.decodedRecords || {}));
-    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
     data.append('nextRow', payload.nextRow >= 0 ? JSON.stringify(payload.nextRow) : '-1');
     data.append('nextSheetName', JSON.stringify(payload.nextSheetName || ''));
     data.append('workingRow', payload.workingRow >= 0 ? JSON.stringify(payload.workingRow) : '-1');

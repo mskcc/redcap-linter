@@ -19,6 +19,10 @@ export const REMOVE_FIELD_MATCH = 'REMOVE_FIELD_MATCH';
 export const SAVE_FIELDS_SUCCESS = 'SAVE_FIELDS_SUCCESS';
 export const SAVE_FIELDS_FAILURE = 'SAVE_FIELDS_FAILURE';
 
+export const ENCODE_RECORDS_START = 'ENCODE_RECORDS_START';
+export const ENCODE_RECORDS_SUCCESS = 'ENCODE_RECORDS_SUCCESS';
+export const ENCODE_RECORDS_FAILURE = 'ENCODE_RECORDS_FAILURE';
+
 export const MATCH_CHOICES = 'MATCH_CHOICES';
 
 export const MERGE_FIELD = 'MERGE_FIELD';
@@ -47,6 +51,12 @@ export const CHANGE_SECONDARY_UNIQUE_FIELD = 'CHANGE_SECONDARY_UNIQUE_FIELD';
 export function loadingStart() {
   return {
     type: LOADING_START,
+  };
+}
+
+export function encodeRecordsStart() {
+  return {
+    type: ENCODE_RECORDS_START,
   };
 }
 
@@ -230,6 +240,46 @@ export function saveFields(payload) {
     return request.then(
       response => dispatch(saveFieldsSuccess(Object.assign({}, nextPage, response))),
       err => dispatch(saveFieldsError(err)),
+    );
+  };
+}
+
+export function encodeRecordsSuccess(payload) {
+  return {
+    type: ENCODE_RECORDS_SUCCESS,
+    payload,
+  };
+}
+
+export function encodeRecordsError(payload) {
+  return {
+    type: ENCODE_RECORDS_FAILURE,
+    payload,
+  };
+}
+
+export function encodeRecords(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('jsonData', JSON.stringify(payload.jsonData));
+    data.append('matchingRepeatInstances', JSON.stringify(payload.matchingRepeatInstances) || {});
+    data.append('decodedRecords', JSON.stringify(payload.decodedRecords) || {});
+    data.append('projectInfo', JSON.stringify(payload.projectInfo));
+    data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));
+    data.append('ddData', JSON.stringify(payload.ddData));
+    data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
+    const request = axios({
+      method: 'POST',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/encode_records`,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    dispatch(encodeRecordsStart());
+
+    return request.then(
+      response => dispatch(encodeRecordsSuccess(Object.assign({}, response))),
+      err => dispatch(encodeRecordsError(err)),
     );
   };
 }
