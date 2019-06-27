@@ -65,6 +65,10 @@ def save_fields():
                     'secondary_unique_field_values': secondary_unique_field_values
                 }
                 existing_records = redcap_api.export_records(token, options)
+
+                record_ids = [utils.get_record_id(r[recordid_field]) for r in existing_records]
+                options = {'records': record_ids}
+                existing_records = redcap_api.export_records(token, options)
         else:
             record_ids = set()
             for sheet_name, sheet in records.items():
@@ -100,8 +104,7 @@ def save_fields():
 
     decoded_records = {}
 
-    for sheet_name in records.keys():
-        sheet = records.get(sheet_name)
+    for sheet_name, sheet in records.items():
         for _, row in sheet.iterrows():
             if row.get(recordid_field):
                 recordid = row[recordid_field]
@@ -254,9 +257,7 @@ def post_form():
         form_name_to_dd_fields.get(dd_field.form_name).append(dd_field.field_name)
         form_names.add(dd_field.form_name)
 
-    recordid_field = 'record_id'
-    if not project_info['record_autonumbering_enabled']:
-        recordid_field = dd[0].field_name
+    recordid_field = dd[0].field_name
 
     form_names = list(form_names)
 

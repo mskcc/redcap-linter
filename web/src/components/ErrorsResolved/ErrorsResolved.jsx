@@ -41,11 +41,7 @@ class ErrorsResolved extends Component {
     encodeRecords(payload);
   }
 
-  handleChange(e) {
-    console.log(e);
-  }
-
-  uploadToRedcap(e) {
+  uploadToRedcap() {
     const {
       encodedRecords, token, env, importRecords,
     } = this.props;
@@ -73,10 +69,6 @@ class ErrorsResolved extends Component {
       loading,
     } = this.props;
 
-    const { selectedValue } = this.state;
-
-    // TODO For Autonumbering projects with Repeatable Instruments create a dropdown to choose a field for each sheet to repeat on
-    let repeatableFieldDropdown = null;
     if (
       projectInfo.record_autonumbering_enabled === 1
       && projectInfo.repeatable_instruments
@@ -92,19 +84,6 @@ class ErrorsResolved extends Component {
           });
         });
       });
-      repeatableFieldDropdown = (
-        <div className="ErrorsResolved-repeatField">
-          <b>Select a column to repeat on</b>
-          :
-          <Select
-            options={options}
-            isSearchable
-            value={selectedValue}
-            onChange={e => this.handleChange(e)}
-            placeholder="Select..."
-          />
-        </div>
-      );
     }
 
     const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${
@@ -214,7 +193,6 @@ class ErrorsResolved extends Component {
             />
             <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
           </form>
-          {repeatableFieldDropdown}
           <button
             type="submit"
             form="downloadOutput"

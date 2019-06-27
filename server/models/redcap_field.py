@@ -1,4 +1,5 @@
 import json
+import logging
 
 
 def get_from_data_dictionary(data_dictionary, field_name, col):

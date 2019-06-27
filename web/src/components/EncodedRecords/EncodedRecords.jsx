@@ -17,7 +17,7 @@ class EncodedRecords extends Component {
 
   render() {
     const {
-      encodedRecords, ddData, recordidField, importErrors,
+      encodedRecords, ddData, recordidField, importErrors, projectInfo,
     } = this.props;
 
     const tabProps = {
@@ -42,13 +42,13 @@ class EncodedRecords extends Component {
         if (tData && tData.length > 0) {
           const encodedHeaders = Object.keys(tData[0]);
           ddFields.forEach((field) => {
-            if (encodedHeaders.includes(field) && field !== recordidField) {
+            if (encodedHeaders.includes(field) && ![recordidField, 'record_id'].includes(field)) {
               headers.push(field);
             }
           });
 
           encodedHeaders.forEach((header) => {
-            if (!ddFields.includes(header) && header !== recordidField) {
+            if (!ddFields.includes(header) && ![recordidField, 'record_id'].includes(header)) {
               headers.unshift(header);
             }
           });
@@ -111,6 +111,7 @@ EncodedRecords.propTypes = {
   encodedRecords: PropTypes.objectOf(PropTypes.array),
   encodedRecordsHeaders: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
   recordidField: PropTypes.string,
   importErrors: PropTypes.objectOf(PropTypes.object),
 };
@@ -118,6 +119,7 @@ EncodedRecords.propTypes = {
 EncodedRecords.defaultProps = {
   encodedRecords: {},
   encodedRecordsHeaders: {},
+  projectInfo: {},
   ddData: [],
   recordidField: '',
   importErrors: {},

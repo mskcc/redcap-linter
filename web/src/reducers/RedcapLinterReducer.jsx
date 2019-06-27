@@ -179,13 +179,6 @@ export default function (state = {}, action) {
         fieldToValueMap[workingSheetName][workingRow],
         action.payload,
       );
-      // Object.keys(action.payload).forEach((field) => {
-      //   if (!action.payload[field]) {
-      //     delete fieldToValueMap[field];
-      //   } else {
-      //     fieldToValueMap[field] = action.payload[field];
-      //   }
-      // });
       return Object.assign({}, state, { fieldToValueMap, toggle: !toggle });
     }
     case CHANGE_REPEATABLE_INSTRUMENTS: {

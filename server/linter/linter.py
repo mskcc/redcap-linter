@@ -2,17 +2,19 @@
 
 import pandas as pd
 
+import logging
+
 from utils import utils
 
 # TODO Consider switching to processing by rows and creating a RecordRow object
-def lint_list(redcap_field, current_list, all_errors=[]):
+def lint_list(redcap_field, current_list, all_errors=[], is_unique=False):
     current_list = [i.strip() if isinstance(i, str) else i for i in current_list]
 
     list_errors = []
     row_errors = []
     list_formatted = current_list
     for idx, item in enumerate(current_list):
-        if (pd.isnull(item) or not item) and redcap_field.required:
+        if (pd.isnull(item) or not item) and (redcap_field.required or is_unique):
             row_errors.append(idx)
             all_errors.append("Required field missing for {0} at index {1}.".format(redcap_field.field_name, idx))
 
@@ -80,15 +82,16 @@ def lint_sheet(data_dictionary, project_info, records):
     all_errors = []
     rows_in_error = []
 
-    recordid_field = utils.get_recordid_field(data_dictionary, project_info)
+    unique_field = utils.get_unique_field(data_dictionary, project_info)
 
-    matching_fields = utils.get_matching_fields(data_dictionary, records, recordid_field)
+    matching_fields = utils.get_matching_fields(data_dictionary, records, unique_field)
 
     for form_name in matching_fields:
         for redcap_field in matching_fields[form_name]:
             current_list = list(records[redcap_field.field_name])
 
-            processed_list = lint_list(redcap_field, current_list, all_errors)
+            is_unique = redcap_field.field_name == unique_field.field_name
+            processed_list = lint_list(redcap_field, current_list, all_errors, is_unique)
             instrument_errors[redcap_field.field_name] = processed_list['list_errors']
             records[redcap_field.field_name] = processed_list['list_formatted']
             rows_in_error += processed_list['row_errors']
@@ -106,7 +109,7 @@ def lint_sheet(data_dictionary, project_info, records):
 def lint_datafile(data_dictionary, project_info, records):
     all_errors = []
 
-    recordid_field = utils.get_recordid_field(data_dictionary, project_info)
+    unique_field = utils.get_unique_field(data_dictionary, project_info)
 
     form_names = [redcap_field.form_name for redcap_field in data_dictionary]
     form_names = list(set(form_names))
@@ -115,15 +118,14 @@ def lint_datafile(data_dictionary, project_info, records):
     rows_in_error = {}
 
     for sheet_name, instrument_records in records.items():
-        if recordid_field.field_name not in instrument_records.columns:
-            all_errors.append("Primary key {0} not present in sheet {1}.".format(recordid_field.field_name, sheet_name))
+        if unique_field.field_name not in instrument_records.columns:
+            all_errors.append("Primary key {0} not present in sheet {1}.".format(unique_field.field_name, sheet_name))
 
         instrument_errors = pd.DataFrame().reindex_like(instrument_records)
         instrument_errors[:] = False
         cells_with_errors[sheet_name] = instrument_errors
 
-    for sheet_name in records.keys():
-        sheet = records.get(sheet_name)
+    for sheet_name, sheet in records.items():
         if sheet is not None:
             results = lint_sheet(data_dictionary, project_info, sheet)
             all_errors += results['all_errors']
