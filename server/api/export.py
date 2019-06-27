@@ -104,29 +104,20 @@ def download_mappings():
 def download_output():
     form = request.form.to_dict()
     datafile_name = form.get('dataFileName')
-    csv_headers = json.loads(form.get('csvHeaders'))
-    project_info = json.loads(form.get('projectInfo'))
-    malformed_sheets = json.loads(form.get('malformedSheets') or '""')
-    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+    encoded_records = json.loads(form.get('encodedRecords'))
+    encoded_record_headers = json.loads(form.get('encodedRecordHeaders'))
     datafile_name = os.path.splitext(ntpath.basename(datafile_name))[0]
     current_date = datetime.now().strftime("%m-%d-%Y")
     new_datafile_name = datafile_name + '-' + current_date + '-Encoded.xlsx'
-    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
-    records = {}
-    for sheet in json_data:
-        frame = pd.DataFrame(json_data[sheet])
-        frame.replace('nan', '', inplace=True)
-        frame = frame[csv_headers[sheet]]
-        records[sheet] = frame
-
-    output_records = serializer.encode_datafile(data_dictionary, project_info, records)
+    for sheet in encoded_records:
+        frame = pd.DataFrame(encoded_records[sheet])
+        frame = frame[encoded_record_headers[sheet]]
+        encoded_records[sheet] = frame
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    for sheet, form in output_records.items():
-        if sheet in malformed_sheets:
-            continue
+    for sheet, form in encoded_records.items():
         form.to_excel(writer, sheet_name=sheet, index=False)
     writer.close()
     output.seek(0)

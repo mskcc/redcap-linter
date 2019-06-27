@@ -173,14 +173,12 @@ def validate_text_type(list_to_validate, redcap_field):
     return validations
 
 def get_unique_field(data_dictionary, project_info):
-    recordid_field = None
+    unique_field = None
     if project_info.get('record_autonumbering_enabled') == 1 and project_info.get('secondary_unique_field'):
-        recordid_field = [d for d in data_dictionary if d.field_name == project_info.get('secondary_unique_field')][0]
-    elif project_info.get('record_autonumbering_enabled') == 1:
-        recordid_field = RedcapField(field_name='record_id', field_type='text')
+        unique_field = [d for d in data_dictionary if d.field_name == project_info.get('secondary_unique_field')][0]
     else:
-        recordid_field = data_dictionary[0]
-    return recordid_field
+        unique_field = data_dictionary[0]
+    return unique_field
 
 def parameterize(str):
     # \W = [^a-zA-Z0-9_]

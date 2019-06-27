@@ -89,7 +89,6 @@ def save_fields():
 
     json_data = {}
 
-    # logging.warning(encoded_records)
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
         cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
@@ -97,23 +96,15 @@ def save_fields():
     records_to_reconcile = {}
     if existing_records:
         for record in existing_records:
-            if not records_to_reconcile.get(record[recordid_field]):
-                records_to_reconcile[record[recordid_field]] = []
             if record.get(recordid_field):
+                if not records_to_reconcile.get(record[recordid_field]):
+                    records_to_reconcile[record[recordid_field]] = []
                 records_to_reconcile[record[recordid_field]].append(record)
 
     decoded_records = {}
-
-    for sheet_name, sheet in records.items():
-        for _, row in sheet.iterrows():
-            if row.get(recordid_field):
-                recordid = row[recordid_field]
-                if isinstance(row.get(recordid_field), float) and row.get(recordid_field).is_integer():
-                    # Excel reads this in as a float :/
-                    recordid = str(int(row[recordid_field]))
-                if records_to_reconcile.get(recordid):
-                    decoded_rows = serializer.decode_sheet(dd, records_to_reconcile.get(recordid))
-                    decoded_records[recordid] = decoded_rows
+    for recordid, encoded_rows in records_to_reconcile.items():
+        decoded_rows = serializer.decode_sheet(dd, encoded_rows)
+        decoded_records[recordid] = decoded_rows
 
     results = {
         'jsonData':                   json_data,
@@ -121,7 +112,6 @@ def save_fields():
         'cellsWithErrors':            cells_with_errors,
         'allErrors':                  all_errors,
         'csvHeaders':                 csv_headers,
-        'recordsToReconcile':         records_to_reconcile,
         'existingRecords':            existing_records,
         'columnsInError':             columns_in_error,
         'decodedRecords':             decoded_records,

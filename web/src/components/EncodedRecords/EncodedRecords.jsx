@@ -42,13 +42,13 @@ class EncodedRecords extends Component {
         if (tData && tData.length > 0) {
           const encodedHeaders = Object.keys(tData[0]);
           ddFields.forEach((field) => {
-            if (encodedHeaders.includes(field) && ![recordidField, 'record_id'].includes(field)) {
+            if (encodedHeaders.includes(field) && field !== recordidField) {
               headers.push(field);
             }
           });
 
           encodedHeaders.forEach((header) => {
-            if (!ddFields.includes(header) && ![recordidField, 'record_id'].includes(header)) {
+            if (!ddFields.includes(header) && header !== recordidField) {
               headers.unshift(header);
             }
           });
@@ -109,7 +109,7 @@ class EncodedRecords extends Component {
 
 EncodedRecords.propTypes = {
   encodedRecords: PropTypes.objectOf(PropTypes.array),
-  encodedRecordsHeaders: PropTypes.objectOf(PropTypes.array),
+  encodedRecordHeaders: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   recordidField: PropTypes.string,
@@ -118,7 +118,7 @@ EncodedRecords.propTypes = {
 
 EncodedRecords.defaultProps = {
   encodedRecords: {},
-  encodedRecordsHeaders: {},
+  encodedRecordHeaders: {},
   projectInfo: {},
   ddData: [],
   recordidField: '',

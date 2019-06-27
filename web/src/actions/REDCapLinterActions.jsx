@@ -263,6 +263,7 @@ export function encodeRecords(payload) {
     const data = new FormData();
     data.append('jsonData', JSON.stringify(payload.jsonData));
     data.append('matchingRepeatInstances', JSON.stringify(payload.matchingRepeatInstances) || {});
+    data.append('matchingRecordIds', JSON.stringify(payload.matchingRecordIds) || {});
     data.append('decodedRecords', JSON.stringify(payload.decodedRecords) || {});
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('malformedSheets', JSON.stringify(payload.malformedSheets || []));

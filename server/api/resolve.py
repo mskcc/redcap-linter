@@ -284,21 +284,27 @@ def calculate_merge_conflicts():
     dd_data = json.loads(form.get('ddData'))
     csv_headers = json.loads(form.get('csvHeaders'))
     merge_conflicts = json.loads(form.get('mergeConflicts'))
+    existing_records = json.loads(form.get('existingRecords'))
     decoded_records = json.loads(form.get('decodedRecords'))
     project_info = json.loads(form.get('projectInfo'))
     malformed_sheets = json.loads(form.get('malformedSheets'))
     reconciliation_columns = json.loads(form.get('reconciliationColumns'))
 
+    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    unique_field = utils.get_unique_field(data_dictionary, project_info)
+
     next_sheet_name = None
     next_merge_row = -1
     merge_conflicts = {}
     matching_repeat_instances = {}
+    matching_record_ids = {}
     records = {}
     for sheet in json_data:
-        df = pd.DataFrame(json_data[sheet])
-        df.fillna('', inplace=True)
-        df = df[csv_headers[sheet]]
-        records[sheet] = df
+        frame = pd.DataFrame(json_data[sheet])
+        frame.fillna('', inplace=True)
+        frame = frame[csv_headers[sheet]]
+        records[sheet] = frame
 
     for sheet_name, sheet in records.items():
         if sheet_name in malformed_sheets:
@@ -308,58 +314,62 @@ def calculate_merge_conflicts():
             merge_conflicts[sheet_name] = {}
         if not matching_repeat_instances.get(sheet_name):
             matching_repeat_instances[sheet_name] = {}
+        if not matching_record_ids.get(sheet_name):
+            matching_record_ids[sheet_name] = {}
         for index, record in sheet.iterrows():
             recordid = record.get(recordid_field)
-            if recordid:
-                if isinstance(recordid, float) and recordid.is_integer():
-                    # Excel reads this in as a float :/
-                    recordid = str(int(record[recordid_field]))
-                recordid = str(recordid)
-                record_to_merge = {}
-                if decoded_records.get(recordid):
-                    flat_record = [r for r in decoded_records.get(recordid) if not r['redcap_repeat_instance']]
-                    if flat_record:
-                        record_to_merge = flat_record[0].copy()
-                    for instrument in project_info['repeatable_instruments']:
-                        instrument_fields = [d for d in dd_data if d['form_name'] == instrument]
-                        primary_key = reconciliation_columns.get(instrument)
-                        matching_record = None
-                        for r in decoded_records.get(recordid):
-                            if r['redcap_repeat_instrument'] != instrument:
-                                continue
-                            is_matching = True
-                            # TODO Make sure dates are formatted the same way
-                            for key in primary_key:
-                                if record.get(key) != r.get(key):
-                                    is_matching = False
-                                    break
-                            if is_matching:
-                                matching_record = r
-                        if matching_record:
-                            for field in instrument_fields:
-                                record_to_merge[field['field_name']] = matching_record[field['field_name']]
-                            if not matching_repeat_instances[sheet_name].get(index):
-                                matching_repeat_instances[sheet_name][index] = {}
-                            matching_repeat_instances[sheet_name][index][instrument] = matching_record['redcap_repeat_instance']
-                    exact_match = True
-                    for dd_field in dd_data:
-                        if record_to_merge[dd_field['field_name']] and str(record.get(dd_field['field_name'])) != record_to_merge[dd_field['field_name']]:
-                            # logging.warning(record.get(recordid_field))
-                            # logging.warning(dd_field['field_name'])
-                            # logging.warning("Datafile: " + str(record.get(dd_field['field_name'])))
-                            # logging.warning("Existing: " + record_to_merge[dd_field['field_name']])
-                            exact_match = False
-                    if not exact_match:
-                        merge_conflicts[sheet_name][index] = record_to_merge
-                        if next_sheet_name is None:
-                            next_sheet_name = sheet_name
-                            next_merge_row = index
+            if not recordid:
+                existing_record = [r for r in existing_records if not r['redcap_repeat_instance'] and r[unique_field.field_name] == str(record.get(unique_field.field_name))]
+                if not existing_record:
+                    continue
+                recordid = existing_record[0][recordid_field]
+                matching_record_ids[sheet_name][index] = recordid
+            if isinstance(recordid, float) and recordid.is_integer():
+                # Excel reads this in as a float :/
+                recordid = str(int(record[recordid_field]))
+            recordid = str(recordid)
+            record_to_merge = {}
+            if not decoded_records.get(recordid):
+                continue
+            flat_record = [r for r in decoded_records.get(recordid) if not r['redcap_repeat_instance']]
+            if flat_record:
+                record_to_merge = flat_record[0].copy()
+            for instrument in project_info['repeatable_instruments']:
+                instrument_fields = [d for d in dd_data if d['form_name'] == instrument]
+                primary_key = reconciliation_columns.get(instrument)
+                matching_record = None
+                for r in decoded_records.get(recordid):
+                    if r['redcap_repeat_instrument'] != instrument:
+                        continue
+                    is_matching = all([record.get(key) == r.get(key) for key in primary_key])
+                    if is_matching:
+                        matching_record = r
+                if matching_record:
+                    for field in instrument_fields:
+                        record_to_merge[field['field_name']] = matching_record[field['field_name']]
+                    if not matching_repeat_instances[sheet_name].get(index):
+                        matching_repeat_instances[sheet_name][index] = {}
+                    matching_repeat_instances[sheet_name][index][instrument] = matching_record['redcap_repeat_instance']
+            exact_match = True
+            for dd_field in dd_data:
+                if str(record.get(dd_field['field_name'])) != record_to_merge.get(dd_field['field_name']):
+                    # logging.warning(record.get(recordid_field))
+                    # logging.warning(dd_field['field_name'])
+                    # logging.warning("Datafile: " + str(record.get(dd_field['field_name'])))
+                    # logging.warning("Existing: " + record_to_merge[dd_field['field_name']])
+                    exact_match = False
+            if not exact_match:
+                merge_conflicts[sheet_name][index] = record_to_merge
+                if next_sheet_name is None:
+                    next_sheet_name = sheet_name
+                    next_merge_row = index
 
     results = {
         'mergeConflicts': merge_conflicts,
         'workingSheetName': next_sheet_name,
         'workingMergeRow': next_merge_row,
         'matchingRepeatInstances': matching_repeat_instances,
+        'matchingRecordIds': matching_record_ids,
     }
     return flask.jsonify(results)
 
@@ -422,6 +432,7 @@ def encode_records():
     malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
     decoded_records = json.loads(form.get('decodedRecords'))
     matching_repeat_instances = json.loads(form.get('matchingRepeatInstances'))
+    matching_record_ids = json.loads(form.get('matchingRecordIds'))
     project_info = json.loads(form.get('projectInfo'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
@@ -437,17 +448,26 @@ def encode_records():
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     rows_in_error = datafile_errors['rows_in_error']
 
-    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, {'rows_in_error': rows_in_error, 'decoded_records': decoded_records, 'matching_repeat_instances': matching_repeat_instances})
+    options = {
+        'rows_in_error': rows_in_error,
+        'decoded_records': decoded_records,
+        'matching_repeat_instances': matching_repeat_instances,
+        'matching_record_ids': matching_record_ids
+    }
+    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, options)
 
     json_data = {}
     output_records = {}
+    encoded_record_headers = {}
 
     for sheet_name in encoded_records:
         if malformed_sheets and sheet_name in malformed_sheets:
             continue
         output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
+        encoded_record_headers[sheet_name] = list(encoded_records[sheet_name].columns)
 
     results = {
         'encodedRecords': output_records,
+        'encodedRecordHeaders': encoded_record_headers,
     }
     return flask.jsonify(results)

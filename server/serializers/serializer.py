@@ -13,6 +13,7 @@ def encode_datafile(data_dictionary, project_info, records, options={}):
             sheet_options = {
                 'rows_in_error': options.get('rows_in_error', {}).get(sheet_name, []),
                 'matching_repeat_instances': options.get('matching_repeat_instances', {}).get(sheet_name, {}),
+                'matching_record_ids': options.get('matching_record_ids', {}).get(sheet_name, {}),
                 'decoded_records': options.get('decoded_records', {}),
             }
 
@@ -32,8 +33,7 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
     rows_in_error = options.get('rows_in_error', [])
     decoded_records = options.get('decoded_records', {})
     matching_repeat_instances = options.get('matching_repeat_instances', {})
-
-    logging.warning(matching_repeat_instances)
+    matching_record_ids = options.get('matching_record_ids', {})
 
     for form_name in matching_fields:
         encoded_fields[form_name] = []
@@ -52,39 +52,45 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
 
     # Counts repeats of recordid in the datafile
     repeat_instance_dict = {}
-    if unique_field.field_name in list(records.columns):
-        record_inst = project_info.get('next_record_name', 1)
-        for index, row in records.iterrows():
-            encoded_row = {}
-            if project_info.get('record_autonumbering_enabled') == 1:
-                encoded_row[recordid_field.field_name] = record_inst
-            if int(index) in rows_in_error:
-                continue
-            # TODO need a way to get the max instance number per repeatable instrument
-            if not repeat_instance_dict.get(row[unique_field.field_name]):
-                repeat_instance_dict[row[unique_field.field_name]] = 1
+    if unique_field.field_name not in list(records.columns):
+        return output_records
+
+    next_inst = project_info.get('next_record_name', 1)
+    for index, row in records.iterrows():
+        encoded_row = {}
+        record_inst = None
+        if str(index) in matching_record_ids:
+            record_inst = matching_record_ids.get(str(index))
+        else:
+            record_inst = next_inst
+            next_inst += 1
+        if project_info.get('record_autonumbering_enabled') == 1:
+            encoded_row[recordid_field.field_name] = record_inst
+        if int(index) in rows_in_error:
+            continue
+        if not repeat_instance_dict.get(row[unique_field.field_name]):
+            repeat_instance_dict[row[unique_field.field_name]] = 1
+        else:
+            repeat_instance_dict[row[unique_field.field_name]] += 1
+        for form_name in matching_fields:
+            if form_name in project_info.get('repeatable_instruments'):
+                row_to_encode = {}
+                if project_info.get('record_autonumbering_enabled') == 1:
+                    row_to_encode[recordid_field.field_name] = record_inst
+                row_to_encode = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=row_to_encode)
+                row_to_encode['redcap_repeat_instrument'] = form_name
+                max_instance_number = 0
+                for decoded_record in decoded_records.get(str(row.get(recordid_field.field_name)), []):
+                    if decoded_record['redcap_repeat_instrument'] == form_name and int(decoded_record['redcap_repeat_instance']) > max_instance_number:
+                        max_instance_number = int(decoded_record['redcap_repeat_instance'])
+                repeat_instance = max_instance_number + repeat_instance_dict.get(row[unique_field.field_name])
+                if matching_repeat_instances.get(str(index), {}).get(form_name):
+                    repeat_instance = matching_repeat_instances.get(str(index), {}).get(form_name)
+                row_to_encode['redcap_repeat_instance'] = repeat_instance
+                output_records = output_records.append(row_to_encode, ignore_index=True)
             else:
-                repeat_instance_dict[row[unique_field.field_name]] += 1
-            for form_name in matching_fields:
-                if form_name in project_info.get('repeatable_instruments'):
-                    row_to_encode = {}
-                    if project_info.get('record_autonumbering_enabled') == 1:
-                        row_to_encode[recordid_field.field_name] = record_inst
-                    row_to_encode = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=row_to_encode)
-                    row_to_encode['redcap_repeat_instrument'] = form_name
-                    max_instance_number = 0
-                    for decoded_record in decoded_records.get(str(row.get(recordid_field.field_name)), []):
-                        if decoded_record['redcap_repeat_instrument'] == form_name and int(decoded_record['redcap_repeat_instance']) > max_instance_number:
-                            max_instance_number = int(decoded_record['redcap_repeat_instance'])
-                    repeat_instance = max_instance_number + repeat_instance_dict.get(row[unique_field.field_name])
-                    if matching_repeat_instances.get(str(index), {}).get(form_name):
-                        repeat_instance = matching_repeat_instances.get(str(index), {}).get(form_name)
-                    row_to_encode['redcap_repeat_instance'] = repeat_instance
-                    output_records = output_records.append(row_to_encode, ignore_index=True)
-                else:
-                    encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
-            output_records = output_records.append(encoded_row, ignore_index=True)
-            record_inst += 1
+                encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
+        output_records = output_records.append(encoded_row, ignore_index=True)
 
     return output_records
 

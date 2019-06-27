@@ -27,6 +27,7 @@ class ErrorsResolved extends Component {
       malformedSheets,
       decodedRecords,
       matchingRepeatInstances,
+      matchingRecordIds,
       encodeRecords,
     } = this.props;
     const payload = {
@@ -34,6 +35,7 @@ class ErrorsResolved extends Component {
       projectInfo,
       malformedSheets,
       matchingRepeatInstances,
+      matchingRecordIds,
       ddData,
       decodedRecords,
       csvHeaders,
@@ -57,13 +59,11 @@ class ErrorsResolved extends Component {
 
   render() {
     const {
-      jsonData,
       projectInfo,
       dataFileName,
       dataFieldToRedcapFieldMap,
-      ddData,
-      csvHeaders,
-      malformedSheets,
+      encodedRecords,
+      encodedRecordHeaders,
       token,
       importErrors,
       loading,
@@ -171,25 +171,17 @@ class ErrorsResolved extends Component {
             className="ErrorsResolved-hidden"
             method="POST"
           >
-            <input key="jsonData" name="jsonData" type="hidden" value={JSON.stringify(jsonData)} />
-            <input key="ddData" name="ddData" type="hidden" value={JSON.stringify(ddData)} />
             <input
-              key="csvHeaders"
-              name="csvHeaders"
+              key="encodedRecords"
+              name="encodedRecords"
               type="hidden"
-              value={JSON.stringify(csvHeaders)}
+              value={JSON.stringify(encodedRecords)}
             />
             <input
-              key="projectInfo"
-              name="projectInfo"
+              key="encodedRecordHeaders"
+              name="encodedRecordHeaders"
               type="hidden"
-              value={JSON.stringify(projectInfo)}
-            />
-            <input
-              key="malformedSheets"
-              name="malformedSheets"
-              type="hidden"
-              value={JSON.stringify(malformedSheets)}
+              value={JSON.stringify(encodedRecordHeaders)}
             />
             <input key="dataFileName" name="dataFileName" type="hidden" value={dataFileName} />
           </form>
@@ -220,8 +212,10 @@ ErrorsResolved.propTypes = {
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
   decodedRecords: PropTypes.objectOf(PropTypes.array),
   matchingRepeatInstances: PropTypes.objectOf(PropTypes.object),
+  matchingRecordIds: PropTypes.objectOf(PropTypes.object),
   jsonData: PropTypes.objectOf(PropTypes.array),
   encodedRecords: PropTypes.objectOf(PropTypes.array),
+  encodedRecordHeaders: PropTypes.objectOf(PropTypes.array),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   dataFileName: PropTypes.string,
@@ -237,8 +231,10 @@ ErrorsResolved.defaultProps = {
   dataFieldToRedcapFieldMap: {},
   jsonData: {},
   encodedRecords: {},
+  encodedRecordHeaders: {},
   decodedRecords: {},
   matchingRepeatInstances: {},
+  matchingRecordIds: {},
   projectInfo: {},
   malformedSheets: [],
   dataFileName: '',
