@@ -38,16 +38,13 @@ export function resolveColumn(payload) {
       'originalToCorrectedValueMap',
       JSON.stringify(payload.originalToCorrectedValueMap || {}),
     );
-    data.append('nextColumn', payload.nextColumn ? JSON.stringify(payload.nextColumn) : '');
+    data.append('nextColumn', JSON.stringify(payload.nextColumn || ''));
     data.append('nextSheetName', JSON.stringify(payload.nextSheetName || ''));
-    data.append(
-      'workingColumn',
-      payload.workingColumn ? JSON.stringify(payload.workingColumn) : '',
-    );
+    data.append('workingColumn', JSON.stringify(payload.workingColumn || ''));
     data.append('workingSheetName', JSON.stringify(payload.workingSheetName || ''));
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
     data.append('rowsInError', JSON.stringify(payload.rowsInError));
-    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
+    data.append('action', JSON.stringify(payload.action || ''));
 
     const request = axios({
       method: 'POST',
@@ -140,7 +137,7 @@ export function resolveRow(payload) {
     data.append('workingSheetName', JSON.stringify(payload.workingSheetName || ''));
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
     data.append('rowsInError', JSON.stringify(payload.rowsInError));
-    data.append('action', payload.action ? JSON.stringify(payload.action) : '');
+    data.append('action', JSON.stringify(payload.action || ''));
 
     const request = axios({
       method: 'POST',

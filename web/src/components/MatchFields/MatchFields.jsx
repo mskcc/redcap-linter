@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Spin, Modal } from 'antd';
+import { Spin, Modal, Icon } from 'antd';
 import PropTypes from 'prop-types';
 import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
@@ -9,7 +9,8 @@ import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import ProjectInfo from '../ProjectInfo/ProjectInfo';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchFields.scss';
-import { saveFields, removeFieldMatch } from '../../actions/REDCapLinterActions';
+import '../../App.scss';
+import { saveFields, removeFieldMatch, navigateTo } from '../../actions/REDCapLinterActions';
 
 class MatchFields extends Component {
   constructor(props) {
@@ -42,6 +43,16 @@ class MatchFields extends Component {
     this.setState({
       showModal: false,
     });
+  }
+
+  forward() {
+    const { navigateTo } = this.props;
+    navigateTo('lint');
+  }
+
+  back() {
+    const { navigateTo } = this.props;
+    navigateTo('intro');
   }
 
   saveFields() {
@@ -192,6 +203,16 @@ class MatchFields extends Component {
     const fieldMatcher = <FieldMatcher showModal={showModal} />;
     return (
       <div>
+        <div className="MatchFields-navigation">
+          <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+            <Icon type="left" />
+            {' Back to Intro'}
+          </button>
+          <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
+            {'Continue to Linting '}
+            <Icon type="right" />
+          </button>
+        </div>
         <div>
           <ActionMenu />
           <ProjectInfo />
@@ -272,7 +293,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ saveFields, removeFieldMatch }, dispatch);
+  return bindActionCreators({ saveFields, removeFieldMatch, navigateTo }, dispatch);
 }
 
 export default connect(

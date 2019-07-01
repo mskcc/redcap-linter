@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Icon } from 'antd';
 import PropTypes from 'prop-types';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchChoices.scss';
-import { removeChoiceMatch } from '../../actions/REDCapLinterActions';
+import '../../App.scss';
+import { removeChoiceMatch, navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
 
 class MatchChoices extends Component {
@@ -41,6 +43,16 @@ class MatchChoices extends Component {
       action,
     };
     resolveColumn(payload);
+  }
+
+  forward() {
+    const { navigateTo } = this.props;
+    navigateTo('merge');
+  }
+
+  back() {
+    const { navigateTo } = this.props;
+    navigateTo('matchFields');
   }
 
   render() {
@@ -93,6 +105,16 @@ class MatchChoices extends Component {
 
     return (
       <div>
+        <div className="MatchChoices-navigation">
+          <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+            <Icon type="left" />
+            {' Back to Match Fields'}
+          </button>
+          <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
+            {'Continue to Merging '}
+            <Icon type="right" />
+          </button>
+        </div>
         <ActionMenu />
         <div className="MatchChoices-container">
           <div>
@@ -160,7 +182,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, removeChoiceMatch }, dispatch);
+  return bindActionCreators({ resolveColumn, removeChoiceMatch, navigateTo }, dispatch);
 }
 
 export default connect(

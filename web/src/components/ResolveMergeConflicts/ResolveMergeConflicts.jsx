@@ -4,7 +4,7 @@ import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { Spin } from 'antd';
+import { Spin, Icon } from 'antd';
 import MergeRecords from '../MergeRecords/MergeRecords';
 import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
@@ -59,7 +59,17 @@ class ResolveMergeConflicts extends Component {
     this.setState({ mode: 'MERGE' });
   }
 
+  forward() {
+    const { navigateTo } = this.props;
+    navigateTo('finish');
+  }
+
   back() {
+    const { navigateTo } = this.props;
+    navigateTo('lint');
+  }
+
+  selectReconciliationColumns() {
     this.setState({ mode: 'CHOOSE_RECONCILIATION_COLUMNS' });
   }
 
@@ -84,11 +94,23 @@ class ResolveMergeConflicts extends Component {
     } else if (!calculatedMergeConflicts || hasMergeConflicts) {
       if (mode === 'CHOOSE_RECONCILIATION_COLUMNS') {
         content = (
-          <div className="ResolveMergeConflicts-selector">
-            <RepeatSelector />
-            <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">
-              Continue
-            </button>
+          <div>
+            <div className="ResolveMergeConflicts-navigation">
+              <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+                <Icon type="left" />
+                {' Back to Linting'}
+              </button>
+              <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
+                {'Continue to Finish '}
+                <Icon type="right" />
+              </button>
+            </div>
+            <div className="ResolveMergeConflicts-selector">
+              <RepeatSelector />
+              <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">
+                Continue
+              </button>
+            </div>
           </div>
         );
       } else if (mode === 'MERGE') {
@@ -96,7 +118,7 @@ class ResolveMergeConflicts extends Component {
           <div>
             <button
               type="button"
-              onClick={this.back.bind(this)}
+              onClick={this.selectReconciliationColumns.bind(this)}
               className="App-actionButton ResolveMergeConflicts-back"
             >
               Select Reconciliation Column(s)
