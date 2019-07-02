@@ -7,7 +7,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { postForm } from '../../actions/REDCapLinterActions';
 
-class Form extends Component {
+export class Form extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -27,6 +27,8 @@ class Form extends Component {
         environment: 'test',
       },
     };
+
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -39,7 +41,7 @@ class Form extends Component {
   onSubmit() {
     let errorText = '';
     const { form } = this.state;
-    const { submitForm } = this.props;
+    const { postForm } = this.props;
     if (!form.token && !form.dataDictionary) {
       if (!errorText) {
         errorText += '<ul>';
@@ -58,7 +60,7 @@ class Form extends Component {
       return;
     }
     this.setState({ errorText, loading: true });
-    submitForm(form);
+    postForm(form);
   }
 
   handleOnChangeForm(field, e) {
@@ -215,7 +217,7 @@ class Form extends Component {
         </fieldset>
 
         <div className="Form-submitButtonDiv">
-          <button type="button" onClick={this.onSubmit.bind(this)} className="App-submitButton">
+          <button type="button" onClick={this.onSubmit} className="App-submitButton">
             {buttonText}
           </button>
         </div>
@@ -226,7 +228,6 @@ class Form extends Component {
 }
 
 Form.propTypes = {
-  submitForm: PropTypes.func.isRequired,
   error: PropTypes.objectOf(PropTypes.any),
 };
 
@@ -239,7 +240,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ submitForm: postForm }, dispatch);
+  return bindActionCreators({ postForm }, dispatch);
 }
 
 export default connect(

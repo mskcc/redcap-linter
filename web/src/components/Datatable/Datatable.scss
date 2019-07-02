@@ -1,14 +1,14 @@
 .Datatable-headerError {
-	color: #E5153E;
+  color: #e5153e;
 }
 
 .Datatable-cellError {
-	color: #E5153E;
+  color: #e5153e;
 }
 
 .Datatable-searchBar {
-	width: 100%;
-	text-align: left;
+  width: 100%;
+  text-align: left;
 }
 
 // .ReactTable, .ReactTable .rt-th, .rt-td, .rt-table, .rt-tbody {
@@ -20,15 +20,16 @@ table.ant-table-fixed {
 }
 
 .ant-table-scroll table .ant-table-fixed-columns-in-body {
-	visibility: visible;
+  visibility: visible;
 }
 
 div.truncated {
+  width: 95px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .Datatable-highlight {
-	background-color: #ffec3d;
+  background-color: #ffec3d;
 }

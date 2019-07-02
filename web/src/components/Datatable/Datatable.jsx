@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './Datatable.scss';
 import '../../App.scss';
-import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import { Table, Input, Tooltip } from 'antd';
 import PropTypes from 'prop-types';
@@ -19,18 +18,17 @@ class Datatable extends Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const {
-      filterColumn,
-      tableFilter,
-      headers,
-      tableData,
-      tableErrors,
+      filterColumn, tableFilter, headers, tableData, tableErrors,
     } = nextProps;
     let filterErrors = tableErrors;
     if (tableFilter && filterColumn) {
       const indicesToFilter = [];
       for (let i = 0; i < tableData.length; i++) {
         for (let j = 0; j < headers.length; j++) {
-          if (tableData[i][headers[j]] && tableData[i][headers[j]].toString() === tableFilter.toString()) {
+          if (
+            tableData[i][headers[j]]
+            && tableData[i][headers[j]].toString() === tableFilter.toString()
+          ) {
             indicesToFilter.push(i);
             break;
           }
@@ -44,16 +42,15 @@ class Datatable extends Component {
 
   onSearchChange(e) {
     let filterErrors = [];
-    const {
-      headers,
-      tableData,
-      tableErrors,
-    } = this.props;
+    const { headers, tableData, tableErrors } = this.props;
     if (e.target.value) {
       const indicesToFilter = [];
       for (let i = 0; i < tableData.length; i++) {
         for (let j = 0; j < headers.length; j++) {
-          if (tableData[i][headers[j]] && tableData[i][headers[j]].toString().includes(e.target.value)) {
+          if (
+            tableData[i][headers[j]]
+            && tableData[i][headers[j]].toString().includes(e.target.value)
+          ) {
             indicesToFilter.push(i);
             break;
           }
@@ -65,23 +62,13 @@ class Datatable extends Component {
   }
 
   renderCell(header, cellInfo, index) {
-    // console.log(header)
-    // console.log(cellInfo)
-    const {
-      tableErrors,
-      editable,
-      matchedFieldMap,
-      sheetName,
-    } = this.props;
+    const { tableErrors, matchedFieldMap, sheetName } = this.props;
 
-    const {
-      filterErrors,
-    } = this.state;
+    const { filterErrors } = this.state;
     let className = '';
     if (matchedFieldMap[sheetName] && matchedFieldMap[sheetName][header]) {
       className += ' Datatable-highlight';
     }
-    // console.log(this.state);
     let tErrors = tableErrors;
     if (filterErrors.length > 0) {
       tErrors = filterErrors;
@@ -100,29 +87,10 @@ class Datatable extends Component {
     );
   }
 
-  // renderErrors(cellInfo) {
-  //   const {
-  //     tableErrors,
-  //   } = this.props;
-  //   let hasError = false;
-  //   if (tableErrors[cellInfo.index] && tableErrors[cellInfo.index][cellInfo.column.id]) {
-  //     hasError = tableErrors[cellInfo.index][cellInfo.column.id];
-  //   }
-  //   if (hasError) {
-  //     return {
-  //       style: {
-  //         backgroundColor: '#E5153E',
-  //       },
-  //     };
-  //   }
-  //   return { };
-  // }
-
   render() {
     const {
       headers,
       tableData,
-      tableErrors,
       filterColumn,
       tableFilter,
       selectedRowNum,
@@ -137,7 +105,7 @@ class Datatable extends Component {
 
     let columns = [];
     if (headers.length > 0) {
-      columns = headers.map((header, idx) => {
+      columns = headers.map((header) => {
         let headerClassName = 'truncated';
         let className = '';
         if (tableFieldsNotInRedcap.includes(header)) {
@@ -147,7 +115,11 @@ class Datatable extends Component {
           headerClassName = 'Datatable-headerError';
           className += ' Datatable-cellError';
         }
-        if (!fieldsSaved && dataFieldToRedcapFieldMap[sheetName] && dataFieldToRedcapFieldMap[sheetName][header]) {
+        if (
+          !fieldsSaved
+          && dataFieldToRedcapFieldMap[sheetName]
+          && dataFieldToRedcapFieldMap[sheetName][header]
+        ) {
           className += ' Datatable-highlight';
         }
 
@@ -155,10 +127,14 @@ class Datatable extends Component {
           className += ' Datatable-highlight';
         }
         const column = {
-          title: <Tooltip title={header}><div className={headerClassName}>{header}</div></Tooltip>,
+          title: (
+            <Tooltip title={header}>
+              <div className={headerClassName}>{header}</div>
+            </Tooltip>
+          ),
           className,
           key: header,
-          render: (text, record) => (this.renderCell(header, record, tableData.indexOf(record))),
+          render: (text, record) => this.renderCell(header, record, tableData.indexOf(record)),
         };
         // if (idx > 0) {
         //   column.width = 100;
@@ -203,10 +179,22 @@ class Datatable extends Component {
     return (
       <div>
         <div className="Datatable-searchBar">
-          Search: <Input className="App-tableSearchBar" value={this.state.search} onChange={this.onSearchChange.bind(this)} />
+          Search:
+          {' '}
+          <Input
+            className="App-tableSearchBar"
+            value={search}
+            onChange={this.onSearchChange.bind(this)}
+          />
         </div>
         <div className="Datatable-table">
-          <Table className="fixed" size="small" columns={columns} dataSource={data} scroll={{ x: columns.length * 100 }} />
+          <Table
+            className="fixed"
+            size="small"
+            columns={columns}
+            dataSource={data}
+            scroll={{ x: columns.length * 100 }}
+          />
         </div>
       </div>
     );
@@ -214,27 +202,33 @@ class Datatable extends Component {
 }
 
 Datatable.propTypes = {
-  headers: PropTypes.array.isRequired,
-  tableData: PropTypes.array,
-  tableErrors: PropTypes.array,
-  tableFieldsNotInRedcap: PropTypes.array,
-  dataFieldToRedcapFieldMap: PropTypes.object,
-  matchedFieldMap: PropTypes.object,
+  headers: PropTypes.arrayOf(PropTypes.string),
+  tableData: PropTypes.arrayOf(PropTypes.object),
+  tableErrors: PropTypes.arrayOf(PropTypes.object),
+  tableFieldsNotInRedcap: PropTypes.arrayOf(PropTypes.string),
+  dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
+  matchedFieldMap: PropTypes.objectOf(PropTypes.object),
   sheetName: PropTypes.string,
+  tableFilter: PropTypes.string,
+  selectedRowNum: PropTypes.number,
+  filterColumn: PropTypes.string,
   sheetInError: PropTypes.bool,
-  editable: PropTypes.bool,
   fieldsSaved: PropTypes.bool,
 };
 
 Datatable.defaultProps = {
+  headers: [],
   tableData: [],
   tableErrors: [],
   tableFieldsNotInRedcap: [],
   dataFieldToRedcapFieldMap: {},
   matchedFieldMap: {},
   sheetName: '',
-  editable: true,
+  filterColumn: '',
+  tableFilter: '',
+  selectedRowNum: -1,
   sheetInError: false,
+  fieldsSaved: false,
 };
 
 export default Datatable;
