@@ -22,11 +22,12 @@ def resolve_column():
     next_sheet_name = json.loads(form.get('nextSheetName', '""'))
     working_column = json.loads(form.get('workingColumn', '""'))
     working_sheet_name = json.loads(form.get('workingSheetName', '""'))
-    data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap'))
-    original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap'))
+    data_field_to_choice_map = json.loads(form.get('dataFieldToChoiceMap', '{}'))
+    original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap', '{}'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
     transform_map = data_field_to_choice_map.get(working_sheet_name, {}).get(working_column, {})
+
     if not transform_map:
         transform_map = original_to_correct_value_map.get(working_sheet_name, {}).get(working_column, {})
 
@@ -47,9 +48,9 @@ def resolve_column():
             frame[working_column] = new_list
         records[sheet] = frame
 
-    columns_in_error = json.loads(form.get('columnsInError'))
-    rows_in_error = json.loads(form.get('rowsInError'))
-    project_info = json.loads(form.get('projectInfo'))
+    columns_in_error = json.loads(form.get('columnsInError', '{}'))
+    rows_in_error = json.loads(form.get('rowsInError', '{}'))
+    project_info = json.loads(form.get('projectInfo', '{}'))
 
     next_sheet = False
     for sheet in columns_in_error:
