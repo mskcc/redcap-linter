@@ -10,7 +10,6 @@ class Datatable extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selected: '',
       search: '',
       filterErrors: {},
     };
@@ -172,7 +171,7 @@ class Datatable extends Component {
       data = indicesToFilter.map(index => data[index]);
     }
 
-    if (selectedRowNum || selectedRowNum === 0) {
+    if (selectedRowNum >= 0) {
       data = [data[selectedRowNum]];
     }
 

@@ -52,26 +52,31 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
 
     # Counts repeats of recordid in the datafile
     repeat_instance_dict = {}
-    if unique_field.field_name not in list(records.columns):
+    if project_info.get('record_autonumbering_enabled') == 0 and unique_field.field_name not in list(records.columns):
         return output_records
 
     next_inst = project_info.get('next_record_name', 1)
     for index, row in records.iterrows():
         encoded_row = {}
         record_inst = None
+        if int(index) in rows_in_error:
+            continue
+
         if str(index) in matching_record_ids:
             record_inst = matching_record_ids.get(str(index))
         else:
             record_inst = next_inst
             next_inst += 1
+
         if project_info.get('record_autonumbering_enabled') == 1:
             encoded_row[recordid_field.field_name] = record_inst
-        if int(index) in rows_in_error:
-            continue
-        if not repeat_instance_dict.get(row[unique_field.field_name]):
-            repeat_instance_dict[row[unique_field.field_name]] = 1
-        else:
-            repeat_instance_dict[row[unique_field.field_name]] += 1
+
+        if row.get(unique_field.field_name):
+            if not repeat_instance_dict.get(row[unique_field.field_name]):
+                repeat_instance_dict[row[unique_field.field_name]] = 1
+            else:
+                repeat_instance_dict[row[unique_field.field_name]] += 1
+
         for form_name in matching_fields:
             if form_name in project_info.get('repeatable_instruments'):
                 row_to_encode = {}

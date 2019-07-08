@@ -13,9 +13,7 @@ import { importRecords, encodeRecords } from '../../actions/REDCapLinterActions'
 class ErrorsResolved extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      selectedValue: '',
-    };
+    this.state = {};
   }
 
   componentDidMount() {

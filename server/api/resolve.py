@@ -26,10 +26,13 @@ def resolve_column():
     original_to_correct_value_map = json.loads(form.get('originalToCorrectedValueMap', '{}'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
-    transform_map = data_field_to_choice_map.get(working_sheet_name, {}).get(working_column, {})
+    transform_map = {}
 
-    if not transform_map:
-        transform_map = original_to_correct_value_map.get(working_sheet_name, {}).get(working_column, {})
+    for sheet in json_data:
+        transform_map[sheet] = {
+            **data_field_to_choice_map.get(working_sheet_name, {}).get(working_column, {}),
+            **original_to_correct_value_map.get(working_sheet_name, {}).get(working_column, {})
+        }
 
     data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
@@ -41,7 +44,7 @@ def resolve_column():
         if sheet == working_sheet_name:
             new_list = []
             for field in list(frame[working_column]):
-                new_value = transform_map.get(str(field)) or field
+                new_value = transform_map[sheet].get(str(field)) or field
                 if isinstance(new_value, list):
                     new_value = ', '.join([str(i) for i in new_value])
                 new_list.append(new_value)
@@ -68,7 +71,7 @@ def resolve_column():
                 else:
                     next_column = cols_in_error[cols_in_error.index(working_column)+1]
 
-    next_row = None
+    next_row = -1
     if not next_column:
         for sheet in rows_in_error:
             if rows_in_error[sheet]:
@@ -103,8 +106,7 @@ def resolve_column():
         results['workingColumn'] = next_column
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = field_errors
-        if next_row:
-            results['workingRow'] = next_row
+        results['workingRow'] = next_row
 
     return flask.jsonify(results)
 
@@ -160,8 +162,8 @@ def resolve_row():
                 else:
                     next_row = sheet_rows_in_error[sheet_rows_in_error.index(working_row)+1]
 
-    next_column = None
-    if next_row == '':
+    next_column = ''
+    if next_row == -1:
         for sheet in columns_in_error:
             if columns_in_error[sheet]:
                 next_sheet_name = sheet
@@ -192,10 +194,8 @@ def resolve_row():
     if action == 'continue':
         results['workingRow'] = next_row
         results['workingSheetName'] = next_sheet_name
-        results['fieldErrors'] = {}
-        if next_column:
-            results['workingColumn'] = next_column
-            results['fieldErrors'] = field_errors
+        results['workingColumn'] = next_column
+        results['fieldErrors'] = field_errors
     return flask.jsonify(results)
 
 

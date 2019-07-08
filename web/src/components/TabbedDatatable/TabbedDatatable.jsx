@@ -72,7 +72,7 @@ class TabbedDatatable extends Component {
           filterColumn = workingColumn;
         }
 
-        let selectedRowNum = '';
+        let selectedRowNum = -1;
         if (sheetName === filterSheet) {
           selectedRowNum = filterRowNum;
         }
@@ -87,7 +87,7 @@ class TabbedDatatable extends Component {
         if (cellsWithErrors && cellsWithErrors[sheetName]) {
           tableErrors = cellsWithErrors[sheetName];
         }
-        if (selectedRowNum) {
+        if (selectedRowNum >= 0) {
           tableErrors = [tableErrors[selectedRowNum]];
         }
         let tableFieldsNotInRedcap = [];
