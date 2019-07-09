@@ -13,6 +13,8 @@ class Datatable extends Component {
       search: '',
       filterErrors: {},
     };
+
+    this.onSearchChange = this.onSearchChange.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -76,14 +78,7 @@ class Datatable extends Component {
     if (tErrors[index] && tErrors[index][header]) {
       hasError = tErrors[index][header];
     }
-    return (
-      <Cell
-        className={className}
-        cellData={cellInfo[header]}
-        hasError={hasError}
-        editable={false}
-      />
-    );
+    return <Cell className={className} cellData={cellInfo[header]} hasError={hasError} />;
   }
 
   render() {
@@ -180,11 +175,7 @@ class Datatable extends Component {
         <div className="Datatable-searchBar">
           Search:
           {' '}
-          <Input
-            className="App-tableSearchBar"
-            value={search}
-            onChange={this.onSearchChange.bind(this)}
-          />
+          <Input className="App-tableSearchBar" value={search} onChange={this.onSearchChange} />
         </div>
         <div className="Datatable-table">
           <Table

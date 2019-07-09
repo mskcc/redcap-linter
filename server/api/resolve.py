@@ -320,7 +320,8 @@ def calculate_merge_conflicts():
         for index, record in sheet.iterrows():
             recordid = record.get(recordid_field)
             if not recordid:
-                existing_record = [r for r in existing_records if not r['redcap_repeat_instance'] and r[unique_field.field_name] == str(record.get(unique_field.field_name))]
+                # If recordid doesn't exist try to match on the secondary unique field
+                existing_record = [r for r in existing_records if not r['redcap_repeat_instance'] and str(r[unique_field.field_name]) == str(record.get(unique_field.field_name))]
                 if not existing_record:
                     continue
                 recordid = existing_record[0][recordid_field]
@@ -353,11 +354,11 @@ def calculate_merge_conflicts():
                     matching_repeat_instances[sheet_name][index][instrument] = matching_record['redcap_repeat_instance']
             exact_match = True
             for dd_field in dd_data:
-                if str(record.get(dd_field['field_name'])) != record_to_merge.get(dd_field['field_name']):
+                if record_to_merge.get(dd_field['field_name']) and str(record.get(dd_field['field_name'])) != str(record_to_merge.get(dd_field['field_name'])):
                     # logging.warning(record.get(recordid_field))
                     # logging.warning(dd_field['field_name'])
                     # logging.warning("Datafile: " + str(record.get(dd_field['field_name'])))
-                    # logging.warning("Existing: " + record_to_merge[dd_field['field_name']])
+                    # logging.warning("Existing: " + str(record_to_merge.get(dd_field['field_name'])))
                     exact_match = False
             if not exact_match:
                 merge_conflicts[sheet_name][index] = record_to_merge

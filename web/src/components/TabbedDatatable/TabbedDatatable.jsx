@@ -115,12 +115,7 @@ class TabbedDatatable extends Component {
       }
       panes.push(
         <TabPane tab="Data-Dictionary" key={panes.length.toString()}>
-          <Datatable
-            sheetName="Data-Dictionary"
-            headers={ddHeaders}
-            tableData={ddDataRaw}
-            editable={false}
-          />
+          <Datatable sheetName="Data-Dictionary" headers={ddHeaders} tableData={ddDataRaw} />
         </TabPane>,
       );
       if (allErrors.length > 0) {
@@ -131,7 +126,6 @@ class TabbedDatatable extends Component {
               headers={['Error']}
               tableData={allErrors}
               sheetInError
-              editable={false}
             />
           </TabPane>,
         );

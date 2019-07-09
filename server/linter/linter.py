@@ -28,6 +28,7 @@ def lint_list(redcap_field, current_list, all_errors=[], is_unique=False):
         for idx, valid in enumerate(validations):
             if valid is False:
                 row_errors.append(idx)
+                all_errors.append("{0} did not pass date validation {1}. Min: {2} | Max: {3}".format(formatted_values[idx], redcap_field.text_validation, redcap_field.text_min, redcap_field.text_max))
     elif redcap_field.field_type in ['radio', 'dropdown', 'yesno', 'truefalse']:
         choices_dict = redcap_field.choices_dict
         # Always do this or just for yesno/truefalse?

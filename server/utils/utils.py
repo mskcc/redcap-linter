@@ -87,18 +87,18 @@ def validate_dates(date_list, date_format, date_min, date_max, required):
             is_valid = False if required else None
             formatted_dates.append(is_valid)
             continue
-        if isinstance(d, str):
-            d = parser.parse(d)
-        d = d.replace(tzinfo=None)
-        if ((date_min and d < date_min) or (date_max and d > date_max)):
-            logging.warning("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, date_min, date_max))
-            formatted_dates.append(False)
-        else:
-            try:
+        try:
+            if isinstance(d, str):
+                d = parser.parse(d)
+            d = d.replace(tzinfo=None)
+            if ((date_min and d < date_min) or (date_max and d > date_max)):
+                logging.warning("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, date_min, date_max))
+                formatted_dates.append(False)
+            else:
                 formatted_date = d.strftime("%m/%d/%Y")
                 formatted_dates.append(True)
-            except:
-                formatted_dates.append(False)
+        except:
+            formatted_dates.append(False)
 
     return formatted_dates
 
@@ -109,9 +109,9 @@ def format_dates(date_list, date_format):
         if not d or pd.isnull(d):
             formatted_dates.append(None)
             continue
-        if isinstance(d, str):
-            d = parser.parse(d)
         try:
+            if isinstance(d, str):
+                d = parser.parse(d)
             if date_format == 'date_mdy':
                 formatted_dates.append(d.strftime("%m/%d/%Y"))
             elif date_format == 'date_dmy':

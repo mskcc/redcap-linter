@@ -57,6 +57,7 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
 
     next_inst = project_info.get('next_record_name', 1)
     for index, row in records.iterrows():
+        encoded_rows = []
         encoded_row = {}
         record_inst = None
         if int(index) in rows_in_error:
@@ -92,11 +93,17 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
                 if matching_repeat_instances.get(str(index), {}).get(form_name):
                     repeat_instance = matching_repeat_instances.get(str(index), {}).get(form_name)
                 row_to_encode['redcap_repeat_instance'] = repeat_instance
-                output_records = output_records.append(row_to_encode, ignore_index=True)
+                encoded_rows.append(row_to_encode)
+                # output_records = output_records.append(row_to_encode, ignore_index=True)
             else:
                 encoded_row = encode_row(row, matching_fields[form_name], encoded_fields=encoded_fields[form_name], encoded_row=encoded_row)
-        output_records = output_records.append(encoded_row, ignore_index=True)
+                encoded_rows.insert(0, encoded_row)
+        for r in encoded_rows:
+            output_records = output_records.append(r, ignore_index=True)
 
+    output_records.fillna('', inplace=True)
+    output_records.drop_duplicates(inplace=True)
+    output_records.reset_index(drop=True, inplace=True)
     return output_records
 
 def decode_sheet(data_dictionary, records):
