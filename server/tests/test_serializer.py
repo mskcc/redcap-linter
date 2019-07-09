@@ -55,6 +55,7 @@ def test_serializer():
     records.fillna('', inplace=True)
 
     encoded_rows = serializer.encode_sheet(data_dictionary, project_info, records)
+    encoded_rows = encoded_rows.sort_index(axis=1)
 
     d = {
         'record_id': [1, 2],
@@ -63,6 +64,7 @@ def test_serializer():
         'gender': ['2', '1']
     }
     expected = pd.DataFrame(data=d)
+    expected = expected.sort_index(axis=1)
 
     assert len(encoded_rows) == 2
     assert_frame_equal(encoded_rows, expected, check_dtype=False)
@@ -161,6 +163,7 @@ def test_serializer_with_repeatable_instrument():
     records.fillna('', inplace=True)
 
     encoded_rows = serializer.encode_sheet(data_dictionary, project_info, records)
+    encoded_rows = encoded_rows.sort_index(axis=1)
 
     d = {
         'patient_id': ['123', '123', '123'],
@@ -171,6 +174,7 @@ def test_serializer_with_repeatable_instrument():
         'treatment_dx': ['', '2018-09-01', '2019-09-01']
     }
     expected = pd.DataFrame(data=d)
+    expected = expected.sort_index(axis=1)
 
     assert len(encoded_rows) == 3
     assert_frame_equal(encoded_rows, expected, check_dtype=False, check_like=True)
@@ -221,6 +225,7 @@ def test_serializer_with_repeatable_instrument():
     records.fillna('', inplace=True)
 
     encoded_rows = serializer.encode_sheet(data_dictionary, project_info, records)
+    encoded_rows = encoded_rows.sort_index(axis=1)
 
     d = {
         'patient_id': ['123', '123', '123'],
@@ -231,6 +236,7 @@ def test_serializer_with_repeatable_instrument():
         'treatment_dx': ['', '2018-09-01', '2019-09-01']
     }
     expected = pd.DataFrame(data=d)
+    expected = expected.sort_index(axis=1)
 
     assert len(encoded_rows) == 3
     assert_frame_equal(encoded_rows, expected, check_dtype=False, check_like=True)
@@ -287,6 +293,7 @@ def test_serializer_with_repeatable_instrument_and_matching_repeat_instances():
         }
     }
     encoded_rows = serializer.encode_sheet(data_dictionary, project_info, records, options)
+    encoded_rows = encoded_rows.sort_index(axis=1)
 
     d = {
         'patient_id': ['123', '123', '123'],
@@ -297,6 +304,7 @@ def test_serializer_with_repeatable_instrument_and_matching_repeat_instances():
         'treatment_dx': ['', '2018-09-01', '2019-09-01']
     }
     expected = pd.DataFrame(data=d)
+    expected = expected.sort_index(axis=1)
 
     assert len(encoded_rows) == 3
     assert_frame_equal(encoded_rows, expected, check_dtype=False, check_like=True)
@@ -345,6 +353,7 @@ def test_serializer_with_repeatable_instrument_and_matching_record_id():
         }
     }
     encoded_rows = serializer.encode_sheet(data_dictionary, project_info, records, options)
+    encoded_rows = encoded_rows.sort_index(axis=1)
 
     d = {
         'record_id': [1, 10],
@@ -354,6 +363,7 @@ def test_serializer_with_repeatable_instrument_and_matching_record_id():
         'gender': ['2', '2'],
     }
     expected = pd.DataFrame(data=d)
+    expected = expected.sort_index(axis=1)
 
     assert len(encoded_rows) == 2
     assert_frame_equal(encoded_rows, expected, check_dtype=False, check_like=True)
