@@ -101,6 +101,7 @@ def test_serializer_with_record_id():
     records.fillna('', inplace=True)
 
     encoded_rows = serializer.encode_sheet(data_dictionary, project_info, records)
+    encoded_rows = encoded_rows.sort_index(axis=1)
 
     d = {
         'patient_id': ["123", "456"],
@@ -109,6 +110,7 @@ def test_serializer_with_record_id():
         'gender': ['2', '1']
     }
     expected = pd.DataFrame(data=d)
+    expected = expected.sort_index(axis=1)
 
     assert len(encoded_rows) == 2
     assert_frame_equal(encoded_rows, expected, check_dtype=False)
