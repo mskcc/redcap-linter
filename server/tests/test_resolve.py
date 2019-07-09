@@ -114,3 +114,52 @@ def test_resolve_column_with_value_map(client):
 
     assert response.status_code == 200
     assert response.json['jsonData'] == json.loads('{"Test": [{"volume": "3"}, {"volume": "4"}]}')
+
+
+
+def test_resolve_merge(client):
+    """Test resolve column with value map"""
+
+    payload = {
+        "jsonData": json.dumps({
+            "Demographics": [
+                {"gender": "M"},
+                {"gender": "F"}
+            ]
+        }),
+        "csvHeaders": json.dumps({
+            "Demographics": ["gender"]
+        }),
+        "workingSheetName": json.dumps("Demographics"),
+        "workingMergeRow": json.dumps(0),
+        "mergeMap": json.dumps({
+            "Demographics": {
+                "0": {
+                    "gender": "male",
+                }
+            }
+        }),
+        "ddData": json.dumps([
+            {
+                "field_name": "record_id",
+                "form_name": "demographics",
+                "field_type": "text"
+            },
+            {
+                "field_name": "gender",
+                "form_name": "demographics",
+                "field_type": "radio",
+                "choices": "1, female | 2, male | 3, unknown | 4, unspecified | 5, not reported"
+            }
+        ]),
+        "projectInfo": json.dumps({
+            'secondary_unique_field': "",
+            'record_autonumbering_enabled': 1,
+            'next_record_name': 1
+        })
+    }
+
+    response = client.post('/resolve_merge_row', data=payload, content_type='multipart/form-data')
+
+    assert response.status_code == 200
+    assert response.json['jsonData'] == json.loads('{"Demographics": [{"gender": "male"}, {"gender": "F"}]}')

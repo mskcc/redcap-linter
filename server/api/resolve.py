@@ -209,9 +209,9 @@ def resolve_merge_row():
     next_sheet_name = json.loads(form.get('nextSheetName', '""'))
     working_merge_row = json.loads(form.get('workingMergeRow', '-1'))
     working_sheet_name = json.loads(form.get('workingSheetName', '""'))
-    merge_map = json.loads(form.get('mergeMap'))
-    merge_conflicts = json.loads(form.get('mergeConflicts'))
-    project_info = json.loads(form.get('projectInfo'))
+    merge_map = json.loads(form.get('mergeMap', '{}'))
+    merge_conflicts = json.loads(form.get('mergeConflicts', '{}'))
+    project_info = json.loads(form.get('projectInfo', '{}'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
     data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
