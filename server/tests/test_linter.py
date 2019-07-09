@@ -106,7 +106,7 @@ def test_validation_permissible_value_failure(client):
     results = linter.lint_sheet(data_dictionary, project_info, records)
 
     assert len(results['all_errors']) == 1
-    assert results['all_errors'][0] == "dog not found in Permissible Values: {'female': '1', 'male': '2', 'unknown': '3', 'unspecified': '4', 'not reported': '5'}"
+    assert "dog not found in Permissible Values" in results['all_errors'][0]
 
 def test_date_validation_success(client):
     """Test date validation"""
