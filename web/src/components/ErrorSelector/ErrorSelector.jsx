@@ -232,7 +232,7 @@ class ErrorSelector extends Component {
     };
 
     let errorSelector = '';
-    if (page === 'lint') {
+    if (page === 'lint' && options.length > 1) {
       errorSelector = (
         <div className="ErrorSelector-selector">
           <div className="ErrorSelector-label">
@@ -251,7 +251,7 @@ class ErrorSelector extends Component {
           </div>
         </div>
       );
-    } else if (page === 'merge') {
+    } else if (page === 'merge' && mergeConflictOptions.length > 1) {
       errorSelector = (
         <div className="ErrorSelector-selector">
           <div className="ErrorSelector-label">

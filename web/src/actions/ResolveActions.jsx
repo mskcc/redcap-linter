@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+export const LOADING_RESOLVE_START = 'LOADING_RESOLVE_START';
+
 export const RESOLVE_COLUMN_SUCCESS = 'RESOLVE_COLUMN_SUCCESS';
 export const RESOLVE_COLUMN_FAILURE = 'RESOLVE_COLUMN_FAILURE';
 
@@ -11,6 +13,12 @@ export const RESOLVE_MERGE_ROW_FAILURE = 'RESOLVE_MERGE_ROW_FAILURE';
 
 export const CALCULATE_MERGE_CONFLICTS_SUCCESS = 'CALCULATE_MERGE_CONFLICTS_SUCCESS';
 export const CALCULATE_MERGE_CONFLICTS_FAILURE = 'CALCULATE_MERGE_CONFLICTS_FAILURE';
+
+function loadingResolveStart() {
+  return {
+    type: LOADING_RESOLVE_START,
+  };
+}
 
 export function resolveColumnSuccess(payload) {
   return {
@@ -45,6 +53,8 @@ export function resolveColumn(payload) {
     data.append('columnsInError', JSON.stringify(payload.columnsInError));
     data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', JSON.stringify(payload.action || ''));
+
+    dispatch(loadingResolveStart());
 
     const request = axios({
       method: 'POST',
@@ -174,18 +184,15 @@ export function calculateMergeConflicts(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('projectInfo', JSON.stringify(payload.projectInfo));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
-    data.append('existingRecords', JSON.stringify(payload.existingRecords));
+    data.append('existingRecords', JSON.stringify(payload.existingRecords || []));
     data.append('recordidField', JSON.stringify(payload.recordidField));
     data.append('decodedRecords', JSON.stringify(payload.decodedRecords || {}));
     data.append('malformedSheets', JSON.stringify(payload.malformedSheets));
-    data.append('mergeConflicts', JSON.stringify(payload.mergeConflicts || []));
     data.append('decodedRecords', JSON.stringify(payload.decodedRecords));
     data.append('reconciliationColumns', JSON.stringify(payload.reconciliationColumns));
     const request = axios({
       method: 'POST',
-      url: `${process.env.REDCAP_LINTER_HOST}:${
-        process.env.REDCAP_LINTER_PORT
-      }/calculate_merge_conflicts`,
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/calculate_merge_conflicts`,
       headers: { 'Content-Type': 'multipart/form-data' },
       data,
     });

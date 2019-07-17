@@ -282,14 +282,13 @@ def calculate_merge_conflicts():
     form = request.form.to_dict()
     recordid_field = json.loads(form.get('recordidField'))
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
-    dd_data = json.loads(form.get('ddData'))
-    csv_headers = json.loads(form.get('csvHeaders'))
-    merge_conflicts = json.loads(form.get('mergeConflicts'))
-    existing_records = json.loads(form.get('existingRecords'))
-    decoded_records = json.loads(form.get('decodedRecords'))
-    project_info = json.loads(form.get('projectInfo'))
-    malformed_sheets = json.loads(form.get('malformedSheets'))
-    reconciliation_columns = json.loads(form.get('reconciliationColumns'))
+    dd_data = json.loads(form.get('ddData', '[]'))
+    csv_headers = json.loads(form.get('csvHeaders', '{}'))
+    existing_records = json.loads(form.get('existingRecords', '[]'))
+    decoded_records = json.loads(form.get('decodedRecords', '{}'))
+    project_info = json.loads(form.get('projectInfo', '{}'))
+    malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
+    reconciliation_columns = json.loads(form.get('reconciliationColumns', '{}'))
 
     data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
@@ -338,7 +337,7 @@ def calculate_merge_conflicts():
                 record_to_merge = flat_record[0].copy()
             for instrument in project_info['repeatable_instruments']:
                 instrument_fields = [d for d in dd_data if d['form_name'] == instrument]
-                primary_key = reconciliation_columns.get(instrument)
+                primary_key = reconciliation_columns.get(instrument, [])
                 matching_record = None
                 for r in decoded_records.get(recordid):
                     if r['redcap_repeat_instrument'] != instrument:

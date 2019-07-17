@@ -22,8 +22,9 @@ class MatchFields extends Component {
     };
     this.handleOk = this.handleOk.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
-    this.saveFields = this.saveFields.bind(this);
-    this.saveAndContinue = this.saveAndContinue.bind(this);
+    this.saveChanges = this.saveChanges.bind(this);
+    this.forward = this.forward.bind(this);
+    this.back = this.back.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -34,8 +35,8 @@ class MatchFields extends Component {
     return null;
   }
 
-  handleOk(e) {
-    this.saveAndContinue(e);
+  handleOk() {
+    this.saveChanges('continue');
     this.setState({ showModal: false });
   }
 
@@ -55,39 +56,7 @@ class MatchFields extends Component {
     navigateTo('intro');
   }
 
-  saveFields() {
-    const {
-      jsonData,
-      dataFieldToRedcapFieldMap,
-      matchedFieldMap,
-      projectInfo,
-      ddData,
-      dateColumns,
-      csvHeaders,
-      existingRecords,
-      token,
-      env,
-      recordidField,
-      saveFields,
-    } = this.props;
-    const payload = {
-      jsonData,
-      dataFieldToRedcapFieldMap,
-      matchedFieldMap,
-      projectInfo,
-      ddData,
-      dateColumns,
-      csvHeaders,
-      existingRecords,
-      token,
-      env,
-      recordidField,
-    };
-    saveFields(payload);
-    this.setState({ loadingSave: true });
-  }
-
-  saveAndContinue() {
+  saveChanges(action) {
     const {
       jsonData,
       dataFieldToRedcapFieldMap,
@@ -113,7 +82,7 @@ class MatchFields extends Component {
         });
       }
     });
-    if (hasUnsavedFields) {
+    if (action === 'continue' && hasUnsavedFields) {
       this.setState({ showModal: true });
       return;
     }
@@ -129,10 +98,14 @@ class MatchFields extends Component {
       token,
       env,
       recordidField,
-      action: 'continue',
+      action,
     };
     saveFields(payload);
-    this.setState({ loadingContinue: true });
+    if (action === 'save') {
+      this.setState({ loadingSave: true });
+    } else if (action === 'continue') {
+      this.setState({ loadingContinue: true });
+    }
   }
 
   render() {
@@ -204,11 +177,23 @@ class MatchFields extends Component {
     return (
       <div>
         <div className="MatchFields-navigation">
-          <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+          <button
+            type="button"
+            onClick={() => {
+              this.back();
+            }}
+            className="App-actionButton"
+          >
             <Icon type="left" />
             {' Back to Intro'}
           </button>
-          <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
+          <button
+            type="button"
+            onClick={() => {
+              this.forward();
+            }}
+            className="App-actionButton"
+          >
             {'Continue to Linting '}
             <Icon type="right" />
           </button>
@@ -229,10 +214,22 @@ class MatchFields extends Component {
               <div style={{ clear: 'both' }} />
             </div>
             <div className="MatchFields-saveAndContinue">
-              <button type="button" onClick={this.saveFields} className="App-actionButton">
+              <button
+                type="button"
+                onClick={() => {
+                  this.saveChanges('save');
+                }}
+                className="App-actionButton"
+              >
                 {saveButtonText}
               </button>
-              <button type="button" onClick={this.saveAndContinue} className="App-submitButton">
+              <button
+                type="button"
+                onClick={() => {
+                  this.saveChanges('continue');
+                }}
+                className="App-submitButton"
+              >
                 {continueButtonText}
               </button>
             </div>
@@ -240,9 +237,13 @@ class MatchFields extends Component {
               title="Confirm Fields"
               width={800}
               visible={showModal}
-              onOk={this.handleOk}
+              onOk={() => {
+                this.handleOk();
+              }}
               okButtonProps={{ disabled: hasUnsavedFields }}
-              onCancel={this.handleCancel}
+              onCancel={() => {
+                this.handleCancel();
+              }}
             >
               <p>You have unaccepted matches. Would you like to Accept or Reject these matches?</p>
               {fieldMatcher}

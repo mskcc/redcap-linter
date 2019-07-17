@@ -1,20 +1,38 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Icon } from 'antd';
+import { Icon, Modal, Spin } from 'antd';
 import PropTypes from 'prop-types';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchChoices.scss';
 import '../../App.scss';
-import { removeChoiceMatch, navigateTo } from '../../actions/REDCapLinterActions';
+import { removeChoiceMatch, highlightChoices, navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
 
 class MatchChoices extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      showModal: false,
+      loadingSave: false,
+      loadingContinue: false,
+    };
+
+    this.handleOk = this.handleOk.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.saveChanges = this.saveChanges.bind(this);
+    this.forward = this.forward.bind(this);
+    this.back = this.back.bind(this);
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { loadingResolve } = nextProps;
+    if (!loadingResolve) {
+      return { loadingSave: false, loadingContinue: false };
+    }
+    return null;
   }
 
   saveChanges(action) {
@@ -22,6 +40,7 @@ class MatchChoices extends Component {
       jsonData,
       dataFieldToChoiceMap,
       projectInfo,
+      matchedChoiceMap,
       ddData,
       workingColumn,
       workingSheetName,
@@ -30,6 +49,14 @@ class MatchChoices extends Component {
       csvHeaders,
       resolveColumn,
     } = this.props;
+    let unsavedChoiceMap = {};
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
+    }
+    if (action === 'continue' && Object.keys(unsavedChoiceMap).length > 0) {
+      this.setState({ showModal: true });
+      return;
+    }
     const payload = {
       jsonData,
       dataFieldToChoiceMap,
@@ -43,6 +70,22 @@ class MatchChoices extends Component {
       action,
     };
     resolveColumn(payload);
+    if (action === 'save') {
+      this.setState({ loadingSave: true });
+    } else if (action === 'continue') {
+      this.setState({ loadingContinue: true });
+    }
+  }
+
+  handleOk() {
+    this.saveChanges('continue');
+    this.setState({ showModal: false });
+  }
+
+  handleCancel() {
+    this.setState({
+      showModal: false,
+    });
   }
 
   forward() {
@@ -56,8 +99,10 @@ class MatchChoices extends Component {
   }
 
   render() {
+    const { showModal, loadingSave, loadingContinue } = this.state;
     const {
       fieldErrors,
+      matchedChoiceMap,
       dataFieldToChoiceMap,
       workingSheetName,
       workingColumn,
@@ -68,6 +113,10 @@ class MatchChoices extends Component {
       return null;
     }
 
+    let unsavedChoiceMap = {};
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
+    }
     let matchedChoices = fieldErrors.matchedChoices || [];
     let choiceMap = {};
     if (
@@ -103,14 +152,36 @@ class MatchChoices extends Component {
       }, []),
     );
 
+    let saveButtonText = 'Save';
+    if (loadingSave) {
+      saveButtonText = <Spin />;
+    }
+
+    let continueButtonText = 'Save and Continue';
+    if (loadingContinue) {
+      continueButtonText = <Spin />;
+    }
+    const choiceMatcher = <ChoiceMatcher showModal={showModal} />;
     return (
       <div>
         <div className="MatchChoices-navigation">
-          <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+          <button
+            type="button"
+            onClick={() => {
+              this.back();
+            }}
+            className="App-actionButton"
+          >
             <Icon type="left" />
             {' Back to Match Fields'}
           </button>
-          <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
+          <button
+            type="button"
+            onClick={() => {
+              this.forward();
+            }}
+            className="App-actionButton"
+          >
             {'Continue to Merging '}
             <Icon type="right" />
           </button>
@@ -124,25 +195,44 @@ class MatchChoices extends Component {
             </div>
             <div className="MatchChoices-unmatchedChoices">
               <div className="MatchChoices-title">Unmatched Choices</div>
-              <ChoiceMatcher />
+              {choiceMatcher}
             </div>
             <div style={{ clear: 'both' }} />
           </div>
           <div className="MatchChoices-saveAndContinue">
             <button
               type="button"
-              onClick={this.saveChanges.bind(this, 'save')}
+              onClick={() => {
+                this.saveChanges('save');
+              }}
               className="App-actionButton"
             >
-              Save
+              {saveButtonText}
             </button>
             <button
               type="button"
-              onClick={this.saveChanges.bind(this, 'continue')}
+              onClick={() => {
+                this.saveChanges('continue');
+              }}
               className="App-submitButton"
             >
-              Save and Continue
+              {continueButtonText}
             </button>
+            <Modal
+              title="Confirm Choices"
+              width={800}
+              visible={showModal}
+              onOk={() => {
+                this.handleOk();
+              }}
+              okButtonProps={{ disabled: Object.keys(unsavedChoiceMap).length > 0 }}
+              onCancel={() => {
+                this.handleCancel();
+              }}
+            >
+              <p>You have unaccepted matches. Would you like to Accept or Reject these matches?</p>
+              {choiceMatcher}
+            </Modal>
           </div>
         </div>
         <div style={{ clear: 'both' }} />
@@ -155,6 +245,7 @@ MatchChoices.propTypes = {
   fieldErrors: PropTypes.objectOf(PropTypes.any),
   dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
   ddData: PropTypes.arrayOf(PropTypes.object),
+  matchedChoiceMap: PropTypes.objectOf(PropTypes.any),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
@@ -162,12 +253,14 @@ MatchChoices.propTypes = {
   rowsInError: PropTypes.objectOf(PropTypes.array),
   workingSheetName: PropTypes.string,
   workingColumn: PropTypes.string,
+  loadingResolve: PropTypes.bool,
 };
 
 MatchChoices.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
   ddData: [],
+  matchedChoiceMap: {},
   jsonData: [],
   projectInfo: {},
   csvHeaders: {},
@@ -175,6 +268,7 @@ MatchChoices.defaultProps = {
   rowsInError: {},
   workingSheetName: '',
   workingColumn: '',
+  loadingResolve: false,
 };
 
 function mapStateToProps(state) {
@@ -182,7 +276,15 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, removeChoiceMatch, navigateTo }, dispatch);
+  return bindActionCreators(
+    {
+      resolveColumn,
+      removeChoiceMatch,
+      highlightChoices,
+      navigateTo,
+    },
+    dispatch,
+  );
 }
 
 export default connect(

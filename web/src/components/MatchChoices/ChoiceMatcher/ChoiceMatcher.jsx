@@ -7,15 +7,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { matchChoices } from '../../../actions/REDCapLinterActions';
+import { matchChoices, highlightChoices } from '../../../actions/REDCapLinterActions';
 import { calculateSelectStyles } from '../../../utils/utils';
 
 class ChoiceMatcher extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      choiceMap: {},
-      noMatch: '',
       search: '',
       columns: [
         {
@@ -31,6 +29,8 @@ class ChoiceMatcher extends Component {
         },
       ],
     };
+
+    this.acceptMatches = this.acceptMatches.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -40,7 +40,6 @@ class ChoiceMatcher extends Component {
       || nextProps.workingSheetName !== workingSheetName
     ) {
       return {
-        choiceMap: {},
         workingColumn: nextProps.workingColumn,
         workingSheetName: nextProps.workingSheetName,
       };
@@ -48,47 +47,61 @@ class ChoiceMatcher extends Component {
     return null;
   }
 
-  acceptMatches(e) {
-    const { choiceMap } = this.state;
-    const { matchChoices } = this.props;
-    matchChoices(choiceMap);
+  acceptMatches() {
+    const { matchedChoiceMap, matchChoices } = this.props;
+    matchChoices({ matchedChoiceMap });
   }
 
   handleMatch(fieldToMatch) {
-    const { choiceMap } = this.state;
-    const { matchChoices } = this.props;
-    const match = choiceMap[fieldToMatch] || '';
+    const {
+      matchedChoiceMap, workingSheetName, workingColumn, matchChoices,
+    } = this.props;
+    let match = '';
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      match = matchedChoiceMap[fieldToMatch];
+    }
     const payload = {};
     payload[fieldToMatch] = match;
     matchChoices(payload);
   }
 
   handleNoMatch(fieldToMatch) {
-    const { noMatch } = this.state;
     const { matchChoices } = this.props;
     const payload = {};
-    payload[fieldToMatch] = noMatch;
+    payload[fieldToMatch] = '';
     matchChoices(payload);
   }
 
   handleChange(fieldToMatch, e) {
-    const { fieldErrors } = this.props;
-    const { choiceMap } = this.state;
+    const {
+      matchedChoiceMap,
+      workingSheetName,
+      workingColumn,
+      fieldErrors,
+      highlightChoices,
+    } = this.props;
+    matchedChoiceMap[workingSheetName] = matchedChoiceMap[workingSheetName] || {};
+    matchedChoiceMap[workingSheetName][workingColumn] = matchedChoiceMap[workingSheetName][workingColumn] || {};
+    const choiceMap = matchedChoiceMap[workingSheetName][workingColumn];
     if (fieldErrors && fieldErrors.fieldType === 'checkbox') {
       choiceMap[fieldToMatch] = e.map(choice => choice.value);
     } else {
       choiceMap[fieldToMatch] = e.value;
     }
-    this.setState({ choiceMap });
+    highlightChoices({ matchedChoiceMap });
   }
 
   renderCandidates(cellInfo) {
-    const { fieldErrors, ddData, workingColumn } = this.props;
+    const {
+      matchedChoiceMap, fieldErrors, ddData, workingSheetName, workingColumn,
+    } = this.props;
     const choiceCandidates = fieldErrors.choiceCandidates || {};
-    const { choiceMap } = this.state;
     const ddField = ddData.find(field => field.field_name === workingColumn);
     const fieldToMatch = cellInfo['Data Field'];
-    const value = choiceMap[fieldToMatch];
+    let value = '';
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      value = matchedChoiceMap[workingSheetName][workingColumn][fieldToMatch];
+    }
     let selectedValue = [];
     if (Array.isArray(value)) {
       selectedValue = value.map(choice => ({
@@ -155,10 +168,12 @@ class ChoiceMatcher extends Component {
 
   renderMatchButton(cellInfo) {
     const fieldToMatch = cellInfo['Data Field'];
-    const { choiceMap } = this.state;
+    const { matchedChoiceMap, workingSheetName, workingColumn } = this.props;
     let disabled = true;
-    if (choiceMap[fieldToMatch]) {
-      disabled = false;
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      if (matchedChoiceMap[fieldToMatch]) {
+        disabled = false;
+      }
     }
     return (
       <div className="ChoiceMatcher-buttons">
@@ -183,9 +198,13 @@ class ChoiceMatcher extends Component {
 
   render() {
     const {
-      fieldErrors, workingSheetName, workingColumn, dataFieldToChoiceMap,
+      matchedChoiceMap,
+      fieldErrors,
+      workingSheetName,
+      workingColumn,
+      dataFieldToChoiceMap,
     } = this.props;
-    const { search, columns, choiceMap } = this.state;
+    const { search, columns } = this.state;
 
     let savedChoiceMap = {};
     if (
@@ -209,14 +228,16 @@ class ChoiceMatcher extends Component {
       data = data.filter(row => row['Data Field'].includes(search));
     }
 
-    const disabled = Object.keys(choiceMap).length === 0;
+    let disabled = false;
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      disabled = Object.keys(matchedChoiceMap).length === 0;
+    }
 
     return (
       <div className="ChoiceMatcher-table">
         <div className="ChoiceMatcher-tableTitle">
           <span className="ChoiceMatcher-searchBar">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
               value={search}
@@ -226,7 +247,9 @@ class ChoiceMatcher extends Component {
           <button
             type="button"
             disabled={disabled}
-            onClick={this.acceptMatches.bind(this)}
+            onClick={() => {
+              this.acceptMatches();
+            }}
             className="App-submitButton ChoiceMatcher-matchAll"
           >
             Accept Matches
@@ -245,6 +268,8 @@ class ChoiceMatcher extends Component {
 
 ChoiceMatcher.propTypes = {
   fieldErrors: PropTypes.objectOf(PropTypes.any),
+  ddData: PropTypes.arrayOf(PropTypes.object),
+  matchedChoiceMap: PropTypes.objectOf(PropTypes.any),
   dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
   workingSheetName: PropTypes.string,
   workingColumn: PropTypes.string,
@@ -253,6 +278,8 @@ ChoiceMatcher.propTypes = {
 ChoiceMatcher.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
+  matchedChoiceMap: {},
+  ddData: [],
   workingSheetName: '',
   workingColumn: '',
 };
@@ -262,7 +289,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ matchChoices }, dispatch);
+  return bindActionCreators({ matchChoices, highlightChoices }, dispatch);
 }
 
 export default connect(

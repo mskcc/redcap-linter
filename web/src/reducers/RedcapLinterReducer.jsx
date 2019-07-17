@@ -5,6 +5,7 @@ import {
   POST_FORM_FAILURE,
   MATCH_FIELDS,
   HIGHLIGHT_COLUMNS,
+  HIGHLIGHT_CHOICES,
   CHANGE_RECONCILIATION_COLUMNS,
   REMOVE_FIELD_MATCH,
   MATCH_CHOICES,
@@ -30,6 +31,7 @@ import {
 } from '../actions/REDCapLinterActions';
 
 import {
+  LOADING_RESOLVE_START,
   RESOLVE_COLUMN_SUCCESS,
   RESOLVE_COLUMN_FAILURE,
   RESOLVE_ROW_SUCCESS,
@@ -44,6 +46,9 @@ export default function (state = {}, action) {
   switch (action.type) {
     case LOADING_START: {
       return Object.assign({}, state, { loading: true });
+    }
+    case LOADING_RESOLVE_START: {
+      return Object.assign({}, state, { loadingResolve: true });
     }
     case POST_FORM_SUCCESS: {
       const {
@@ -119,6 +124,12 @@ export default function (state = {}, action) {
       matchedFieldMap = _.merge(matchedFieldMap, action.payload.matchedFieldMap);
       return Object.assign({}, state, { matchedFieldMap, toggle: !toggle });
     }
+    case HIGHLIGHT_CHOICES: {
+      let { matchedChoiceMap = {} } = state;
+      const { toggle = false } = state;
+      matchedChoiceMap = _.merge(matchedChoiceMap, action.payload.matchedChoiceMap);
+      return Object.assign({}, state, { matchedChoiceMap, toggle: !toggle });
+    }
     case CHANGE_RECONCILIATION_COLUMNS: {
       const { reconciliationColumns = {}, toggle = false } = state;
       reconciliationColumns[action.payload.instrument] = action.payload.reconciliationColumns;
@@ -128,7 +139,12 @@ export default function (state = {}, action) {
       });
     }
     case RESOLVE_COLUMN_SUCCESS: {
-      return Object.assign({}, state, { workingRow: -1, workingMergeRow: -1 }, action.payload.data);
+      return Object.assign(
+        {},
+        state,
+        { workingRow: -1, workingMergeRow: -1, loadingResolve: false },
+        action.payload.data,
+      );
     }
     case RESOLVE_COLUMN_FAILURE: {
       return Object.assign({}, state, {
@@ -249,18 +265,26 @@ export default function (state = {}, action) {
       if (fieldErrors.unmatchedChoices) {
         unmatchedChoices = fieldErrors.unmatchedChoices.slice();
       }
-      for (let i = 0; i < Object.keys(action.payload).length; i++) {
-        const idx = unmatchedChoices.indexOf(Object.keys(action.payload)[i]);
+      const matchedChoiceMap = action.payload.matchedChoiceMap;
+      const unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
+      for (let i = 0; i < Object.keys(unsavedChoiceMap).length; i++) {
+        const idx = unmatchedChoices.indexOf(Object.keys(unsavedChoiceMap)[i]);
         if (idx !== -1) unmatchedChoices.splice(idx, 1);
       }
       dataFieldToChoiceMap[workingSheetName] = dataFieldToChoiceMap[workingSheetName] || {};
       dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {};
       dataFieldToChoiceMap[workingSheetName][workingColumn] = Object.assign(
         dataFieldToChoiceMap[workingSheetName][workingColumn],
-        action.payload,
+        matchedChoiceMap[workingSheetName][workingColumn],
       );
+      matchedChoiceMap[workingSheetName][workingColumn] = {};
       fieldErrors.unmatchedChoices = unmatchedChoices;
-      return Object.assign({}, state, { dataFieldToChoiceMap, fieldErrors, unmatchedChoices });
+      return Object.assign({}, state, {
+        dataFieldToChoiceMap,
+        fieldErrors,
+        unmatchedChoices,
+        matchedChoiceMap,
+      });
     }
     case REMOVE_CHOICE_MATCH: {
       const {

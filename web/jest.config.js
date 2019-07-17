@@ -11,7 +11,6 @@ module.exports = {
   },
   testMatch: ['<rootDir>/**/*.test.(js|jsx|ts|tsx)'],
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
-  setupTestFrameworkScripeFile: 'jest-enzyme',
   testEnvironment: 'enzyme',
   testEnvironmentOptions: {
     enzymeAdapter: 'react16',

@@ -16,9 +16,7 @@ class FieldMatcher extends Component {
     super(props);
     const mode = 'REDCap Field';
     this.state = {
-      matchedFieldMap: {},
       noMatchRedcapFields: [],
-      noMatch: '',
       search: '',
       mode,
       columns: [

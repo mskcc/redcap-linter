@@ -11,6 +11,7 @@ export const IMPORT_RECORDS_FAILURE = 'IMPORT_RECORDS_FAILURE';
 export const MATCH_FIELDS = 'MATCH_FIELDS';
 
 export const HIGHLIGHT_COLUMNS = 'HIGHLIGHT_COLUMNS';
+export const HIGHLIGHT_CHOICES = 'HIGHLIGHT_CHOICES';
 
 export const CHANGE_RECONCILIATION_COLUMNS = 'CHANGE_RECONCILIATION_COLUMNS';
 
@@ -165,6 +166,19 @@ export function highlightColumnsSuccess(payload) {
 export function highlightColumns(payload) {
   return function action(dispatch) {
     return dispatch(highlightColumnsSuccess(payload));
+  };
+}
+
+export function highlightChoicesSuccess(payload) {
+  return {
+    type: HIGHLIGHT_CHOICES,
+    payload,
+  };
+}
+
+export function highlightChoices(payload) {
+  return function action(dispatch) {
+    return dispatch(highlightChoicesSuccess(payload));
   };
 }
 

@@ -3,6 +3,7 @@ import './Linter.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 import ResolveErrors from '../ResolveErrors/ResolveErrors';
 import ResolveMergeConflicts from '../ResolveMergeConflicts/ResolveMergeConflicts';
 import ErrorsResolved from '../ErrorsResolved/ErrorsResolved';
@@ -15,6 +16,44 @@ class Linter extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      dataFieldToRedcapFieldMap,
+      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
+      mergeMap,
+    } = nextProps;
+    if (
+      !_.isEmpty(dataFieldToRedcapFieldMap)
+      || !_.isEmpty(dataFieldToChoiceMap)
+      || !_.isEmpty(originalToCorrectedValueMap)
+      || !_.isEmpty(mergeMap)
+    ) {
+      window.addEventListener('beforeunload', (event) => {
+        event.returnValue = 'You have unsaved changes.';
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    const {
+      dataFieldToRedcapFieldMap,
+      dataFieldToChoiceMap,
+      originalToCorrectedValueMap,
+      mergeMap,
+    } = this.props;
+    if (
+      !_.isEmpty(dataFieldToRedcapFieldMap)
+      || !_.isEmpty(dataFieldToChoiceMap)
+      || !_.isEmpty(originalToCorrectedValueMap)
+      || !_.isEmpty(mergeMap)
+    ) {
+      window.removeEventListener('beforeunload', (event) => {
+        event.returnValue = 'You have unsaved changes.';
+      });
+    }
   }
 
   render() {
@@ -48,10 +87,18 @@ class Linter extends Component {
 
 Linter.propTypes = {
   page: PropTypes.string,
+  dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
+  dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
+  originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
+  mergeMap: PropTypes.objectOf(PropTypes.object),
 };
 
 Linter.defaultProps = {
   page: 'intro',
+  dataFieldToRedcapFieldMap: {},
+  dataFieldToChoiceMap: {},
+  originalToCorrectedValueMap: {},
+  mergeMap: {},
 };
 
 function mapStateToProps(state) {

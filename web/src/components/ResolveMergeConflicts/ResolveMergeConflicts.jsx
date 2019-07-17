@@ -8,7 +8,6 @@ import { Spin, Icon } from 'antd';
 import MergeRecords from '../MergeRecords/MergeRecords';
 import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
-// Remove this depencency
 import { navigateTo } from '../../actions/REDCapLinterActions';
 import { calculateMergeConflicts } from '../../actions/ResolveActions';
 
@@ -38,7 +37,6 @@ class ResolveMergeConflicts extends Component {
       existingRecords,
       recordidField,
       malformedSheets,
-      mergeConflicts,
       reconciliationColumns,
       calculateMergeConflicts,
     } = this.props;
@@ -50,7 +48,6 @@ class ResolveMergeConflicts extends Component {
       existingRecords,
       decodedRecords,
       recordidField,
-      mergeConflicts,
       malformedSheets,
       reconciliationColumns,
     };
