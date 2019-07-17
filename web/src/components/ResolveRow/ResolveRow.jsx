@@ -6,7 +6,7 @@ import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './ResolveRow.scss';
-import { filterRow, updateValue } from '../../actions/REDCapLinterActions';
+import { filterRow, acceptRowMatches } from '../../actions/REDCapLinterActions';
 import { resolveRow } from '../../actions/ResolveActions';
 
 class ResolveRow extends Component {
@@ -52,7 +52,7 @@ class ResolveRow extends Component {
       workingSheetName,
       workingRow,
       csvHeaders,
-      updateValue,
+      acceptRowMatches,
       filterRow,
     } = this.props;
 
@@ -71,7 +71,7 @@ class ResolveRow extends Component {
     const sheetHeaders = csvHeaders[workingSheetName];
     const tableData = sheetHeaders.reduce((filtered, field) => {
       // TODO Figure out why date of prior visit is null
-      if (!currentRowErrors[field]) {
+      if (!currentRowErrors[field] && !valueMap[field]) {
         filtered.push({
           Field: field,
           Value: row[field] || '',
@@ -97,10 +97,11 @@ class ResolveRow extends Component {
             <div className="ResolveRow-matchedChoices">
               <div className="ResolveRow-title">Row Data</div>
               <ResolvedRowErrors
-                fieldToValueMap={valueMap}
-                updateValue={updateValue}
+                fieldToValueMap={fieldToValueMap}
+                acceptRowMatches={acceptRowMatches}
                 tableData={tableData}
                 workingSheetName={workingSheetName}
+                workingRow={workingRow}
               />
             </div>
             <div className="ResolveRow-unmatchedChoices">
@@ -163,7 +164,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveRow, filterRow, updateValue }, dispatch);
+  return bindActionCreators({ resolveRow, filterRow, acceptRowMatches }, dispatch);
 }
 
 export default connect(

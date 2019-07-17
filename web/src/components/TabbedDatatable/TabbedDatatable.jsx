@@ -54,13 +54,13 @@ class TabbedDatatable extends Component {
       workingSheetName,
       workingColumn,
       filter,
+      filterSheet,
+      filterRowNum,
     } = this.props;
     const sheets = Object.keys(csvHeaders);
     const panes = [];
     const { activeIndex } = this.state;
     const workingIndex = sheets.indexOf(workingSheetName);
-
-    const { filterSheet, filterRowNum } = this.props;
 
     if (sheets && sheets.length > 0) {
       for (let i = 0; i < sheets.length; i++) {

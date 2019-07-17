@@ -7,14 +7,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
-import { updateValue, filterRow } from '../../../actions/REDCapLinterActions';
+import { updateValue, acceptRowMatches, filterRow } from '../../../actions/REDCapLinterActions';
 import { calculateSelectStyles } from '../../../utils/utils';
 
 class RowResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      valueMap: {},
       search: '',
       columns: [
         {
@@ -40,20 +39,17 @@ class RowResolver extends Component {
           width: '200px',
           render: (text, record) => this.renderInput(record),
         },
-        {
-          title: 'Action',
-          key: 'Action',
-          render: (text, record) => this.renderMatchButton(record),
-        },
       ],
     };
+
+    this.acceptMatches = this.acceptMatches.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { workingRow, workingSheetName } = prevState;
     if (nextProps.workingRow !== workingRow || nextProps.workingSheetName !== workingSheetName) {
       return {
-        valueMap: {},
+        matchedValueMap: {},
         workingRow: nextProps.workingRow,
         workingSheetName: nextProps.workingSheetName,
       };
@@ -68,33 +64,35 @@ class RowResolver extends Component {
 
   onBlur() {
     const { workingSheetName, filterRow } = this.props;
-    filterRow(workingSheetName, '');
+    filterRow(workingSheetName, -1);
   }
 
-  handleUpdateAll() {
-    const { valueMap } = this.state;
-    const { updateValue } = this.props;
-    updateValue(valueMap);
-  }
-
-  handleUpdate(field, e) {
-    const { valueMap } = this.state;
-    const { updateValue } = this.props;
-    const payload = {};
-    payload[field] = valueMap[field];
-    updateValue(payload);
+  acceptMatches() {
+    const { matchedValueMap, acceptRowMatches } = this.props;
+    acceptRowMatches({ matchedValueMap });
   }
 
   handleSelectChange(field, e) {
-    const { valueMap } = this.state;
-    valueMap[field] = e.value;
-    this.setState({ valueMap });
+    const {
+      matchedValueMap, workingSheetName, workingRow, updateValue,
+    } = this.props;
+    matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
+    matchedValueMap[workingSheetName][workingRow] = matchedValueMap[workingSheetName][workingRow] || {};
+    matchedValueMap[workingSheetName][workingRow][field] = e.value;
+    updateValue({ matchedValueMap });
+    // TODO Call on action here
   }
 
   handleChange(field, e) {
-    const { valueMap } = this.state;
-    valueMap[field] = e.target.value;
-    this.setState({ valueMap });
+    const value = e.target.value;
+    const {
+      matchedValueMap, workingSheetName, workingRow, updateValue,
+    } = this.props;
+    matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
+    matchedValueMap[workingSheetName][workingRow] = matchedValueMap[workingSheetName][workingRow] || {};
+    matchedValueMap[workingSheetName][workingRow][field] = value;
+    updateValue({ matchedValueMap });
+    // TODO Call on action here
   }
 
   renderValidation(header, record) {
@@ -130,12 +128,17 @@ class RowResolver extends Component {
   }
 
   renderInput(record) {
-    const { valueMap } = this.state;
-    const { ddData } = this.props;
+    const {
+      matchedValueMap, workingSheetName, workingRow, ddData,
+    } = this.props;
     const fieldName = record.Field;
     const ddField = ddData.find(field => field.field_name === fieldName);
 
     // TODO Get value from sheet data if exists
+    let valueMap = {};
+    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingRow]) {
+      valueMap = matchedValueMap[workingSheetName][workingRow];
+    }
     const value = valueMap[fieldName] || '';
     if (ddField.choices_dict) {
       const options = [];
@@ -177,32 +180,21 @@ class RowResolver extends Component {
     );
   }
 
-  renderMatchButton(record) {
-    const field = record.Field;
-    const { valueMap } = this.state;
-    let disabled = true;
-    if (valueMap[field]) {
-      disabled = false;
-    }
-    return (
-      <div className="RowResolver-buttons">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={e => this.handleUpdate(field, e)}
-          className="App-submitButton"
-        >
-          Update
-        </button>
-      </div>
-    );
-  }
-
   render() {
     const {
-      workingSheetName, workingRow, cellsWithErrors, jsonData, fieldToValueMap,
+      matchedValueMap,
+      workingSheetName,
+      workingRow,
+      cellsWithErrors,
+      jsonData,
+      fieldToValueMap,
     } = this.props;
-    const { search, columns, valueMap } = this.state;
+    const { search, columns } = this.state;
+
+    let valueMap = {};
+    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingRow]) {
+      valueMap = matchedValueMap[workingSheetName][workingRow];
+    }
 
     const row = jsonData[workingSheetName][workingRow];
     const currentRowErrors = cellsWithErrors[workingSheetName][workingRow];
@@ -239,18 +231,19 @@ class RowResolver extends Component {
       <div className="RowResolver-table">
         <div className="RowResolver-tableTitle">
           <div className="RowResolver-searchBar">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
-              value={this.state.search}
+              value={search}
               onChange={e => this.setState({ search: e.target.value })}
             />
           </div>
           <button
             type="button"
             disabled={disabled}
-            onClick={this.handleUpdateAll.bind(this)}
+            onClick={() => {
+              this.acceptMatches();
+            }}
             className="App-submitButton RowResolver-updateAll"
           >
             Update All
@@ -269,6 +262,7 @@ class RowResolver extends Component {
 
 RowResolver.propTypes = {
   fieldToValueMap: PropTypes.objectOf(PropTypes.object),
+  matchedValueMap: PropTypes.objectOf(PropTypes.any),
   jsonData: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   cellsWithErrors: PropTypes.objectOf(PropTypes.array),
@@ -278,6 +272,7 @@ RowResolver.propTypes = {
 
 RowResolver.defaultProps = {
   fieldToValueMap: {},
+  matchedValueMap: {},
   jsonData: [],
   ddData: [],
   cellsWithErrors: {},
@@ -290,7 +285,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ updateValue, filterRow }, dispatch);
+  return bindActionCreators({ updateValue, filterRow, acceptRowMatches }, dispatch);
 }
 
 export default connect(

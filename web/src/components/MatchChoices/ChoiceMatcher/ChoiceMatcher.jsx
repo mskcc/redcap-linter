@@ -52,26 +52,6 @@ class ChoiceMatcher extends Component {
     matchChoices({ matchedChoiceMap });
   }
 
-  handleMatch(fieldToMatch) {
-    const {
-      matchedChoiceMap, workingSheetName, workingColumn, matchChoices,
-    } = this.props;
-    let match = '';
-    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
-      match = matchedChoiceMap[fieldToMatch];
-    }
-    const payload = {};
-    payload[fieldToMatch] = match;
-    matchChoices(payload);
-  }
-
-  handleNoMatch(fieldToMatch) {
-    const { matchChoices } = this.props;
-    const payload = {};
-    payload[fieldToMatch] = '';
-    matchChoices(payload);
-  }
-
   handleChange(fieldToMatch, e) {
     const {
       matchedChoiceMap,
@@ -163,36 +143,6 @@ class ChoiceMatcher extends Component {
         onChange={e => this.handleChange(fieldToMatch, e)}
         placeholder="Select..."
       />
-    );
-  }
-
-  renderMatchButton(cellInfo) {
-    const fieldToMatch = cellInfo['Data Field'];
-    const { matchedChoiceMap, workingSheetName, workingColumn } = this.props;
-    let disabled = true;
-    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
-      if (matchedChoiceMap[fieldToMatch]) {
-        disabled = false;
-      }
-    }
-    return (
-      <div className="ChoiceMatcher-buttons">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={e => this.handleMatch(fieldToMatch, e)}
-          className="App-submitButton"
-        >
-          Match
-        </button>
-        <button
-          type="button"
-          onClick={e => this.handleNoMatch(fieldToMatch, e)}
-          className="App-actionButton"
-        >
-          No Match
-        </button>
-      </div>
     );
   }
 

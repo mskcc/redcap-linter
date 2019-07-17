@@ -173,8 +173,7 @@ class Datatable extends Component {
     return (
       <div>
         <div className="Datatable-searchBar">
-          Search:
-          {' '}
+          {'Search: '}
           <Input className="App-tableSearchBar" value={search} onChange={this.onSearchChange} />
         </div>
         <div className="Datatable-table">

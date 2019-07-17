@@ -43,6 +43,7 @@ export const CORRECT_VALUE = 'CORRECT_VALUE';
 
 export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
 
+export const ACCEPT_ROW_MATCHES = 'ACCEPT_ROW_MATCHES';
 export const UPDATE_VALUE = 'UPDATE_VALUE';
 
 export const CHANGE_REPEATABLE_INSTRUMENTS = 'CHANGE_REPEATABLE_INSTRUMENTS';
@@ -379,6 +380,19 @@ export function correctValueSuccess(payload) {
 export function correctValue(payload) {
   return function action(dispatch) {
     return dispatch(correctValueSuccess(payload));
+  };
+}
+
+export function acceptRowMatchesSuccess(payload) {
+  return {
+    type: ACCEPT_ROW_MATCHES,
+    payload,
+  };
+}
+
+export function acceptRowMatches(payload) {
+  return function action(dispatch) {
+    return dispatch(acceptRowMatchesSuccess(payload));
   };
 }
 

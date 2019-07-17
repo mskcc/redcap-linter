@@ -25,6 +25,7 @@ import {
   FILTER_ROW,
   CORRECT_VALUE,
   REMOVE_VALUE_MATCH,
+  ACCEPT_ROW_MATCHES,
   UPDATE_VALUE,
   CHANGE_REPEATABLE_INSTRUMENTS,
   CHANGE_SECONDARY_UNIQUE_FIELD,
@@ -185,17 +186,34 @@ export default function (state = {}, action) {
         error: action.payload,
       });
     }
-    case UPDATE_VALUE: {
+    case ACCEPT_ROW_MATCHES: {
       const {
         workingSheetName, workingRow, fieldToValueMap = {}, toggle = false,
       } = state;
+
+      const matchedValueMap = action.payload.matchedValueMap;
+      const unsavedValueMap = matchedValueMap[workingSheetName][workingRow];
       fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {};
       fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {};
       fieldToValueMap[workingSheetName][workingRow] = Object.assign(
         fieldToValueMap[workingSheetName][workingRow],
-        action.payload,
+        unsavedValueMap,
       );
-      return Object.assign({}, state, { fieldToValueMap, toggle: !toggle });
+      matchedValueMap[workingSheetName][workingRow] = {};
+      return Object.assign({}, state, { fieldToValueMap, matchedValueMap, toggle: !toggle });
+    }
+    case UPDATE_VALUE: {
+      const { matchedValueMap = {}, workingSheetName, workingRow } = state;
+      const { toggle = false } = state;
+      matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
+      matchedValueMap[workingSheetName][workingRow] = matchedValueMap[workingSheetName][workingRow] || {};
+      const newRowMap = _.extend(
+        {},
+        matchedValueMap[workingSheetName][workingRow],
+        action.payload.matchedValueMap[workingSheetName][workingRow],
+      );
+      matchedValueMap[workingSheetName][workingRow] = newRowMap;
+      return Object.assign({}, state, { matchedValueMap, toggle: !toggle });
     }
     case CHANGE_REPEATABLE_INSTRUMENTS: {
       const projectInfo = state.projectInfo || {};

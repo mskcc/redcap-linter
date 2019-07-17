@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './ResolvedRowErrors.scss';
 import '../../../App.scss';
+import _ from 'lodash';
 import { Table, Input, Icon } from 'antd';
 import PropTypes from 'prop-types';
 
@@ -26,26 +27,32 @@ class ResolvedRowErrors extends Component {
   }
 
   removeRequiredMatch(record) {
-    const { updateValue } = this.props;
-    const payload = {};
-    payload[record.Field] = '';
-    updateValue(payload);
+    const {
+      fieldToValueMap, workingSheetName, workingRow, acceptRowMatches,
+    } = this.props;
+    const valueMap = _.cloneDeep(fieldToValueMap);
+    if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
+      valueMap[workingSheetName][workingRow][record.Field] = '';
+    }
+    acceptRowMatches({ matchedValueMap: valueMap });
   }
 
   renderCell(header, record) {
-    const { fieldToValueMap } = this.props;
+    const { fieldToValueMap, workingSheetName, workingRow } = this.props;
     let cancelButton = '';
     let className = 'ResolvedRowErrors-cell';
-    if (fieldToValueMap.hasOwnProperty(record.Field)) {
-      className += ' ResolvedRowErrors-resolvedCell';
-      if (header === 'Value') {
-        cancelButton = (
-          <div className="ResolvedRowErrors-cancel">
-            <a onClick={e => this.removeRequiredMatch(record, e)}>
-              <Icon type="close" />
-            </a>
-          </div>
-        );
+    if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
+      if (fieldToValueMap[workingSheetName][workingRow].hasOwnProperty(record.Field)) {
+        className += ' ResolvedRowErrors-resolvedCell';
+        if (header === 'Value') {
+          cancelButton = (
+            <div className="ResolvedRowErrors-cancel">
+              <a onClick={e => this.removeRequiredMatch(record, e)}>
+                <Icon type="close" />
+              </a>
+            </div>
+          );
+        }
       }
     }
 
@@ -81,8 +88,7 @@ class ResolvedRowErrors extends Component {
           </span>
           <div className="ResolvedRowErrors-sheetInfo">
             <b>Sheet</b>
-:
-            {workingSheetName}
+            {`: ${workingSheetName}`}
           </div>
         </div>
         <Table
@@ -98,14 +104,16 @@ class ResolvedRowErrors extends Component {
 
 ResolvedRowErrors.propTypes = {
   tableData: PropTypes.arrayOf(PropTypes.object),
-  fieldToValueMap: PropTypes.objectOf(PropTypes.object),
+  fieldToValueMap: PropTypes.objectOf(PropTypes.any),
   workingSheetName: PropTypes.string,
+  workingRow: PropTypes.number,
 };
 
 ResolvedRowErrors.defaultProps = {
   tableData: [],
   fieldToValueMap: {},
   workingSheetName: '',
+  workingRow: -1,
 };
 
 export default ResolvedRowErrors;
