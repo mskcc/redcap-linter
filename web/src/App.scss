@@ -142,6 +142,11 @@ body {
   color: darken(color(blue500), 10%);
 }
 
+.App-actionButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .App-content {
   width: 100%;
   min-height: 100%;

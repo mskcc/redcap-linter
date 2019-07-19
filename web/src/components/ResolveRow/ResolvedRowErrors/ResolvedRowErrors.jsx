@@ -34,7 +34,7 @@ class ResolvedRowErrors extends Component {
     if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
       valueMap[workingSheetName][workingRow][record.Field] = '';
     }
-    acceptRowMatches({ matchedValueMap: valueMap });
+    acceptRowMatches({ matchedRowValueMap: valueMap });
   }
 
   renderCell(header, record) {

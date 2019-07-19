@@ -1,26 +1,25 @@
 import React, { Component } from 'react';
 import './TextErrorResolver.scss';
 import '../../../App.scss';
-import { Table, Input } from 'antd';
+import { Table, Input, DatePicker } from 'antd';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Cell from '../../Cell/Cell';
 
-import { correctValue, filterTable } from '../../../actions/REDCapLinterActions';
+import { correctValue, acceptCorrections, filterTable } from '../../../actions/REDCapLinterActions';
 
 class TextErrorResolver extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      valueMap: {},
-      removedValue: '',
       search: '',
       columns: [
         {
           title: 'Original Value',
           key: 'Original Value',
-          render: (text, record) => this.renderCell('Original Value', record),
+          render: (text, record) => <Cell cellData={record['Original Value']} />,
         },
         {
           title: 'Corrected Value',
@@ -35,6 +34,8 @@ class TextErrorResolver extends Component {
         },
       ],
     };
+
+    this.handleCorrectAll = this.handleCorrectAll.bind(this);
   }
 
   // TODO Add button to batch this
@@ -50,44 +51,94 @@ class TextErrorResolver extends Component {
   }
 
   handleCorrectAll() {
-    const { valueMap } = this.state;
-    const { correctValue } = this.props;
-    correctValue(valueMap);
+    const {
+      acceptCorrections,
+      matchedValueMap,
+      workingSheetName,
+      workingColumn,
+      isValueValid,
+    } = this.props;
+    const validFields = [];
+    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
+      Object.keys(matchedValueMap[workingSheetName][workingColumn]).forEach((originalValue) => {
+        const value = matchedValueMap[workingSheetName][workingColumn][originalValue];
+        if (value && isValueValid(value)) {
+          validFields.push(originalValue);
+        }
+      });
+    }
+    acceptCorrections({ matchedValueMap, fields: validFields });
   }
 
   handleCorrect(originalValue) {
-    const { valueMap } = this.state;
-    const { correctValue } = this.props;
-    const payload = {};
-    payload[originalValue] = valueMap[originalValue];
-    correctValue(payload);
+    const { acceptCorrections, matchedValueMap } = this.props;
+    acceptCorrections({ matchedValueMap, fields: [originalValue] });
   }
 
   handleRemove(originalValue) {
-    const { removedValue } = this.state;
-    const { correctValue } = this.props;
-    const payload = {};
-    payload[originalValue] = removedValue;
-    correctValue(payload);
+    const {
+      matchedValueMap, workingSheetName, workingColumn, acceptCorrections,
+    } = this.props;
+    matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
+    matchedValueMap[workingSheetName][workingColumn] = matchedValueMap[workingSheetName][workingColumn] || {};
+    matchedValueMap[workingSheetName][workingColumn][originalValue] = '';
+    acceptCorrections({ matchedValueMap, fields: [originalValue] });
   }
 
   handleChange(originalValue, e) {
-    const { valueMap } = this.state;
-    valueMap[originalValue] = e.target.value;
-    this.setState({ valueMap });
+    let value = '';
+    if (moment.isMoment(e)) {
+      value = e.format('MM-DD-YYYY');
+    } else {
+      value = e.target.value;
+    }
+    const {
+      matchedValueMap, workingSheetName, workingColumn, correctValue,
+    } = this.props;
+    matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
+    matchedValueMap[workingSheetName][workingColumn] = matchedValueMap[workingSheetName][workingColumn] || {};
+    matchedValueMap[workingSheetName][workingColumn][originalValue] = value;
+    correctValue({ matchedValueMap });
   }
 
-  renderCell(header, record) {
-    return <Cell cellData={record[header]} editable={false} />;
+  disabledDate(current) {
+    const { fieldErrors } = this.props;
+
+    const { textValidationMin, textValidationMax } = fieldErrors;
+    let disabled = false;
+    if (
+      (textValidationMin && current < moment(textValidationMin))
+      || (textValidationMax && current > moment(textValidationMax))
+    ) {
+      disabled = true;
+    }
+
+    return disabled;
   }
 
   renderInput(record) {
-    const { valueMap } = this.state;
+    const {
+      matchedValueMap,
+      workingSheetName,
+      workingColumn,
+      fieldErrors,
+      isValueValid,
+    } = this.props;
     const originalValue = record['Original Value'];
-    const value = valueMap[originalValue] || '';
-    return (
+    let value = '';
+    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
+      value = matchedValueMap[workingSheetName][workingColumn][originalValue];
+    }
+    const { textValidation } = fieldErrors;
+    let validClassName = '';
+    if (value) {
+      const valid = isValueValid(value);
+
+      validClassName = valid ? 'TextErrorResolver-valid' : 'TextErrorResolver-invalid';
+    }
+    let input = (
       <Input
-        className="TextErrorResolver-input"
+        className={`TextErrorResolver-input ${validClassName}`}
         key={`${record['Original Value']}`}
         type="text"
         value={value}
@@ -96,14 +147,41 @@ class TextErrorResolver extends Component {
         onChange={this.handleChange.bind(this, originalValue)}
       />
     );
+
+    if (['date_dmy', 'date_mdy', 'date_ymd'].includes(textValidation)) {
+      input = (
+        <DatePicker
+          value={value ? moment(value) : null}
+          onBlur={this.onBlur.bind(this)}
+          onFocus={this.onFocus.bind(this, originalValue)}
+          onChange={this.handleChange.bind(this, originalValue)}
+          disabledDate={this.disabledDate.bind(this)}
+        />
+      );
+    }
+
+    return input;
   }
 
   renderMatchButton(record) {
     const originalValue = record['Original Value'];
-    const { valueMap } = this.state;
+    const {
+      matchedValueMap,
+      workingSheetName,
+      workingColumn,
+      fieldErrors,
+      isValueValid,
+    } = this.props;
     let disabled = true;
-    if (valueMap[originalValue]) {
-      disabled = false;
+    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
+      const value = matchedValueMap[workingSheetName][workingColumn][originalValue];
+      if (value && isValueValid(value)) {
+        disabled = false;
+      }
+    }
+    let removeDisabled = false;
+    if (fieldErrors.required) {
+      removeDisabled = true;
     }
     return (
       <div className="TextErrorResolver-buttons">
@@ -117,8 +195,9 @@ class TextErrorResolver extends Component {
         </button>
         <button
           type="button"
+          disabled={removeDisabled}
           onClick={e => this.handleRemove(originalValue, e)}
-          className="TextErrorResolver-noMatchButton"
+          className="App-actionButton"
         >
           Remove
         </button>
@@ -128,12 +207,13 @@ class TextErrorResolver extends Component {
 
   render() {
     const {
+      matchedValueMap,
       workingSheetName,
       workingColumn,
       originalToCorrectedValueMap,
       fieldErrors,
     } = this.props;
-    const { search, columns, valueMap } = this.state;
+    const { search, columns } = this.state;
 
     let currentMap = {};
     if (
@@ -153,8 +233,10 @@ class TextErrorResolver extends Component {
     }, []);
 
     let disabled = true;
-    if (Object.keys(valueMap).length > 0) {
-      disabled = false;
+    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
+      if (Object.keys(matchedValueMap[workingSheetName][workingColumn]).length > 0) {
+        disabled = false;
+      }
     }
 
     let data = tableData;
@@ -166,8 +248,7 @@ class TextErrorResolver extends Component {
       <div className="TextErrorResolver-table">
         <div className="TextErrorResolver-tableTitle">
           <div className="TextErrorResolver-searchBar">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
               value={search}
@@ -202,7 +283,9 @@ class TextErrorResolver extends Component {
           <button
             type="button"
             disabled={disabled}
-            onClick={this.handleCorrectAll.bind(this)}
+            onClick={() => {
+              this.handleCorrectAll();
+            }}
             className="App-submitButton TextErrorResolver-correctAll"
           >
             Correct All
@@ -222,6 +305,7 @@ class TextErrorResolver extends Component {
 TextErrorResolver.propTypes = {
   fieldErrors: PropTypes.objectOf(PropTypes.any),
   originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
+  matchedValueMap: PropTypes.objectOf(PropTypes.any),
   workingSheetName: PropTypes.string,
   workingColumn: PropTypes.string,
 };
@@ -229,6 +313,7 @@ TextErrorResolver.propTypes = {
 TextErrorResolver.defaultProps = {
   fieldErrors: {},
   originalToCorrectedValueMap: {},
+  matchedValueMap: {},
   workingSheetName: '',
   workingColumn: '',
 };
@@ -238,7 +323,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ correctValue, filterTable }, dispatch);
+  return bindActionCreators({ correctValue, acceptCorrections, filterTable }, dispatch);
 }
 
 export default connect(

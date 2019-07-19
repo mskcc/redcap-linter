@@ -49,7 +49,7 @@ class RowResolver extends Component {
     const { workingRow, workingSheetName } = prevState;
     if (nextProps.workingRow !== workingRow || nextProps.workingSheetName !== workingSheetName) {
       return {
-        matchedValueMap: {},
+        matchedRowValueMap: {},
         workingRow: nextProps.workingRow,
         workingSheetName: nextProps.workingSheetName,
       };
@@ -68,30 +68,30 @@ class RowResolver extends Component {
   }
 
   acceptMatches() {
-    const { matchedValueMap, acceptRowMatches } = this.props;
-    acceptRowMatches({ matchedValueMap });
+    const { matchedRowValueMap, acceptRowMatches } = this.props;
+    acceptRowMatches({ matchedRowValueMap });
   }
 
   handleSelectChange(field, e) {
     const {
-      matchedValueMap, workingSheetName, workingRow, updateValue,
+      matchedRowValueMap, workingSheetName, workingRow, updateValue,
     } = this.props;
-    matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
-    matchedValueMap[workingSheetName][workingRow] = matchedValueMap[workingSheetName][workingRow] || {};
-    matchedValueMap[workingSheetName][workingRow][field] = e.value;
-    updateValue({ matchedValueMap });
+    matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
+    matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
+    matchedRowValueMap[workingSheetName][workingRow][field] = e.value;
+    updateValue({ matchedRowValueMap });
     // TODO Call on action here
   }
 
   handleChange(field, e) {
     const value = e.target.value;
     const {
-      matchedValueMap, workingSheetName, workingRow, updateValue,
+      matchedRowValueMap, workingSheetName, workingRow, updateValue,
     } = this.props;
-    matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
-    matchedValueMap[workingSheetName][workingRow] = matchedValueMap[workingSheetName][workingRow] || {};
-    matchedValueMap[workingSheetName][workingRow][field] = value;
-    updateValue({ matchedValueMap });
+    matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
+    matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
+    matchedRowValueMap[workingSheetName][workingRow][field] = value;
+    updateValue({ matchedRowValueMap });
     // TODO Call on action here
   }
 
@@ -129,28 +129,33 @@ class RowResolver extends Component {
 
   renderInput(record) {
     const {
-      matchedValueMap, workingSheetName, workingRow, ddData,
+      matchedRowValueMap, workingSheetName, workingRow, ddData,
     } = this.props;
     const fieldName = record.Field;
     const ddField = ddData.find(field => field.field_name === fieldName);
 
     // TODO Get value from sheet data if exists
     let valueMap = {};
-    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingRow]) {
-      valueMap = matchedValueMap[workingSheetName][workingRow];
+    if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
+      valueMap = matchedRowValueMap[workingSheetName][workingRow];
     }
     const value = valueMap[fieldName] || '';
+    let selectedValue = null;
     if (ddField.choices_dict) {
       const options = [];
       Object.keys(ddField.choices_dict).forEach((choice) => {
+        const label = (
+          <span>
+            <b>{choice}</b>
+            <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
+          </span>
+        );
+        if (value === choice) {
+          selectedValue = { value: choice, label };
+        }
         options.push({
           value: choice,
-          label: (
-            <span>
-              <b>{choice}</b>
-              <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
-            </span>
-          ),
+          label,
         });
       });
 
@@ -160,6 +165,7 @@ class RowResolver extends Component {
         <Select
           options={options}
           isSearchable
+          value={selectedValue}
           onFocus={e => this.onFocus(e)}
           onBlur={e => this.onBlur(e)}
           onChange={e => this.handleSelectChange(fieldName, e)}
@@ -182,7 +188,7 @@ class RowResolver extends Component {
 
   render() {
     const {
-      matchedValueMap,
+      matchedRowValueMap,
       workingSheetName,
       workingRow,
       cellsWithErrors,
@@ -192,8 +198,8 @@ class RowResolver extends Component {
     const { search, columns } = this.state;
 
     let valueMap = {};
-    if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingRow]) {
-      valueMap = matchedValueMap[workingSheetName][workingRow];
+    if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
+      valueMap = matchedRowValueMap[workingSheetName][workingRow];
     }
 
     const row = jsonData[workingSheetName][workingRow];
@@ -262,7 +268,7 @@ class RowResolver extends Component {
 
 RowResolver.propTypes = {
   fieldToValueMap: PropTypes.objectOf(PropTypes.object),
-  matchedValueMap: PropTypes.objectOf(PropTypes.any),
+  matchedRowValueMap: PropTypes.objectOf(PropTypes.any),
   jsonData: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
   cellsWithErrors: PropTypes.objectOf(PropTypes.array),
@@ -272,7 +278,7 @@ RowResolver.propTypes = {
 
 RowResolver.defaultProps = {
   fieldToValueMap: {},
-  matchedValueMap: {},
+  matchedRowValueMap: {},
   jsonData: [],
   ddData: [],
   cellsWithErrors: {},

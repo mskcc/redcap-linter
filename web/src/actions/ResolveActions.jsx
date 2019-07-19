@@ -149,6 +149,8 @@ export function resolveRow(payload) {
     data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', JSON.stringify(payload.action || ''));
 
+    dispatch(loadingResolveStart());
+
     const request = axios({
       method: 'POST',
       url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/resolve_row`,

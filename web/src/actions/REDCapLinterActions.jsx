@@ -39,6 +39,7 @@ export const FILTER_TABLE = 'FILTER_TABLE';
 
 export const FILTER_ROW = 'FILTER_ROW';
 
+export const ACCEPT_CORRECTIONS = 'ACCEPT_CORRECTIONS';
 export const CORRECT_VALUE = 'CORRECT_VALUE';
 
 export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
@@ -369,7 +370,19 @@ export function removeValueMatch(payload) {
   };
 }
 
-// TODO make this one call
+export function acceptCorrectionsSuccess(payload) {
+  return {
+    type: ACCEPT_CORRECTIONS,
+    payload,
+  };
+}
+
+export function acceptCorrections(payload) {
+  return function action(dispatch) {
+    return dispatch(acceptCorrectionsSuccess(payload));
+  };
+}
+
 export function correctValueSuccess(payload) {
   return {
     type: CORRECT_VALUE,

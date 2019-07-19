@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import { Modal, Spin } from 'antd';
 import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
@@ -12,13 +13,29 @@ import { resolveRow } from '../../actions/ResolveActions';
 class ResolveRow extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      showModal: false,
+      loadingSave: false,
+      loadingContinue: false,
+    };
+
+    this.handleOk = this.handleOk.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { loadingResolve } = nextProps;
+    if (!loadingResolve) {
+      return { loadingSave: false, loadingContinue: false };
+    }
+    return null;
   }
 
   saveChanges(action) {
     const {
       jsonData,
       fieldToValueMap,
+      matchedRowValueMap,
       projectInfo,
       ddData,
       workingRow,
@@ -28,6 +45,14 @@ class ResolveRow extends Component {
       csvHeaders,
       resolveRow,
     } = this.props;
+    let unsavedValueMap = {};
+    if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
+      unsavedValueMap = matchedRowValueMap[workingSheetName][workingRow];
+    }
+    if (action === 'continue' && Object.keys(unsavedValueMap).length > 0) {
+      this.setState({ showModal: true });
+      return;
+    }
     const payload = {
       jsonData,
       fieldToValueMap,
@@ -42,6 +67,22 @@ class ResolveRow extends Component {
     };
 
     resolveRow(payload);
+    if (action === 'save') {
+      this.setState({ loadingSave: true });
+    } else if (action === 'continue') {
+      this.setState({ loadingContinue: true });
+    }
+  }
+
+  handleOk() {
+    this.saveChanges('continue');
+    this.setState({ showModal: false });
+  }
+
+  handleCancel() {
+    this.setState({
+      showModal: false,
+    });
   }
 
   render() {
@@ -50,14 +91,22 @@ class ResolveRow extends Component {
       cellsWithErrors,
       fieldToValueMap,
       workingSheetName,
+      matchedRowValueMap,
       workingRow,
       csvHeaders,
       acceptRowMatches,
       filterRow,
     } = this.props;
 
+    const { loadingSave, loadingContinue, showModal } = this.state;
+
     if (workingRow === -1 || workingRow === '') {
       return null;
+    }
+
+    let unsavedValueMap = {};
+    if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
+      unsavedValueMap = matchedRowValueMap[workingSheetName][workingRow];
     }
 
     const row = jsonData[workingSheetName][workingRow];
@@ -89,6 +138,16 @@ class ResolveRow extends Component {
       }
     });
 
+    let saveButtonText = 'Save';
+    if (loadingSave) {
+      saveButtonText = <Spin />;
+    }
+
+    let continueButtonText = 'Save and Continue';
+    if (loadingContinue) {
+      continueButtonText = <Spin />;
+    }
+    const rowResolver = <RowResolver showModal={showModal} />;
     return (
       <div>
         <ActionMenu />
@@ -106,7 +165,7 @@ class ResolveRow extends Component {
             </div>
             <div className="ResolveRow-unmatchedChoices">
               <div className="ResolveRow-title">Row Errors</div>
-              <RowResolver />
+              {rowResolver}
             </div>
             <div style={{ clear: 'both' }} />
           </div>
@@ -116,15 +175,30 @@ class ResolveRow extends Component {
               onClick={this.saveChanges.bind(this, 'save')}
               className="App-actionButton"
             >
-              Save
+              {saveButtonText}
             </button>
             <button
               type="button"
               onClick={this.saveChanges.bind(this, 'continue')}
               className="App-submitButton"
             >
-              Save and Continue
+              {continueButtonText}
             </button>
+            <Modal
+              title="Confirm Updates"
+              width={800}
+              visible={showModal}
+              onOk={() => {
+                this.handleOk();
+              }}
+              okButtonProps={{ disabled: Object.keys(unsavedValueMap).length > 0 }}
+              onCancel={() => {
+                this.handleCancel();
+              }}
+            >
+              <p>You have unaccepted matches. Would you like to Accept or Reject these matches?</p>
+              {rowResolver}
+            </Modal>
           </div>
         </div>
         <div style={{ clear: 'both' }} />
@@ -135,6 +209,7 @@ class ResolveRow extends Component {
 
 ResolveRow.propTypes = {
   fieldToValueMap: PropTypes.objectOf(PropTypes.object),
+  matchedRowValueMap: PropTypes.objectOf(PropTypes.any),
   ddData: PropTypes.arrayOf(PropTypes.object),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   jsonData: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.object)),
@@ -153,6 +228,7 @@ ResolveRow.defaultProps = {
   csvHeaders: {},
   cellsWithErrors: {},
   fieldToValueMap: {},
+  matchedRowValueMap: {},
   columnsInError: {},
   rowsInError: {},
   workingSheetName: '',

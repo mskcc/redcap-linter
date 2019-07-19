@@ -23,6 +23,7 @@ import {
   NAVIGATE_TO_FAILURE,
   FILTER_TABLE,
   FILTER_ROW,
+  ACCEPT_CORRECTIONS,
   CORRECT_VALUE,
   REMOVE_VALUE_MATCH,
   ACCEPT_ROW_MATCHES,
@@ -156,7 +157,7 @@ export default function (state = {}, action) {
       return Object.assign(
         {},
         state,
-        { workingColumn: '', workingMergeRow: -1 },
+        { workingColumn: '', workingMergeRow: -1, loadingResolve: false },
         action.payload.data,
       );
     }
@@ -191,29 +192,29 @@ export default function (state = {}, action) {
         workingSheetName, workingRow, fieldToValueMap = {}, toggle = false,
       } = state;
 
-      const matchedValueMap = action.payload.matchedValueMap;
-      const unsavedValueMap = matchedValueMap[workingSheetName][workingRow];
+      const matchedRowValueMap = action.payload.matchedRowValueMap;
+      const unsavedValueMap = matchedRowValueMap[workingSheetName][workingRow];
       fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {};
       fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {};
       fieldToValueMap[workingSheetName][workingRow] = Object.assign(
         fieldToValueMap[workingSheetName][workingRow],
         unsavedValueMap,
       );
-      matchedValueMap[workingSheetName][workingRow] = {};
-      return Object.assign({}, state, { fieldToValueMap, matchedValueMap, toggle: !toggle });
+      matchedRowValueMap[workingSheetName][workingRow] = {};
+      return Object.assign({}, state, { fieldToValueMap, matchedRowValueMap, toggle: !toggle });
     }
     case UPDATE_VALUE: {
-      const { matchedValueMap = {}, workingSheetName, workingRow } = state;
+      const { matchedRowValueMap = {}, workingSheetName, workingRow } = state;
       const { toggle = false } = state;
-      matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
-      matchedValueMap[workingSheetName][workingRow] = matchedValueMap[workingSheetName][workingRow] || {};
+      matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
+      matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
       const newRowMap = _.extend(
         {},
-        matchedValueMap[workingSheetName][workingRow],
-        action.payload.matchedValueMap[workingSheetName][workingRow],
+        matchedRowValueMap[workingSheetName][workingRow],
+        action.payload.matchedRowValueMap[workingSheetName][workingRow],
       );
-      matchedValueMap[workingSheetName][workingRow] = newRowMap;
-      return Object.assign({}, state, { matchedValueMap, toggle: !toggle });
+      matchedRowValueMap[workingSheetName][workingRow] = newRowMap;
+      return Object.assign({}, state, { matchedRowValueMap, toggle: !toggle });
     }
     case CHANGE_REPEATABLE_INSTRUMENTS: {
       const projectInfo = state.projectInfo || {};
@@ -227,18 +228,30 @@ export default function (state = {}, action) {
       projectInfo.secondary_unique_field = action.payload.secondaryUniqueField;
       return Object.assign({}, state, { projectInfo, toggle: !toggle });
     }
-    case CORRECT_VALUE: {
+    case ACCEPT_CORRECTIONS: {
       const {
         workingSheetName,
         workingColumn,
         originalToCorrectedValueMap = {},
         fieldErrors = {},
       } = state;
+      const matchedValueMap = action.payload.matchedValueMap;
+      const fields = action.payload.fields || [];
+      let unsavedValueMap = {};
+      if (fields.length > 0) {
+        fields.forEach((field) => {
+          unsavedValueMap[field] = matchedValueMap[workingSheetName][workingColumn][field];
+          delete matchedValueMap[workingSheetName][workingColumn][field];
+        });
+      } else {
+        unsavedValueMap = matchedValueMap[workingSheetName][workingColumn];
+        matchedValueMap[workingSheetName][workingColumn] = {};
+      }
       originalToCorrectedValueMap[workingSheetName] = originalToCorrectedValueMap[workingSheetName] || {};
       originalToCorrectedValueMap[workingSheetName][workingColumn] = originalToCorrectedValueMap[workingSheetName][workingColumn] || {};
       originalToCorrectedValueMap[workingSheetName][workingColumn] = Object.assign(
         originalToCorrectedValueMap[workingSheetName][workingColumn],
-        action.payload,
+        unsavedValueMap,
       );
       let textErrors = [];
       if (fieldErrors.textErrors) {
@@ -249,7 +262,25 @@ export default function (state = {}, action) {
         if (idx !== -1) textErrors.splice(idx, 1);
       });
       fieldErrors.textErrors = textErrors;
-      return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
+      return Object.assign({}, state, {
+        originalToCorrectedValueMap,
+        matchedValueMap,
+        fieldErrors,
+        textErrors,
+      });
+    }
+    case CORRECT_VALUE: {
+      const { matchedValueMap = {}, workingSheetName, workingColumn } = state;
+      const { toggle = false } = state;
+      matchedValueMap[workingSheetName] = matchedValueMap[workingSheetName] || {};
+      matchedValueMap[workingSheetName][workingColumn] = matchedValueMap[workingSheetName][workingColumn] || {};
+      const newRowMap = _.extend(
+        {},
+        matchedValueMap[workingSheetName][workingColumn],
+        action.payload.matchedValueMap[workingSheetName][workingColumn],
+      );
+      matchedValueMap[workingSheetName][workingColumn] = newRowMap;
+      return Object.assign({}, state, { matchedValueMap, toggle: !toggle });
     }
     case MERGE_FIELD: {
       const {
