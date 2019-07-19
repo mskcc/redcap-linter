@@ -7,7 +7,7 @@ import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './ResolveRow.scss';
-import { filterRow, acceptRowMatches } from '../../actions/REDCapLinterActions';
+import { filterRow, acceptRowMatches, removeRowMatch } from '../../actions/REDCapLinterActions';
 import { resolveRow } from '../../actions/ResolveActions';
 
 class ResolveRow extends Component {
@@ -95,6 +95,7 @@ class ResolveRow extends Component {
       workingRow,
       csvHeaders,
       acceptRowMatches,
+      removeRowMatch,
       filterRow,
     } = this.props;
 
@@ -120,7 +121,7 @@ class ResolveRow extends Component {
     const sheetHeaders = csvHeaders[workingSheetName];
     const tableData = sheetHeaders.reduce((filtered, field) => {
       // TODO Figure out why date of prior visit is null
-      if (!currentRowErrors[field] && !valueMap[field]) {
+      if (!currentRowErrors[field] && !valueMap.hasOwnProperty(field)) {
         filtered.push({
           Field: field,
           Value: row[field] || '',
@@ -130,12 +131,10 @@ class ResolveRow extends Component {
     }, []);
 
     Object.keys(valueMap).forEach((field) => {
-      if (valueMap[field]) {
-        tableData.unshift({
-          Field: field,
-          Value: valueMap[field],
-        });
-      }
+      tableData.unshift({
+        Field: field,
+        Value: valueMap[field],
+      });
     });
 
     let saveButtonText = 'Save';
@@ -158,6 +157,7 @@ class ResolveRow extends Component {
               <ResolvedRowErrors
                 fieldToValueMap={fieldToValueMap}
                 acceptRowMatches={acceptRowMatches}
+                removeRowMatch={removeRowMatch}
                 tableData={tableData}
                 workingSheetName={workingSheetName}
                 workingRow={workingRow}
@@ -240,7 +240,15 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveRow, filterRow, acceptRowMatches }, dispatch);
+  return bindActionCreators(
+    {
+      resolveRow,
+      filterRow,
+      acceptRowMatches,
+      removeRowMatch,
+    },
+    dispatch,
+  );
 }
 
 export default connect(

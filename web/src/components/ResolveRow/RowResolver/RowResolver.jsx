@@ -39,10 +39,17 @@ class RowResolver extends Component {
           width: '200px',
           render: (text, record) => this.renderInput(record),
         },
+        {
+          title: 'Action',
+          key: 'Action',
+          render: (text, record) => this.renderMatchButton(record),
+        },
       ],
     };
 
     this.acceptMatches = this.acceptMatches.bind(this);
+    this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleRemove = this.handleRemove.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -65,6 +72,21 @@ class RowResolver extends Component {
   onBlur() {
     const { workingSheetName, filterRow } = this.props;
     filterRow(workingSheetName, -1);
+  }
+
+  handleUpdate(field, e) {
+    const { matchedRowValueMap, acceptRowMatches } = this.props;
+    acceptRowMatches({ matchedRowValueMap, fields: [field] });
+  }
+
+  handleRemove(field) {
+    const {
+      matchedRowValueMap, workingSheetName, workingRow, acceptRowMatches,
+    } = this.props;
+    matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
+    matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
+    matchedRowValueMap[workingSheetName][workingRow][field] = '';
+    acceptRowMatches({ matchedRowValueMap, fields: [field] });
   }
 
   acceptMatches() {
@@ -186,6 +208,38 @@ class RowResolver extends Component {
     );
   }
 
+  renderMatchButton(record) {
+    const field = record.Field;
+    const { matchedRowValueMap, workingSheetName, workingRow } = this.props;
+    let disabled = true;
+    if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
+      if (matchedRowValueMap[workingSheetName][workingRow][field]) {
+        disabled = false;
+      }
+    }
+    const removeDisabled = false;
+    return (
+      <div className="RowResolver-buttons">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={e => this.handleUpdate(field, e)}
+          className="App-submitButton"
+        >
+          Update
+        </button>
+        <button
+          type="button"
+          disabled={removeDisabled}
+          onClick={e => this.handleRemove(field, e)}
+          className="App-actionButton"
+        >
+          Remove
+        </button>
+      </div>
+    );
+  }
+
   render() {
     const {
       matchedRowValueMap,
@@ -211,10 +265,7 @@ class RowResolver extends Component {
     }
 
     const tableData = Object.keys(row).reduce((filtered, field) => {
-      if (
-        (currentRowErrors[field] && !savedValueMap[field])
-        || (savedValueMap.hasOwnProperty(field) && !savedValueMap[field])
-      ) {
+      if (currentRowErrors[field] && !savedValueMap.hasOwnProperty(field)) {
         filtered.push({
           Field: field,
           Value: row[field],

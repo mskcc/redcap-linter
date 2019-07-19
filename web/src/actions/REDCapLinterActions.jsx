@@ -41,11 +41,11 @@ export const FILTER_ROW = 'FILTER_ROW';
 
 export const ACCEPT_CORRECTIONS = 'ACCEPT_CORRECTIONS';
 export const CORRECT_VALUE = 'CORRECT_VALUE';
-
 export const REMOVE_VALUE_MATCH = 'REMOVE_VALUE_MATCH';
 
 export const ACCEPT_ROW_MATCHES = 'ACCEPT_ROW_MATCHES';
 export const UPDATE_VALUE = 'UPDATE_VALUE';
+export const REMOVE_ROW_MATCH = 'REMOVE_ROW_MATCH';
 
 export const CHANGE_REPEATABLE_INSTRUMENTS = 'CHANGE_REPEATABLE_INSTRUMENTS';
 
@@ -367,6 +367,19 @@ export function removeValueMatchSuccess(payload) {
 export function removeValueMatch(payload) {
   return function action(dispatch) {
     return dispatch(removeValueMatchSuccess(payload));
+  };
+}
+
+export function removeRowMatchSuccess(payload) {
+  return {
+    type: REMOVE_ROW_MATCH,
+    payload,
+  };
+}
+
+export function removeRowMatch(payload) {
+  return function action(dispatch) {
+    return dispatch(removeRowMatchSuccess(payload));
   };
 }
 

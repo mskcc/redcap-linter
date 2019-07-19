@@ -28,6 +28,7 @@ import {
   REMOVE_VALUE_MATCH,
   ACCEPT_ROW_MATCHES,
   UPDATE_VALUE,
+  REMOVE_ROW_MATCH,
   CHANGE_REPEATABLE_INSTRUMENTS,
   CHANGE_SECONDARY_UNIQUE_FIELD,
 } from '../actions/REDCapLinterActions';
@@ -193,14 +194,23 @@ export default function (state = {}, action) {
       } = state;
 
       const matchedRowValueMap = action.payload.matchedRowValueMap;
-      const unsavedValueMap = matchedRowValueMap[workingSheetName][workingRow];
+      let unsavedValueMap = {};
+      const fields = action.payload.fields || [];
+      if (fields.length > 0) {
+        fields.forEach((field) => {
+          unsavedValueMap[field] = matchedRowValueMap[workingSheetName][workingRow][field];
+          delete matchedRowValueMap[workingSheetName][workingRow][field];
+        });
+      } else {
+        unsavedValueMap = matchedRowValueMap[workingSheetName][workingRow];
+        matchedRowValueMap[workingSheetName][workingRow] = {};
+      }
       fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {};
       fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {};
       fieldToValueMap[workingSheetName][workingRow] = Object.assign(
         fieldToValueMap[workingSheetName][workingRow],
         unsavedValueMap,
       );
-      matchedRowValueMap[workingSheetName][workingRow] = {};
       return Object.assign({}, state, { fieldToValueMap, matchedRowValueMap, toggle: !toggle });
     }
     case UPDATE_VALUE: {
@@ -463,6 +473,17 @@ export default function (state = {}, action) {
       });
       fieldErrors.textErrors = textErrors;
       return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
+    }
+    case REMOVE_ROW_MATCH: {
+      const {
+        workingSheetName, workingRow, fieldToValueMap = {}, toggle = false,
+      } = state;
+      fieldToValueMap[workingSheetName] = fieldToValueMap[workingSheetName] || {};
+      fieldToValueMap[workingSheetName][workingRow] = fieldToValueMap[workingSheetName][workingRow] || {};
+      Object.keys(action.payload).forEach((field) => {
+        delete fieldToValueMap[workingSheetName][workingRow][field];
+      });
+      return Object.assign({}, state, { fieldToValueMap, toggle: !toggle });
     }
     default: {
       return state;

@@ -27,14 +27,10 @@ class ResolvedRowErrors extends Component {
   }
 
   removeRequiredMatch(record) {
-    const {
-      fieldToValueMap, workingSheetName, workingRow, acceptRowMatches,
-    } = this.props;
-    const valueMap = _.cloneDeep(fieldToValueMap);
-    if (fieldToValueMap[workingSheetName] && fieldToValueMap[workingSheetName][workingRow]) {
-      valueMap[workingSheetName][workingRow][record.Field] = '';
-    }
-    acceptRowMatches({ matchedRowValueMap: valueMap });
+    const { removeRowMatch } = this.props;
+    const payload = {};
+    payload[record.Field] = '';
+    removeRowMatch(payload);
   }
 
   renderCell(header, record) {
@@ -78,8 +74,7 @@ class ResolvedRowErrors extends Component {
       <div className="ResolvedRowErrors-table">
         <div className="ResolvedRowErrors-tableTitle">
           <span className="ResolvedRowErrors-searchBar">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
               value={search}
