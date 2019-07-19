@@ -7,6 +7,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Cell from '../../Cell/Cell';
+import { isValueValid, disabledDate } from '../../../utils/utils';
 
 import { correctValue, acceptCorrections, filterTable } from '../../../actions/REDCapLinterActions';
 
@@ -38,8 +39,6 @@ class TextErrorResolver extends Component {
     this.handleCorrectAll = this.handleCorrectAll.bind(this);
   }
 
-  // TODO Add button to batch this
-
   onBlur(e) {
     const { filterTable } = this.props;
     filterTable('');
@@ -56,13 +55,13 @@ class TextErrorResolver extends Component {
       matchedValueMap,
       workingSheetName,
       workingColumn,
-      isValueValid,
+      fieldErrors,
     } = this.props;
     const validFields = [];
     if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
       Object.keys(matchedValueMap[workingSheetName][workingColumn]).forEach((originalValue) => {
         const value = matchedValueMap[workingSheetName][workingColumn][originalValue];
-        if (value && isValueValid(value)) {
+        if (value && isValueValid(value, fieldErrors)) {
           validFields.push(originalValue);
         }
       });
@@ -101,28 +100,9 @@ class TextErrorResolver extends Component {
     correctValue({ matchedValueMap });
   }
 
-  disabledDate(current) {
-    const { fieldErrors } = this.props;
-
-    const { textValidationMin, textValidationMax } = fieldErrors;
-    let disabled = false;
-    if (
-      (textValidationMin && current < moment(textValidationMin))
-      || (textValidationMax && current > moment(textValidationMax))
-    ) {
-      disabled = true;
-    }
-
-    return disabled;
-  }
-
   renderInput(record) {
     const {
-      matchedValueMap,
-      workingSheetName,
-      workingColumn,
-      fieldErrors,
-      isValueValid,
+      matchedValueMap, workingSheetName, workingColumn, fieldErrors,
     } = this.props;
     const originalValue = record['Original Value'];
     let value = '';
@@ -132,7 +112,7 @@ class TextErrorResolver extends Component {
     const { textValidation } = fieldErrors;
     let validClassName = '';
     if (value) {
-      const valid = isValueValid(value);
+      const valid = isValueValid(value, fieldErrors);
 
       validClassName = valid ? 'TextErrorResolver-valid' : 'TextErrorResolver-invalid';
     }
@@ -155,7 +135,7 @@ class TextErrorResolver extends Component {
           onBlur={this.onBlur.bind(this)}
           onFocus={this.onFocus.bind(this, originalValue)}
           onChange={this.handleChange.bind(this, originalValue)}
-          disabledDate={this.disabledDate.bind(this)}
+          disabledDate={e => disabledDate(fieldErrors, e)}
         />
       );
     }
@@ -166,16 +146,12 @@ class TextErrorResolver extends Component {
   renderMatchButton(record) {
     const originalValue = record['Original Value'];
     const {
-      matchedValueMap,
-      workingSheetName,
-      workingColumn,
-      fieldErrors,
-      isValueValid,
+      matchedValueMap, workingSheetName, workingColumn, fieldErrors,
     } = this.props;
     let disabled = true;
     if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
       const value = matchedValueMap[workingSheetName][workingColumn][originalValue];
-      if (value && isValueValid(value)) {
+      if (value && isValueValid(value, fieldErrors)) {
         disabled = false;
       }
     }

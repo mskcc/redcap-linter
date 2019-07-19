@@ -9,6 +9,7 @@ import ActionMenu from '../ActionMenu/ActionMenu';
 import './TextValidation.scss';
 import { filterTable, removeValueMatch } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
+import { isValueValid } from '../../utils/utils';
 
 class TextValidation extends Component {
   constructor(props) {
@@ -21,7 +22,6 @@ class TextValidation extends Component {
 
     this.handleOk = this.handleOk.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
-    this.isValueValid = this.isValueValid.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -44,6 +44,7 @@ class TextValidation extends Component {
       csvHeaders,
       columnsInError,
       rowsInError,
+      fieldErrors,
       resolveColumn,
       filterTable,
     } = this.props;
@@ -51,7 +52,7 @@ class TextValidation extends Component {
     if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
       // TODO only check for valid values
       Object.values(matchedValueMap[workingSheetName][workingColumn]).forEach((value) => {
-        if (this.isValueValid(value)) {
+        if (isValueValid(value, fieldErrors)) {
           validValues.push(value);
         }
       });
@@ -90,45 +91,6 @@ class TextValidation extends Component {
     this.setState({
       showModal: false,
     });
-  }
-
-  isValueValid(value) {
-    const { fieldErrors } = this.props;
-
-    const { textValidation, textValidationMin, textValidationMax } = fieldErrors;
-
-    let valid = true;
-    if (textValidation === 'integer') {
-      // https://stackoverflow.com/questions/1779013/check-if-string-contains-only-digits/1779019
-      const integerRegex = /^[-+]?\d+$/;
-      if (integerRegex.test(value)) {
-        const parsedValue = parseInt(value, 10);
-        if (
-          (textValidationMin && parsedValue < parseInt(textValidationMin, 10))
-          || (textValidationMax && parsedValue > parseInt(textValidationMax, 10))
-        ) {
-          valid = false;
-        }
-      } else {
-        valid = false;
-      }
-    } else if (textValidation === 'number_2dp') {
-      // https://stackoverflow.com/questions/1779013/check-if-string-contains-only-digits/1779019
-      const decimalRegex = /^[-+]?\d+\.[0-9]{2}$/;
-      if (decimalRegex.test(value)) {
-        const parsedValue = parseFloat(value, 10);
-        if (
-          (textValidationMin && parsedValue < parseFloat(textValidationMin, 10))
-          || (textValidationMax && parsedValue > parseFloat(textValidationMax, 10))
-        ) {
-          valid = false;
-        }
-      } else {
-        valid = false;
-      }
-    }
-
-    return valid;
   }
 
   render() {
@@ -171,9 +133,7 @@ class TextValidation extends Component {
     if (loadingContinue) {
       continueButtonText = <Spin />;
     }
-    const textErrorResolver = (
-      <TextErrorResolver isValueValid={this.isValueValid} showModal={showModal} />
-    );
+    const textErrorResolver = <TextErrorResolver showModal={showModal} />;
     return (
       <div>
         <ActionMenu />

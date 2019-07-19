@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import './RowResolver.scss';
 import '../../../App.scss';
-import { Table, Input } from 'antd';
+import { Table, Input, DatePicker } from 'antd';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Select from 'react-select';
 import Cell from '../../Cell/Cell';
 import { updateValue, acceptRowMatches, filterRow } from '../../../actions/REDCapLinterActions';
-import { calculateSelectStyles } from '../../../utils/utils';
+import { calculateSelectStyles, isValueValid, disabledDate } from '../../../utils/utils';
 
 class RowResolver extends Component {
   constructor(props) {
@@ -106,7 +107,12 @@ class RowResolver extends Component {
   }
 
   handleChange(field, e) {
-    const value = e.target.value;
+    let value = '';
+    if (moment.isMoment(e)) {
+      value = e.format('MM-DD-YYYY');
+    } else {
+      value = e.target.value;
+    }
     const {
       matchedRowValueMap, workingSheetName, workingRow, updateValue,
     } = this.props;
@@ -162,6 +168,19 @@ class RowResolver extends Component {
       valueMap = matchedRowValueMap[workingSheetName][workingRow];
     }
     const value = valueMap[fieldName] || '';
+
+    const validation = {
+      textValidation: ddField.text_validation,
+      textValidationMin: ddField.text_min,
+      textValidationMax: ddField.text_max,
+    };
+    let validClassName = '';
+    if (value) {
+      const valid = isValueValid(value, validation);
+
+      validClassName = valid ? 'TextErrorResolver-valid' : 'TextErrorResolver-invalid';
+    }
+
     let selectedValue = null;
     if (ddField.choices_dict) {
       const options = [];
@@ -196,9 +215,10 @@ class RowResolver extends Component {
         />
       );
     }
-    return (
+
+    let input = (
       <Input
-        className="RowResolver-input"
+        className={`RowResolver-input ${validClassName}`}
         type="text"
         onFocus={e => this.onFocus(e)}
         onBlur={e => this.onBlur(e)}
@@ -206,18 +226,45 @@ class RowResolver extends Component {
         onChange={e => this.handleChange(fieldName, e)}
       />
     );
+
+    if (['date_dmy', 'date_mdy', 'date_ymd'].includes(ddField.text_validation)) {
+      input = (
+        <DatePicker
+          value={value ? moment(value) : null}
+          onFocus={e => this.onFocus(e)}
+          onBlur={e => this.onBlur(e)}
+          onChange={e => this.handleChange(fieldName, e)}
+          disabledDate={e => disabledDate(validation, e)}
+        />
+      );
+    }
+
+    return input;
   }
 
   renderMatchButton(record) {
     const field = record.Field;
-    const { matchedRowValueMap, workingSheetName, workingRow } = this.props;
+    const {
+      matchedRowValueMap, workingSheetName, workingRow, ddData,
+    } = this.props;
+    const ddField = ddData.find(f => f.field_name === field);
     let disabled = true;
     if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
-      if (matchedRowValueMap[workingSheetName][workingRow][field]) {
+      const value = matchedRowValueMap[workingSheetName][workingRow][field];
+      const validation = {
+        textValidation: ddField.text_validation,
+        textValidationMin: ddField.text_min,
+        textValidationMax: ddField.text_max,
+      };
+      if (value && isValueValid(value, validation)) {
         disabled = false;
       }
     }
-    const removeDisabled = false;
+
+    let removeDisabled = false;
+    if (ddField.required) {
+      removeDisabled = true;
+    }
     return (
       <div className="RowResolver-buttons">
         <button
@@ -276,7 +323,7 @@ class RowResolver extends Component {
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row.Field.includes(search));
+      data = data.filter(r => r.Field.includes(search));
     }
 
     let disabled = true;
