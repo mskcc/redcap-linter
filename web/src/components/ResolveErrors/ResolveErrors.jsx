@@ -61,10 +61,8 @@ class ResolveErrors extends Component {
         nextColumn,
         action: 'continue',
       };
-      // TODO Call on resolveRow if there are no column errors
       resolveColumn(payload);
     } else if (workingRow < 0 && Object.keys(rowsInError).length > 0) {
-      // TODO take workingSheetName from props
       const nextSheetName = Object.keys(rowsInError)[0];
       const nextRow = rowsInError[nextSheetName][0];
       const payload = {
@@ -93,7 +91,6 @@ class ResolveErrors extends Component {
     const { columnsInError, fieldErrors, rowsInError } = this.props;
     const { loading } = this.state;
     let content = '';
-    // TODO rework the logic here
     if (loading) {
       content = <Spin tip="Loading..." />;
     } else if (

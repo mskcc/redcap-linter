@@ -68,11 +68,10 @@ class ResolvedTextErrors extends Component {
       <div className="ResolvedTextErrors-table">
         <div className="ResolvedTextErrors-tableTitle">
           <span className="ResolvedTextErrors-searchBar">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
-              value={this.state.search}
+              value={search}
               onChange={e => this.setState({ search: e.target.value })}
             />
           </span>

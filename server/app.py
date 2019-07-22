@@ -81,8 +81,8 @@ def save_fields():
 
     datafile_errors = linter.lint_datafile(dd, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
-    rows_in_error = datafile_errors['rows_in_error']
 
+    rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
     columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
@@ -188,7 +188,6 @@ def post_form():
     redcap_api = RedcapApi(env)
 
     project_info = {
-        'custom_record_label': '',
         'secondary_unique_field': '',
         'record_autonumbering_enabled': 0,
         'repeatable_instruments': [],

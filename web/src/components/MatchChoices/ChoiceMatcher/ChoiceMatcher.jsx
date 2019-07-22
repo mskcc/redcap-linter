@@ -27,6 +27,12 @@ class ChoiceMatcher extends Component {
           width: '250px',
           render: (text, record) => this.renderCandidates(record),
         },
+        {
+          title: 'Action',
+          key: 'Action',
+          width: 200,
+          render: (text, record) => this.renderMatchButton(record),
+        },
       ],
     };
 
@@ -34,17 +40,78 @@ class ChoiceMatcher extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { workingColumn, workingSheetName } = prevState;
+    const {
+      matchedChoiceMap,
+      fieldErrors,
+      ddData,
+      workingSheetName,
+      workingColumn,
+      dataFieldToChoiceMap,
+      highlightChoices,
+    } = nextProps;
+
     if (
-      nextProps.workingColumn !== workingColumn
-      || nextProps.workingSheetName !== workingSheetName
+      workingColumn !== prevState.workingColumn
+      || workingSheetName !== prevState.workingSheetName
+    ) {
+      let savedChoiceMap = {};
+      if (
+        dataFieldToChoiceMap[workingSheetName]
+        && dataFieldToChoiceMap[workingSheetName][workingColumn]
+      ) {
+        savedChoiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
+      }
+
+      const ddField = ddData.find(field => field.field_name === workingColumn);
+      if (ddField.field_type === 'checkbox') {
+        matchedChoiceMap[workingSheetName] = matchedChoiceMap[workingSheetName] || {};
+        matchedChoiceMap[workingSheetName][workingColumn] = matchedChoiceMap[workingSheetName][workingColumn] || {};
+        const unmatchedChoices = fieldErrors.unmatchedChoices.reduce((filtered, f) => {
+          if (!Object.keys(savedChoiceMap).includes(f)) {
+            filtered.push(f);
+          }
+          return filtered;
+        }, []);
+        unmatchedChoices.forEach((unmatchedChoice) => {
+          const checkboxItems = unmatchedChoice.split(',').map(item => item.trim());
+          const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
+          checkboxItems.forEach((item) => {
+            if (choices.indexOf(item.toLowerCase()) >= 0) {
+              matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] = matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] || [];
+              matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice].push(item);
+            }
+          });
+        });
+
+        highlightChoices({ matchedChoiceMap });
+      }
+    }
+
+    if (
+      workingColumn !== prevState.workingColumn
+      || workingSheetName !== prevState.workingSheetName
     ) {
       return {
-        workingColumn: nextProps.workingColumn,
-        workingSheetName: nextProps.workingSheetName,
+        workingColumn,
+        workingSheetName,
       };
     }
     return null;
+  }
+
+  handleMatch(fieldToMatch) {
+    const { matchedChoiceMap, matchChoices } = this.props;
+    matchChoices({ matchedChoiceMap, fields: [fieldToMatch] });
+  }
+
+  handleNoMatch(fieldToMatch) {
+    const {
+      matchedChoiceMap, workingSheetName, workingColumn, matchChoices,
+    } = this.props;
+    matchedChoiceMap[workingSheetName] = matchedChoiceMap[workingSheetName] || [];
+    matchedChoiceMap[workingSheetName][workingColumn] = matchedChoiceMap[workingSheetName][workingColumn] || [];
+    matchedChoiceMap[workingSheetName][workingColumn][fieldToMatch] = '';
+    matchChoices({ matchedChoiceMap, fields: [fieldToMatch] });
   }
 
   acceptMatches() {
@@ -69,6 +136,36 @@ class ChoiceMatcher extends Component {
       choiceMap[fieldToMatch] = e.value;
     }
     highlightChoices({ matchedChoiceMap });
+  }
+
+  renderMatchButton(cellInfo) {
+    const fieldToMatch = cellInfo['Data Field'];
+    const { matchedChoiceMap, workingSheetName, workingColumn } = this.props;
+    let disabled = true;
+    if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
+      if (matchedChoiceMap[workingSheetName][workingColumn][fieldToMatch]) {
+        disabled = false;
+      }
+    }
+    return (
+      <div className="ChoiceMatcher-buttons">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={e => this.handleMatch(fieldToMatch, e)}
+          className="App-submitButton"
+        >
+          Match
+        </button>
+        <button
+          type="button"
+          onClick={e => this.handleNoMatch(fieldToMatch, e)}
+          className="App-actionButton"
+        >
+          No Match
+        </button>
+      </div>
+    );
   }
 
   renderCandidates(cellInfo) {
@@ -178,9 +275,11 @@ class ChoiceMatcher extends Component {
       data = data.filter(row => row['Data Field'].includes(search));
     }
 
-    let disabled = false;
+    let disabled = true;
     if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
-      disabled = Object.keys(matchedChoiceMap).length === 0;
+      if (Object.keys(matchedChoiceMap[workingSheetName][workingColumn]).length > 0) {
+        disabled = false;
+      }
     }
 
     return (

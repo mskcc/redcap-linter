@@ -353,8 +353,7 @@ class FieldMatcher extends Component {
       <div className="FieldMatcher-table">
         <div className="FieldMatcher-tableActions">
           <div className="FieldMatcher-tableSearch">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
               value={search}

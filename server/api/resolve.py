@@ -27,12 +27,15 @@ def resolve_column():
     json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
 
     transform_map = {}
+    has_transforms = False
 
     for sheet in json_data:
         transform_map[sheet] = {
             **data_field_to_choice_map.get(working_sheet_name, {}).get(working_column, {}),
             **original_to_correct_value_map.get(working_sheet_name, {}).get(working_column, {})
         }
+        if transform_map[sheet]:
+            has_transforms = True
 
     data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
 
@@ -82,26 +85,29 @@ def resolve_column():
     if next_column:
         field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
 
-    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
-    cells_with_errors = datafile_errors['cells_with_errors']
-    rows_in_error = datafile_errors['rows_in_error']
-    columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
-
     json_data = {}
-
-    all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
-        cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
     results = {
-        'jsonData':        json_data,
-        'cellsWithErrors': cells_with_errors,
-        'columnsInError':  columns_in_error,
-        'allErrors':       all_errors,
-        'rowsInError':     rows_in_error,
+        'jsonData': json_data,
     }
+
+    if has_transforms:
+        datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
+        cells_with_errors = datafile_errors['cells_with_errors']
+        rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
+        columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
+        for sheet_name, sheet in records.items():
+            cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
+
+        all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
+        results['allErrors'] = all_errors
+        results['columnInError'] = columns_in_error
+        results['cellsWithErrors'] = cells_with_errors
+        results['rowsInError'] = rows_in_error
+
     if action == 'continue':
         results['workingColumn'] = next_column
         results['workingSheetName'] = next_sheet_name
@@ -175,7 +181,7 @@ def resolve_row():
 
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
-    rows_in_error = datafile_errors['rows_in_error']
+    rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -447,7 +453,8 @@ def encode_records():
         records[sheet] = frame
 
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
-    rows_in_error = datafile_errors['rows_in_error']
+    cells_with_errors = datafile_errors['cells_with_errors']
+    rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
 
     options = {
         'rows_in_error': rows_in_error,

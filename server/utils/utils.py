@@ -4,7 +4,8 @@ import re
 import pandas as pd
 from dateutil import parser
 
-from models.redcap_field import RedcapField
+DECIMAL_PATTERN = re.compile("^[-+]?\d+\.[0-9]{2}$")
+INTEGER_PATTERN = re.compile("^[-+]?\d+$")
 
 def write_errors_to_excel(original_records, errors, error_cols):
     writer = pd.ExcelWriter('datafile_errors.xlsx', engine='xlsxwriter')
@@ -40,28 +41,29 @@ def validate_numbers(numbers_list, number_format, number_min, number_max, requir
         number_min = float(number_min)
     if number_max and isinstance(number_max, str):
         number_max = float(number_max)
-    for d in numbers_list:
-        if not d or pd.isnull(d):
+    for number_str in numbers_list:
+        if not number_str or pd.isnull(number_str):
             is_valid = False if required else None
             formatted_numbers.append(is_valid)
             continue
         try:
-            d = float(d)
+            d = float(number_str)
         except ValueError:
             formatted_numbers.append(False)
+            continue
         if ((number_min and d < number_min) or
               (number_max and d > number_max)):
             logging.error("{0} is outside the acceptable range. min: {1}, max: {2}".format(d, number_min, number_max))
             formatted_numbers.append(False)
         else:
             if number_format == 'number_2dp':
-                if float(d).is_integer():
-                    logging.error("Expected decimal point, but received: {0}".format(d))
-                    formatted_numbers.append(False)
-                else:
+                if DECIMAL_PATTERN.fullmatch(str(number_str)):
                     formatted_numbers.append("{:.2f}".format(d))
+                else:
+                    logging.error("Expected decimal point with 2 places, but received: {0}".format(d))
+                    formatted_numbers.append(False)
             elif number_format == 'integer':
-                if float(d).is_integer():
+                if INTEGER_PATTERN.fullmatch(str(number_str)):
                     formatted_numbers.append("{:.0f}".format(d))
                 else:
                     logging.error("Integer validation failed: {0}".format(d))
@@ -138,6 +140,16 @@ def get_columns_with_errors(cells_with_errors, records):
         if sheet_columns_in_error:
             columns_in_error[sheet_name] = sheet_columns_in_error
     return columns_in_error
+
+def get_rows_with_errors(cells_with_errors, records):
+    rows_in_error = {}
+    for sheet_name in cells_with_errors:
+        sheet_rows_in_error = []
+        for row in cells_with_errors[sheet_name].itertuples():
+            if True in row:
+                sheet_rows_in_error.append(row.Index)
+        rows_in_error[sheet_name] = sheet_rows_in_error
+    return rows_in_error
 
 def get_matching_fields(data_dictionary, records, recordid_field):
     form_fields = data_dictionary

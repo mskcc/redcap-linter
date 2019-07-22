@@ -325,7 +325,17 @@ export default function (state = {}, action) {
         unmatchedChoices = fieldErrors.unmatchedChoices.slice();
       }
       const matchedChoiceMap = action.payload.matchedChoiceMap;
-      const unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
+      let unsavedChoiceMap = {};
+      const fields = action.payload.fields || [];
+      if (fields.length > 0) {
+        fields.forEach((field) => {
+          unsavedChoiceMap[field] = matchedChoiceMap[workingSheetName][workingColumn][field];
+          delete matchedChoiceMap[workingSheetName][workingColumn][field];
+        });
+      } else {
+        unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
+        matchedChoiceMap[workingSheetName][workingColumn] = {};
+      }
       for (let i = 0; i < Object.keys(unsavedChoiceMap).length; i++) {
         const idx = unmatchedChoices.indexOf(Object.keys(unsavedChoiceMap)[i]);
         if (idx !== -1) unmatchedChoices.splice(idx, 1);
@@ -334,9 +344,8 @@ export default function (state = {}, action) {
       dataFieldToChoiceMap[workingSheetName][workingColumn] = dataFieldToChoiceMap[workingSheetName][workingColumn] || {};
       dataFieldToChoiceMap[workingSheetName][workingColumn] = Object.assign(
         dataFieldToChoiceMap[workingSheetName][workingColumn],
-        matchedChoiceMap[workingSheetName][workingColumn],
+        unsavedChoiceMap,
       );
-      matchedChoiceMap[workingSheetName][workingColumn] = {};
       fieldErrors.unmatchedChoices = unmatchedChoices;
       return Object.assign({}, state, {
         dataFieldToChoiceMap,

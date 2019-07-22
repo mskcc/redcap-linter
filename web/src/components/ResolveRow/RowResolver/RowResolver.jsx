@@ -91,8 +91,33 @@ class RowResolver extends Component {
   }
 
   acceptMatches() {
-    const { matchedRowValueMap, acceptRowMatches } = this.props;
-    acceptRowMatches({ matchedRowValueMap });
+    const {
+      matchedRowValueMap,
+      workingSheetName,
+      workingRow,
+      ddData,
+      acceptRowMatches,
+    } = this.props;
+    // TODO Only match the valid Values
+    const validFields = [];
+    matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
+    matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
+    Object.keys(matchedRowValueMap[workingSheetName][workingRow]).forEach((field) => {
+      const ddField = ddData.find(f => f.field_name === field);
+      const value = matchedRowValueMap[workingSheetName][workingRow][field];
+      const validation = {
+        textValidation: ddField.text_validation,
+        textValidationMin: ddField.text_min,
+        textValidationMax: ddField.text_max,
+      };
+      if (value && isValueValid(value, validation)) {
+        validFields.push(field);
+      }
+    });
+
+    if (validFields.length > 0) {
+      acceptRowMatches({ matchedRowValueMap, fields: validFields });
+    }
   }
 
   handleSelectChange(field, e) {
@@ -103,7 +128,6 @@ class RowResolver extends Component {
     matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
     matchedRowValueMap[workingSheetName][workingRow][field] = e.value;
     updateValue({ matchedRowValueMap });
-    // TODO Call on action here
   }
 
   handleChange(field, e) {
@@ -120,7 +144,6 @@ class RowResolver extends Component {
     matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
     matchedRowValueMap[workingSheetName][workingRow][field] = value;
     updateValue({ matchedRowValueMap });
-    // TODO Call on action here
   }
 
   renderValidation(header, record) {
@@ -294,6 +317,7 @@ class RowResolver extends Component {
       workingRow,
       cellsWithErrors,
       jsonData,
+      ddData,
       fieldToValueMap,
     } = this.props;
     const { search, columns } = this.state;
@@ -327,9 +351,18 @@ class RowResolver extends Component {
     }
 
     let disabled = true;
-    if (Object.keys(valueMap).length > 0) {
-      disabled = false;
-    }
+    Object.keys(valueMap).forEach((field) => {
+      const ddField = ddData.find(f => f.field_name === field);
+      const value = valueMap[field];
+      const validation = {
+        textValidation: ddField.text_validation,
+        textValidationMin: ddField.text_min,
+        textValidationMax: ddField.text_max,
+      };
+      if (value && isValueValid(value, validation)) {
+        disabled = false;
+      }
+    });
 
     return (
       <div className="RowResolver-table">

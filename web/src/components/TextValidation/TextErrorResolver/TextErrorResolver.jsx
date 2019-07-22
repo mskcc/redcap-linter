@@ -209,11 +209,17 @@ class TextErrorResolver extends Component {
     }, []);
 
     let disabled = true;
+    let unsavedValueMap = {};
     if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
-      if (Object.keys(matchedValueMap[workingSheetName][workingColumn]).length > 0) {
+      unsavedValueMap = matchedValueMap[workingSheetName][workingColumn];
+    }
+
+    Object.keys(unsavedValueMap).forEach((originalValue) => {
+      const value = unsavedValueMap[originalValue];
+      if (value && isValueValid(value, fieldErrors)) {
         disabled = false;
       }
-    }
+    });
 
     let data = tableData;
     if (search) {
@@ -234,26 +240,22 @@ class TextErrorResolver extends Component {
           <div className="TextErrorResolver-textValidation">
             <span className="TextErrorResolver-textValidationRange">
               <b>Validation</b>
-:
-              {fieldErrors.textValidation}
+              {`: ${fieldErrors.textValidation}`}
             </span>
             |
             <span className="TextErrorResolver-textValidationRange">
               <b>Required</b>
-:
-              {fieldErrors.required ? 'True' : 'False'}
+              {`: ${fieldErrors.required ? 'True' : 'False'}`}
             </span>
             <br />
             <span className="TextErrorResolver-textValidationRange">
               <b>Min</b>
-:
-              {fieldErrors.textValidationMin || 'None'}
+              {`: ${fieldErrors.textValidationMin || 'None'}`}
             </span>
             |
             <span className="TextErrorResolver-textValidationRange">
               <b>Max</b>
-:
-              {fieldErrors.textValidationMax || 'None'}
+              {`: ${fieldErrors.textValidationMax || 'None'}`}
             </span>
           </div>
           <button

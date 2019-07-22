@@ -41,6 +41,9 @@ class MatchedChoices extends Component {
       cellValue = cellInfo[header];
     }
     let cancelButton = '';
+    if (cellInfo['Permissible Value'] && cellInfo['Permissible Value'] !== cellInfo['Data Field']) {
+      className += ' MatchedChoices-added';
+    }
     if (
       header === 'Permissible Value'
       && cellInfo['Permissible Value'] !== cellInfo['Data Field']
