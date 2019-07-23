@@ -80,7 +80,7 @@ class ResolvedTextErrors extends Component {
           size="small"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+          pagination={{ defaultPageSize: 5, showSizeChanger: true, showQuickJumper: true }}
         />
       </div>
     );

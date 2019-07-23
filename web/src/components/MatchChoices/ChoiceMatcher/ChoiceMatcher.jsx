@@ -48,6 +48,7 @@ class ChoiceMatcher extends Component {
       workingColumn,
       dataFieldToChoiceMap,
       highlightChoices,
+      matchChoices,
     } = nextProps;
 
     if (
@@ -62,6 +63,7 @@ class ChoiceMatcher extends Component {
         savedChoiceMap = dataFieldToChoiceMap[workingSheetName][workingColumn];
       }
 
+      const completeMatches = [];
       const ddField = ddData.find(field => field.field_name === workingColumn);
       if (ddField.field_type === 'checkbox') {
         matchedChoiceMap[workingSheetName] = matchedChoiceMap[workingSheetName] || {};
@@ -75,19 +77,33 @@ class ChoiceMatcher extends Component {
         unmatchedChoices.forEach((unmatchedChoice) => {
           const checkboxItems = unmatchedChoice.split(',').map(item => item.trim());
           const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
-          checkboxItems.forEach((item) => {
-            if (choices.indexOf(item.toLowerCase()) >= 0) {
-              matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] = matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] || [];
-              if (
-                !matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice].includes(item)
-              ) {
-                matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice].push(item);
-              }
-            }
+          const choiceMap = {};
+          Object.keys(ddField.choices_dict).forEach((choice) => {
+            choiceMap[choice.toLowerCase()] = choice;
           });
+          if (!matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice]) {
+            const tokenMatches = [];
+            checkboxItems.forEach((item) => {
+              if (choices.includes(item.toLowerCase())) {
+                const matchingItem = choiceMap[item.toLowerCase()];
+                if (!tokenMatches.includes(matchingItem)) {
+                  tokenMatches.push(matchingItem);
+                }
+              }
+            });
+            if (tokenMatches.length > 0) {
+              matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] = tokenMatches;
+            }
+            if (tokenMatches.length === checkboxItems.length) {
+              completeMatches.push(unmatchedChoice);
+            }
+          }
         });
 
         highlightChoices({ matchedChoiceMap });
+        if (completeMatches.length > 0) {
+          matchChoices({ matchedChoiceMap, fields: completeMatches });
+        }
       }
     }
 
@@ -312,7 +328,7 @@ class ChoiceMatcher extends Component {
           size="small"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+          pagination={{ defaultPageSize: 5, showSizeChanger: true, showQuickJumper: true }}
         />
       </div>
     );

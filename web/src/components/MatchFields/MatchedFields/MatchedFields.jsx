@@ -78,8 +78,7 @@ class MatchedFields extends Component {
     }
     return (
       <div className="MatchedFields-table">
-        Search:
-        {' '}
+        {'Search: '}
         <Input
           className="App-tableSearchBar"
           value={search}
@@ -89,7 +88,7 @@ class MatchedFields extends Component {
           size="small"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+          pagination={{ defaultPageSize: 5, showSizeChanger: true, showQuickJumper: true }}
         />
       </div>
     );

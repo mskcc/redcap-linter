@@ -77,8 +77,7 @@ class MatchedChoices extends Component {
       <div className="MatchedChoices-table">
         <div className="MatchedChoices-tableTitle">
           <span className="MatchedChoices-searchBar">
-            Search:
-            {' '}
+            {'Search: '}
             <Input
               className="App-tableSearchBar"
               value={search}
@@ -90,7 +89,7 @@ class MatchedChoices extends Component {
           size="small"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+          pagination={{ defaultPageSize: 5, showSizeChanger: true, showQuickJumper: true }}
         />
       </div>
     );
