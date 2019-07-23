@@ -52,9 +52,16 @@ class ResolvedRowErrors extends Component {
       }
     }
 
+    let cellValue = '';
+    if (Array.isArray(record[header])) {
+      cellValue = record[header].join(', ');
+    } else {
+      cellValue = record[header];
+    }
+
     return (
       <div className="ResolvedRowErrors-cellContainer">
-        <div className={className}>{record[header]}</div>
+        <div className={className}>{cellValue}</div>
         {cancelButton}
       </div>
     );

@@ -123,11 +123,18 @@ class RowResolver extends Component {
 
   handleSelectChange(field, e) {
     const {
-      matchedRowValueMap, workingSheetName, workingRow, updateValue,
+      matchedRowValueMap, workingSheetName, workingRow, updateValue, ddData,
     } = this.props;
+    const ddField = ddData.find(f => f.field_name === field);
     matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
     matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
-    matchedRowValueMap[workingSheetName][workingRow][field] = e.value;
+    let value = '';
+    if (ddField.field_type === 'checkbox') {
+      value = e.map(choice => choice.value);
+    } else {
+      value = e.value;
+    }
+    matchedRowValueMap[workingSheetName][workingRow][field] = value;
     updateValue({ matchedRowValueMap });
   }
 
@@ -181,7 +188,7 @@ class RowResolver extends Component {
 
   renderInput(record) {
     const {
-      matchedRowValueMap, workingSheetName, workingRow, ddData,
+      matchedRowValueMap, workingSheetName, workingRow, ddData, updateValue,
     } = this.props;
     const fieldName = record.Field;
     const ddField = ddData.find(field => field.field_name === fieldName);
@@ -215,14 +222,80 @@ class RowResolver extends Component {
             <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
           </span>
         );
-        if (value === choice) {
-          selectedValue = { value: choice, label };
-        }
         options.push({
           value: choice,
           label,
         });
       });
+
+      if (Array.isArray(value)) {
+        selectedValue = [];
+        value.forEach((choice) => {
+          const label = (
+            <span>
+              <b>{choice}</b>
+              <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
+            </span>
+          );
+          selectedValue.push({
+            value: choice,
+            label,
+          });
+        });
+      } else if (value) {
+        const label = (
+          <span>
+            <b>{value}</b>
+            <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[value]}`}</span>
+          </span>
+        );
+        selectedValue = {
+          value,
+          label,
+        };
+      } else if (ddField.field_type === 'checkbox' && !value) {
+        selectedValue = [];
+        const matchedChoices = [];
+        let checkboxItems = [];
+        if (record.Value) {
+          checkboxItems = record.Value.split(',').map(item => item.trim());
+        }
+        const choices = Object.keys(ddField.choices_dict).map(choice => choice.toLowerCase());
+        const choiceMap = {};
+        Object.keys(ddField.choices_dict).forEach((choice) => {
+          choiceMap[choice.toLowerCase()] = choice;
+        });
+        checkboxItems.forEach((item) => {
+          if (choices.includes(item.toLowerCase())) {
+            const choice = choiceMap[item.toLowerCase()];
+            matchedChoices.push(choice);
+            const label = (
+              <span>
+                <b>{choice}</b>
+                <span style={{ fontWeight: 'lighter' }}>
+                  {` | ${ddField.choices_dict[choice]}`}
+                </span>
+              </span>
+            );
+            selectedValue.push({
+              value: choice,
+              label,
+            });
+          }
+        });
+
+        if (matchedChoices.length > 0) {
+          matchedRowValueMap[workingSheetName] = matchedRowValueMap[workingSheetName] || {};
+          matchedRowValueMap[workingSheetName][workingRow] = matchedRowValueMap[workingSheetName][workingRow] || {};
+          matchedRowValueMap[workingSheetName][workingRow][fieldName] = matchedChoices;
+          updateValue({ matchedRowValueMap });
+        }
+      }
+
+      let isMulti = false;
+      if (ddField.field_type === 'checkbox') {
+        isMulti = true;
+      }
 
       const selectStyles = calculateSelectStyles(options);
 
@@ -230,6 +303,7 @@ class RowResolver extends Component {
         <Select
           options={options}
           isSearchable
+          isMulti={isMulti}
           value={selectedValue}
           onFocus={e => this.onFocus(e)}
           onBlur={e => this.onBlur(e)}
