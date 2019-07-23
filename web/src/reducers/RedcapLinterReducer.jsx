@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import {
   LOADING_START,
+  DOWNLOAD_START,
+  DOWNLOAD_FINISH,
   POST_FORM_SUCCESS,
   POST_FORM_FAILURE,
   MATCH_FIELDS,
@@ -52,6 +54,12 @@ export default function (state = {}, action) {
     }
     case LOADING_RESOLVE_START: {
       return Object.assign({}, state, { loadingResolve: true });
+    }
+    case DOWNLOAD_START: {
+      return Object.assign({}, state, { formSubmitting: true });
+    }
+    case DOWNLOAD_FINISH: {
+      return Object.assign({}, state, { formSubmitting: false });
     }
     case POST_FORM_SUCCESS: {
       const {

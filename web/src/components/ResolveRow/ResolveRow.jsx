@@ -2,13 +2,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { Modal, Spin } from 'antd';
+import { Modal, Spin, Icon } from 'antd';
 import ResolvedRowErrors from './ResolvedRowErrors/ResolvedRowErrors';
 import RowResolver from './RowResolver/RowResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './ResolveRow.scss';
-import { filterRow, acceptRowMatches, removeRowMatch } from '../../actions/REDCapLinterActions';
+import {
+  filterRow,
+  acceptRowMatches,
+  removeRowMatch,
+  navigateTo,
+} from '../../actions/REDCapLinterActions';
 import { resolveRow } from '../../actions/ResolveActions';
+import ButtonMenu from '../ButtonMenu/ButtonMenu';
 
 class ResolveRow extends Component {
   constructor(props) {
@@ -21,6 +27,8 @@ class ResolveRow extends Component {
 
     this.handleOk = this.handleOk.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+    this.forward = this.forward.bind(this);
+    this.back = this.back.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -73,6 +81,16 @@ class ResolveRow extends Component {
     } else if (action === 'continue') {
       this.setState({ loadingContinue: true });
     }
+  }
+
+  forward() {
+    const { navigateTo } = this.props;
+    navigateTo('merge');
+  }
+
+  back() {
+    const { navigateTo } = this.props;
+    navigateTo('matchFields');
   }
 
   handleOk() {
@@ -148,8 +166,34 @@ class ResolveRow extends Component {
       continueButtonText = <Spin />;
     }
     const rowResolver = <RowResolver showModal={showModal} />;
+    // TODO Add Navigation Buttons to here and on resolving text errors
     return (
       <div>
+        <div className="ResolveRow-navigation">
+          <ButtonMenu />
+          <div className="ResolveRow-navigationButtons">
+            <button
+              type="button"
+              onClick={() => {
+                this.back();
+              }}
+              className="App-actionButton"
+            >
+              <Icon type="left" />
+              {' Back to Match Fields'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                this.forward();
+              }}
+              className="App-actionButton"
+            >
+              {'Continue to Merging '}
+              <Icon type="right" />
+            </button>
+          </div>
+        </div>
         <ActionMenu />
         <div className="ResolveRow-container">
           <div>
@@ -247,6 +291,7 @@ function mapDispatchToProps(dispatch) {
       filterRow,
       acceptRowMatches,
       removeRowMatch,
+      navigateTo,
     },
     dispatch,
   );

@@ -145,9 +145,9 @@ def get_rows_with_errors(cells_with_errors, records):
     rows_in_error = {}
     for sheet_name in cells_with_errors:
         sheet_rows_in_error = []
-        for row in cells_with_errors[sheet_name].itertuples():
+        for idx, row in enumerate(cells_with_errors[sheet_name].itertuples()):
             if True in row:
-                sheet_rows_in_error.append(row.Index)
+                sheet_rows_in_error.append(idx)
         rows_in_error[sheet_name] = sheet_rows_in_error
     return rows_in_error
 

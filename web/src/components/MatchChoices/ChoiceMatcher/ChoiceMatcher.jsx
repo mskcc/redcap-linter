@@ -78,7 +78,11 @@ class ChoiceMatcher extends Component {
           checkboxItems.forEach((item) => {
             if (choices.indexOf(item.toLowerCase()) >= 0) {
               matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] = matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice] || [];
-              matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice].push(item);
+              if (
+                !matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice].includes(item)
+              ) {
+                matchedChoiceMap[workingSheetName][workingColumn][unmatchedChoice].push(item);
+              }
             }
           });
         });

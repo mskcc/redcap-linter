@@ -8,6 +8,7 @@ import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchChoices.scss';
 import '../../App.scss';
+import ButtonMenu from '../ButtonMenu/ButtonMenu';
 import { removeChoiceMatch, highlightChoices, navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
 
@@ -165,26 +166,29 @@ class MatchChoices extends Component {
     return (
       <div>
         <div className="MatchChoices-navigation">
-          <button
-            type="button"
-            onClick={() => {
-              this.back();
-            }}
-            className="App-actionButton"
-          >
-            <Icon type="left" />
-            {' Back to Match Fields'}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              this.forward();
-            }}
-            className="App-actionButton"
-          >
-            {'Continue to Merging '}
-            <Icon type="right" />
-          </button>
+          <ButtonMenu />
+          <div className="MatchChoices-navigationButtons">
+            <button
+              type="button"
+              onClick={() => {
+                this.back();
+              }}
+              className="App-actionButton"
+            >
+              <Icon type="left" />
+              {' Back to Match Fields'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                this.forward();
+              }}
+              className="App-actionButton"
+            >
+              {'Continue to Merging '}
+              <Icon type="right" />
+            </button>
+          </div>
         </div>
         <ActionMenu />
         <div className="MatchChoices-container">

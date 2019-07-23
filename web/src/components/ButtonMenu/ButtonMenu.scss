@@ -1,0 +1,58 @@
+@import '../Utilities/color';
+
+.ButtonMenu-elevate {
+  z-index: 10;
+}
+
+.ButtonMenu-column {
+  float: left;
+  margin-top: -5px;
+}
+
+.ButtonMenu-menu {
+  margin-top: 2px;
+  text-align: left;
+}
+
+.ButtonMenu-selector {
+  margin-top: 20px;
+}
+
+.ButtonMenu-navigation {
+  margin-left: 3%;
+  font-size: 14px;
+  height: 30px;
+  line-height: 30px;
+}
+
+.ButtonMenu-downloadIcon {
+  width: 30px;
+  float: right;
+  fill: color(blue500);
+}
+
+.ButtonMenu-button {
+  border: none;
+  background: transparent;
+  margin-left: -10px;
+}
+
+.ButtonMenu-menu {
+  display: inline-block;
+}
+
+.ButtonMenu-buttonText {
+  float: left;
+}
+
+.ButtonMenu-hidden {
+  display: none;
+}
+
+.ButtonMenu-finish {
+  float: right;
+}
+
+.ButtonMenu-links {
+  display: inline-block;
+}

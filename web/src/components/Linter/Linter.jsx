@@ -3,6 +3,7 @@ import './Linter.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import { Modal } from 'antd';
 import _ from 'lodash';
 import ResolveErrors from '../ResolveErrors/ResolveErrors';
 import ResolveMergeConflicts from '../ResolveMergeConflicts/ResolveMergeConflicts';
@@ -11,29 +12,35 @@ import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import Form from '../Form/Form';
 import MatchFields from '../MatchFields/MatchFields';
+import { finishDownload } from '../../actions/REDCapLinterActions';
 
 class Linter extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      showModal: false,
+    };
+
+    this.onUnload = this.onUnload.bind(this);
+    this.handleOk = this.handleOk.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  componentDidUpdate() {
     const {
       dataFieldToRedcapFieldMap,
       dataFieldToChoiceMap,
       originalToCorrectedValueMap,
       mergeMap,
-    } = nextProps;
+    } = this.props;
+
     if (
       !_.isEmpty(dataFieldToRedcapFieldMap)
       || !_.isEmpty(dataFieldToChoiceMap)
       || !_.isEmpty(originalToCorrectedValueMap)
       || !_.isEmpty(mergeMap)
     ) {
-      window.addEventListener('beforeunload', (event) => {
-        event.returnValue = 'You have unsaved changes.';
-      });
+      window.addEventListener('beforeunload', this.onUnload);
     }
   }
 
@@ -56,7 +63,43 @@ class Linter extends Component {
     }
   }
 
+  onUnload(e) {
+    const { formSubmitting, finishDownload } = this.props;
+    if (formSubmitting) {
+      finishDownload();
+      return undefined;
+    }
+    e.preventDefault();
+    this.setState({ showModal: true });
+    e.returnValue = 'You have unsaved changes';
+  }
+
+  handleOk(e) {
+    this.setState({
+      showModal: false,
+    });
+  }
+
+  handleCancel(e) {
+    this.setState({
+      showModal: false,
+    });
+  }
+
+  // TODO Figure out if its possible to do custom Modal on unload
+  // <Modal
+  //   title="Basic Modal"
+  //   visible={showModal}
+  //   onOk={this.handleOk}
+  //   onCancel={this.handleCancel}
+  // >
+  //   <p>Some contents...</p>
+  //   <p>Some contents...</p>
+  //   <p>Some contents...</p>
+  // </Modal>
+
   render() {
+    const { showModal } = this.state;
     const { page } = this.props;
     let currentPage = '';
     console.log(this.props);
@@ -91,6 +134,7 @@ Linter.propTypes = {
   dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
   originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
   mergeMap: PropTypes.objectOf(PropTypes.object),
+  formSubmitting: PropTypes.bool,
 };
 
 Linter.defaultProps = {
@@ -99,6 +143,7 @@ Linter.defaultProps = {
   dataFieldToChoiceMap: {},
   originalToCorrectedValueMap: {},
   mergeMap: {},
+  formSubmitting: false,
 };
 
 function mapStateToProps(state) {
@@ -106,7 +151,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({}, dispatch);
+  return bindActionCreators({ finishDownload }, dispatch);
 }
 
 export default connect(

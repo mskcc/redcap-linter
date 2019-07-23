@@ -3,7 +3,7 @@
 @import '../Utilities/mixins';
 
 .MatchChoices-container {
-  width: 80%;
+  width: 75%;
   float: right;
   margin-right: 2.5%;
   padding-top: 10px;
@@ -11,9 +11,14 @@
 }
 
 .MatchChoices-navigation {
-  float: right;
   margin-right: 2.5%;
   margin-top: -25px;
+  width: 75%;
+  float: right;
+}
+
+.MatchChoices-navigationButtons {
+  float: right;
 }
 
 .MatchChoices-column {

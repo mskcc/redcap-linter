@@ -3,11 +3,22 @@
 @import '../Utilities/mixins';
 
 .TextValidation-container {
-  width: 80%;
+  width: 75%;
   float: right;
   margin-right: 2.5%;
   padding-top: 10px;
-  margin-top: -35px;
+  margin-top: -10px;
+}
+
+.TextValidation-navigation {
+  margin-right: 2.5%;
+  margin-top: -25px;
+  width: 75%;
+  float: right;
+}
+
+.TextValidation-navigationButtons {
+  float: right;
 }
 
 .TextValidation-column {

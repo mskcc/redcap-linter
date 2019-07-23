@@ -6,10 +6,10 @@ import PropTypes from 'prop-types';
 import MatchedFields from './MatchedFields/MatchedFields';
 import FieldMatcher from './FieldMatcher/FieldMatcher';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
-import ProjectInfo from '../ProjectInfo/ProjectInfo';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MatchFields.scss';
 import '../../App.scss';
+import ButtonMenu from '../ButtonMenu/ButtonMenu';
 import { saveFields, removeFieldMatch, navigateTo } from '../../actions/REDCapLinterActions';
 
 class MatchFields extends Component {
@@ -177,30 +177,32 @@ class MatchFields extends Component {
     return (
       <div>
         <div className="MatchFields-navigation">
-          <button
-            type="button"
-            onClick={() => {
-              this.back();
-            }}
-            className="App-actionButton"
-          >
-            <Icon type="left" />
-            {' Back to Intro'}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              this.forward();
-            }}
-            className="App-actionButton"
-          >
-            {'Continue to Linting '}
-            <Icon type="right" />
-          </button>
+          <ButtonMenu />
+          <div className="MatchFields-navigationButtons">
+            <button
+              type="button"
+              onClick={() => {
+                this.back();
+              }}
+              className="App-actionButton"
+            >
+              <Icon type="left" />
+              {' Back to Intro'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                this.forward();
+              }}
+              className="App-actionButton"
+            >
+              {'Continue to Linting '}
+              <Icon type="right" />
+            </button>
+          </div>
         </div>
         <div>
           <ActionMenu />
-          <ProjectInfo />
           <div className="MatchFields-container">
             <div>
               <div className="MatchFields-matchedFields">

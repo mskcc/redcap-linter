@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { Modal, Spin } from 'antd';
+import { Modal, Spin, Icon } from 'antd';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './TextValidation.scss';
-import { filterTable, removeValueMatch } from '../../actions/REDCapLinterActions';
+import ButtonMenu from '../ButtonMenu/ButtonMenu';
+import { filterTable, removeValueMatch, navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
 import { isValueValid } from '../../utils/utils';
 
@@ -22,6 +23,8 @@ class TextValidation extends Component {
 
     this.handleOk = this.handleOk.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+    this.forward = this.forward.bind(this);
+    this.back = this.back.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -82,6 +85,16 @@ class TextValidation extends Component {
     }
   }
 
+  forward() {
+    const { navigateTo } = this.props;
+    navigateTo('merge');
+  }
+
+  back() {
+    const { navigateTo } = this.props;
+    navigateTo('matchFields');
+  }
+
   handleOk() {
     this.saveChanges('continue');
     this.setState({ showModal: false });
@@ -136,6 +149,31 @@ class TextValidation extends Component {
     const textErrorResolver = <TextErrorResolver showModal={showModal} />;
     return (
       <div>
+        <div className="TextValidation-navigation">
+          <ButtonMenu />
+          <div className="TextValidation-navigationButtons">
+            <button
+              type="button"
+              onClick={() => {
+                this.back();
+              }}
+              className="App-actionButton"
+            >
+              <Icon type="left" />
+              {' Back to Match Fields'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                this.forward();
+              }}
+              className="App-actionButton"
+            >
+              {'Continue to Merging '}
+              <Icon type="right" />
+            </button>
+          </div>
+        </div>
         <ActionMenu />
         <div className="TextValidation-container">
           <div>
@@ -220,7 +258,15 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ resolveColumn, filterTable, removeValueMatch }, dispatch);
+  return bindActionCreators(
+    {
+      resolveColumn,
+      filterTable,
+      removeValueMatch,
+      navigateTo,
+    },
+    dispatch,
+  );
 }
 
 export default connect(

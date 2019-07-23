@@ -1,5 +1,5 @@
 .MatchFields-container {
-  width: 69%;
+  width: 75%;
   float: right;
   margin-right: 2.5%;
   padding-top: 10px;
@@ -10,6 +10,11 @@
   float: right;
   margin-right: 2.5%;
   margin-top: -25px;
+  width: 75%;
+}
+
+.MatchFields-navigationButtons {
+  float: right;
 }
 
 .MatchFields-matchedFields {

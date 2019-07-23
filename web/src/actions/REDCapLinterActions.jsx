@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 export const LOADING_START = 'LOADING_START';
+export const DOWNLOAD_START = 'DOWNLOAD_START';
+export const DOWNLOAD_FINISH = 'DOWNLOAD_FINISH';
 
 export const POST_FORM_SUCCESS = 'POST_FORM_SUCCESS';
 export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
@@ -54,6 +56,30 @@ export const CHANGE_SECONDARY_UNIQUE_FIELD = 'CHANGE_SECONDARY_UNIQUE_FIELD';
 export function loadingStart() {
   return {
     type: LOADING_START,
+  };
+}
+
+export function downloadStart() {
+  return {
+    type: DOWNLOAD_START,
+  };
+}
+
+export function downloadFinish() {
+  return {
+    type: DOWNLOAD_FINISH,
+  };
+}
+
+export function downloadProgress() {
+  return function action(dispatch) {
+    return dispatch(downloadStart());
+  };
+}
+
+export function finishDownload() {
+  return function action(dispatch) {
+    return dispatch(downloadFinish());
   };
 }
 
