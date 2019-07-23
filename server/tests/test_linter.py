@@ -288,7 +288,7 @@ def test_decimal_validation(client):
 
     records = [
         {"number": "1"},
-        {"number": "2.5"},
+        {"number": "2.55"},
     ]
     records = pd.DataFrame(records)
     records.fillna('', inplace=True)
