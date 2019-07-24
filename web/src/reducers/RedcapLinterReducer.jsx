@@ -3,6 +3,9 @@ import {
   LOADING_START,
   DOWNLOAD_START,
   DOWNLOAD_FINISH,
+  FETCH_CONFIG_SUCCESS,
+  FETCH_CONFIG_FAILURE,
+  CHANGE_ENVIRONMENT,
   POST_FORM_SUCCESS,
   POST_FORM_FAILURE,
   MATCH_FIELDS,
@@ -61,6 +64,17 @@ export default function (state = {}, action) {
     case DOWNLOAD_FINISH: {
       return Object.assign({}, state, { formSubmitting: false });
     }
+    case CHANGE_ENVIRONMENT: {
+      return Object.assign({}, state, action.payload);
+    }
+    case FETCH_CONFIG_SUCCESS: {
+      return Object.assign({}, state, action.payload.data);
+    }
+    case FETCH_CONFIG_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.payload,
+      });
+    }
     case POST_FORM_SUCCESS: {
       const {
         payload: {
@@ -71,7 +85,7 @@ export default function (state = {}, action) {
       if (error) {
         page = 'intro';
       }
-      return Object.assign({ loading: false, new: true, page }, action.payload.data, error);
+      return Object.assign({ loading: false, new: true, page }, state, action.payload.data, error);
     }
     case POST_FORM_FAILURE: {
       return Object.assign({}, state, {

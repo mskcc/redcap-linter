@@ -1,28 +1,32 @@
 .emphasis {
-	font-size: 14px;
-	font-weight: bold;
-	text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
 }
 
-
 .Form-submitButtonDiv {
-	text-align: center;
+  text-align: center;
 }
 
 .Form-errorText {
-	color: red;
-	padding-top: 5px;
+  color: red;
+  padding-top: 5px;
 }
 
 .Form-malformedSheets {
-	color: #CC4400;
+  color: #cc4400;
 }
 
 .Form-projectInfo {
-	padding-top: 10px;
+  padding-top: 10px;
 }
 
 .Form-label {
-	font-weight: 600;
-	margin-left: 7px;
+  font-weight: 600;
+  margin-left: 7px;
+}
+
+.Form-environmentSelect {
+  width: 95%;
+  margin: 5px;
 }

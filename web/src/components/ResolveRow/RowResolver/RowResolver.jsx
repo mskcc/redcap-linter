@@ -188,7 +188,12 @@ class RowResolver extends Component {
 
   renderInput(record) {
     const {
-      matchedRowValueMap, workingSheetName, workingRow, ddData, updateValue,
+      matchedRowValueMap,
+      workingSheetName,
+      workingRow,
+      ddData,
+      rowInfo,
+      updateValue,
     } = this.props;
     const fieldName = record.Field;
     const ddField = ddData.find(field => field.field_name === fieldName);
@@ -214,19 +219,34 @@ class RowResolver extends Component {
 
     let selectedValue = null;
     if (ddField.choices_dict) {
-      const options = [];
-      Object.keys(ddField.choices_dict).forEach((choice) => {
-        const label = (
-          <span>
-            <b>{choice}</b>
-            <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
-          </span>
-        );
-        options.push({
-          value: choice,
-          label,
+      let scores = rowInfo[ddField.field_name] || [];
+
+      let options = [];
+      if (scores && scores.length > 0) {
+        scores = scores.sort((a, b) => b.score - a.score);
+        options = scores.map(score => ({
+          value: score.candidate,
+          label: (
+            <span>
+              <b>{score.candidate}</b>
+              <span style={{ fontWeight: 'lighter' }}>{` | ${score.choiceValue}`}</span>
+            </span>
+          ),
+        }));
+      } else {
+        Object.keys(ddField.choices_dict).forEach((choice) => {
+          const label = (
+            <span>
+              <b>{choice}</b>
+              <span style={{ fontWeight: 'lighter' }}>{` | ${ddField.choices_dict[choice]}`}</span>
+            </span>
+          );
+          options.push({
+            value: choice,
+            label,
+          });
         });
-      });
+      }
 
       if (Array.isArray(value)) {
         selectedValue = [];
@@ -477,6 +497,7 @@ RowResolver.propTypes = {
   matchedRowValueMap: PropTypes.objectOf(PropTypes.any),
   jsonData: PropTypes.objectOf(PropTypes.array),
   ddData: PropTypes.arrayOf(PropTypes.object),
+  rowInfo: PropTypes.objectOf(PropTypes.any),
   cellsWithErrors: PropTypes.objectOf(PropTypes.array),
   workingSheetName: PropTypes.string,
   workingRow: PropTypes.number,
@@ -487,6 +508,7 @@ RowResolver.defaultProps = {
   matchedRowValueMap: {},
   jsonData: [],
   ddData: [],
+  rowInfo: {},
   cellsWithErrors: {},
   workingSheetName: '',
   workingRow: -1,

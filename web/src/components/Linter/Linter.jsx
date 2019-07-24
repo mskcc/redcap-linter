@@ -12,7 +12,7 @@ import Breadcrumbs from '../Breadcrumbs/Breadcrumbs';
 import Intro from '../Intro/Intro';
 import Form from '../Form/Form';
 import MatchFields from '../MatchFields/MatchFields';
-import { finishDownload } from '../../actions/REDCapLinterActions';
+import { finishDownload, fetchConfig } from '../../actions/REDCapLinterActions';
 
 class Linter extends Component {
   constructor(props) {
@@ -24,6 +24,11 @@ class Linter extends Component {
     this.onUnload = this.onUnload.bind(this);
     this.handleOk = this.handleOk.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+  }
+
+  componentDidMount() {
+    const { fetchConfig } = this.props;
+    fetchConfig();
   }
 
   componentDidUpdate() {
@@ -151,7 +156,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ finishDownload }, dispatch);
+  return bindActionCreators({ finishDownload, fetchConfig }, dispatch);
 }
 
 export default connect(

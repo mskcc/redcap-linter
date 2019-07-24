@@ -179,6 +179,10 @@ def resolve_row():
     if next_column:
         field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
 
+    row_info = {}
+    if next_row >= 0:
+        row_info = calculate_row_info(next_row, next_sheet_name, data_dictionary, records)
+
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
     rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
@@ -195,6 +199,7 @@ def resolve_row():
         'jsonData':         json_data,
         'allErrors':        all_errors,
         'rowsInError':      rows_in_error,
+        'rowInfo':          row_info,
         'cellsWithErrors':  cells_with_errors,
     }
     if action == 'continue':
@@ -380,6 +385,55 @@ def calculate_merge_conflicts():
     }
     return flask.jsonify(results)
 
+@RESOLVE.route('/encode_records', methods=['GET', 'POST', 'OPTIONS'])
+def encode_records():
+    form = request.form.to_dict()
+    csv_headers = json.loads(form.get('csvHeaders'))
+    malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
+    decoded_records = json.loads(form.get('decodedRecords'))
+    matching_repeat_instances = json.loads(form.get('matchingRepeatInstances'))
+    matching_record_ids = json.loads(form.get('matchingRecordIds'))
+    project_info = json.loads(form.get('projectInfo'))
+    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
+
+    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
+
+    records = {}
+    for sheet in json_data:
+        frame = pd.DataFrame(json_data[sheet])
+        frame = frame[csv_headers[sheet]]
+        frame.fillna('', inplace=True)
+        records[sheet] = frame
+
+    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
+    cells_with_errors = datafile_errors['cells_with_errors']
+    rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
+
+    options = {
+        'rows_in_error': rows_in_error,
+        'decoded_records': decoded_records,
+        'matching_repeat_instances': matching_repeat_instances,
+        'matching_record_ids': matching_record_ids
+    }
+    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, options)
+
+    json_data = {}
+    output_records = {}
+    encoded_record_headers = {}
+
+    for sheet_name in encoded_records:
+        if malformed_sheets and sheet_name in malformed_sheets:
+            continue
+        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
+        encoded_record_headers[sheet_name] = list(encoded_records[sheet_name].columns)
+
+    results = {
+        'encodedRecords': output_records,
+        'encodedRecordHeaders': encoded_record_headers,
+    }
+    return flask.jsonify(results)
+
+# TODO Change the name of this and simplify, this is confusing
 def calculate_field_errors(column, sheet_name, data_dictionary, records):
     field_errors = {}
     dd_field = [f for f in data_dictionary if f.field_name == column][0]
@@ -431,51 +485,24 @@ def calculate_field_errors(column, sheet_name, data_dictionary, records):
         field_errors['textValidationMax'] = dd_field.text_max
     return field_errors
 
-
-@RESOLVE.route('/encode_records', methods=['GET', 'POST', 'OPTIONS'])
-def encode_records():
-    form = request.form.to_dict()
-    csv_headers = json.loads(form.get('csvHeaders'))
-    malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
-    decoded_records = json.loads(form.get('decodedRecords'))
-    matching_repeat_instances = json.loads(form.get('matchingRepeatInstances'))
-    matching_record_ids = json.loads(form.get('matchingRecordIds'))
-    project_info = json.loads(form.get('projectInfo'))
-    json_data = json.loads(form.get('jsonData'), object_pairs_hook=OrderedDict)
-
-    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
-
-    records = {}
-    for sheet in json_data:
-        frame = pd.DataFrame(json_data[sheet])
-        frame = frame[csv_headers[sheet]]
-        frame.fillna('', inplace=True)
-        records[sheet] = frame
-
-    datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
-    cells_with_errors = datafile_errors['cells_with_errors']
-    rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
-
-    options = {
-        'rows_in_error': rows_in_error,
-        'decoded_records': decoded_records,
-        'matching_repeat_instances': matching_repeat_instances,
-        'matching_record_ids': matching_record_ids
-    }
-    encoded_records = serializer.encode_datafile(data_dictionary, project_info, records, options)
-
-    json_data = {}
-    output_records = {}
-    encoded_record_headers = {}
-
-    for sheet_name in encoded_records:
-        if malformed_sheets and sheet_name in malformed_sheets:
+def calculate_row_info(idx, sheet_name, data_dictionary, records):
+    row_info = {}
+    row = records[sheet_name].iloc[int(idx)]
+    choice_candidates = []
+    for column in records[sheet_name].columns:
+        dd_field = [f for f in data_dictionary if f.field_name == column]
+        if not dd_field:
             continue
-        output_records[sheet_name] = json.loads(encoded_records[sheet_name].to_json(orient='records'))
-        encoded_record_headers[sheet_name] = list(encoded_records[sheet_name].columns)
-
-    results = {
-        'encodedRecords': output_records,
-        'encodedRecordHeaders': encoded_record_headers,
-    }
-    return flask.jsonify(results)
+        dd_field = dd_field[0]
+        if dd_field.field_type in ['dropdown', 'radio']:
+            unmatched_choice = row[column]
+            if not unmatched_choice:
+                continue
+            for dd_choice in dd_field.choices_dict:
+                choice_candidates.append({
+                    'candidate': dd_choice,
+                    'choiceValue': dd_field.choices_dict[dd_choice],
+                    'score': fuzz.ratio(unmatched_choice, dd_choice)
+                })
+            row_info[column] = choice_candidates
+    return row_info

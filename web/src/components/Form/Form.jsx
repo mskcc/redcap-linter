@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 import '../../App.scss';
 import './Form.scss';
 import { Input, Spin } from 'antd';
+import Select from 'react-select';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { postForm } from '../../actions/REDCapLinterActions';
+import { postForm, changeEnvironment } from '../../actions/REDCapLinterActions';
 
 export class Form extends Component {
   constructor(props) {
@@ -41,7 +42,7 @@ export class Form extends Component {
   onSubmit() {
     let errorText = '';
     const { form } = this.state;
-    const { postForm } = this.props;
+    const { postForm, env } = this.props;
     if (!form.token && !form.dataDictionary) {
       if (!errorText) {
         errorText += '<ul>';
@@ -60,7 +61,12 @@ export class Form extends Component {
       return;
     }
     this.setState({ errorText, loading: true });
-    postForm(form);
+    postForm({ form, env });
+  }
+
+  handleChangeEnvironment(option) {
+    const { changeEnvironment } = this.props;
+    changeEnvironment({ env: option.value });
   }
 
   handleOnChangeForm(field, e) {
@@ -89,7 +95,7 @@ export class Form extends Component {
   render() {
     const { form, loading } = this.state;
     let { errorText } = this.state;
-    const { error } = this.props;
+    const { error, redcapUrls, env } = this.props;
     let buttonText = 'Submit';
     if (loading) {
       buttonText = <Spin />;
@@ -98,45 +104,37 @@ export class Form extends Component {
       errorText = `<ul><li>${error}</li></ul>`;
     }
 
+    const options = [];
+    let selectedValue = null;
+    redcapUrls.forEach((redcapUrl) => {
+      const option = {
+        value: redcapUrl.redcap_base_url,
+        label: (
+          <span>
+            <b>{redcapUrl.env}</b>
+            <span style={{ fontWeight: 'lighter' }}>{` | ${redcapUrl.redcap_base_url}`}</span>
+          </span>
+        ),
+      };
+      if (env === redcapUrl.redcap_base_url) {
+        selectedValue = option;
+      }
+      options.push(option);
+    });
+
     return (
       <div className="App-fieldsetColumn">
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel">
             <span className="Form-label">Environment</span>
           </label>
-          <label className="App-fieldsetRadioLabel" htmlFor="development">
-            <Input
-              className="App-fieldsetRadio"
-              type="radio"
-              id="development"
-              value="development"
-              checked={form.environment === 'development'}
-              onChange={this.handleOnChangeForm.bind(this, 'environment')}
-            />
-            Development
-          </label>
-          <label className="App-fieldsetRadioLabel" htmlFor="test">
-            <Input
-              className="App-fieldsetRadio"
-              type="radio"
-              id="test"
-              value="test"
-              checked={form.environment === 'test'}
-              onChange={this.handleOnChangeForm.bind(this, 'environment')}
-            />
-            Test
-          </label>
-          <label className="App-fieldsetRadioLabel" htmlFor="production">
-            <Input
-              className="App-fieldsetRadio"
-              type="radio"
-              id="production"
-              value="production"
-              checked={form.environment === 'production'}
-              onChange={this.handleOnChangeForm.bind(this, 'environment')}
-            />
-            Production
-          </label>
+          <Select
+            className="Form-environmentSelect"
+            options={options}
+            isSearchable
+            value={selectedValue}
+            onChange={this.handleChangeEnvironment.bind(this)}
+          />
         </fieldset>
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="token">
@@ -229,10 +227,14 @@ export class Form extends Component {
 
 Form.propTypes = {
   error: PropTypes.objectOf(PropTypes.any),
+  redcapUrls: PropTypes.arrayOf(PropTypes.object),
+  env: PropTypes.string,
 };
 
 Form.defaultProps = {
   error: null,
+  redcapUrls: [],
+  env: '',
 };
 
 function mapStateToProps(state) {
@@ -240,7 +242,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ postForm }, dispatch);
+  return bindActionCreators({ postForm, changeEnvironment }, dispatch);
 }
 
 export default connect(

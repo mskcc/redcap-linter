@@ -1,6 +1,8 @@
-development:
-  redcap_base_url: https://redcapdev.mskcc.org/api/
-test:
-  redcap_base_url: https://redcaptest.mskcc.org/api/
-production:
-  redcap_base_url: https://redcap.mskcc.org/api/
+redcap_urls:
+  - redcap_base_url: https://redcapdev.mskcc.org/api/
+    env: Dev
+  - redcap_base_url: https://redcaptest.mskcc.org/api/
+    env: Test
+    default: true
+  - redcap_base_url: https://redcap.mskcc.org/api/
+    env: Production

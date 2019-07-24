@@ -4,6 +4,11 @@ export const LOADING_START = 'LOADING_START';
 export const DOWNLOAD_START = 'DOWNLOAD_START';
 export const DOWNLOAD_FINISH = 'DOWNLOAD_FINISH';
 
+export const FETCH_CONFIG_SUCCESS = 'FETCH_CONFIG_SUCCESS';
+export const FETCH_CONFIG_FAILURE = 'FETCH_CONFIG_FAILURE';
+
+export const CHANGE_ENVIRONMENT = 'CHANGE_ENVIRONMENT';
+
 export const POST_FORM_SUCCESS = 'POST_FORM_SUCCESS';
 export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 
@@ -59,33 +64,66 @@ export function loadingStart() {
   };
 }
 
-export function downloadStart() {
-  return {
-    type: DOWNLOAD_START,
-  };
-}
-
-export function downloadFinish() {
-  return {
-    type: DOWNLOAD_FINISH,
-  };
-}
-
 export function downloadProgress() {
   return function action(dispatch) {
-    return dispatch(downloadStart());
+    return dispatch({
+      type: DOWNLOAD_START,
+    });
   };
 }
 
 export function finishDownload() {
   return function action(dispatch) {
-    return dispatch(downloadFinish());
+    return dispatch({
+      type: DOWNLOAD_FINISH,
+    });
   };
 }
 
 export function encodeRecordsStart() {
   return {
     type: ENCODE_RECORDS_START,
+  };
+}
+
+export function fetchConfigSuccess(results) {
+  return {
+    type: FETCH_CONFIG_SUCCESS,
+    payload: results,
+  };
+}
+
+export function fetchConfigError(error) {
+  return {
+    type: FETCH_CONFIG_FAILURE,
+    payload: error,
+  };
+}
+
+export function fetchConfig() {
+  return function action(dispatch) {
+    const data = new FormData();
+
+    const request = axios({
+      method: 'POST',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/fetch_config`,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(fetchConfigSuccess(response)),
+      err => dispatch(fetchConfigError(err)),
+    );
+  };
+}
+
+export function changeEnvironment(payload) {
+  return function action(dispatch) {
+    return dispatch({
+      type: CHANGE_ENVIRONMENT,
+      payload,
+    });
   };
 }
 
@@ -103,8 +141,9 @@ export function postFormError(error) {
   };
 }
 
-export function postForm(form) {
+export function postForm(payload) {
   return function action(dispatch) {
+    const { form, env } = payload;
     const data = new FormData();
     data.append('dataFile', form.dataFile);
     data.append('dataFileName', form.dataFileName);
@@ -113,7 +152,7 @@ export function postForm(form) {
     data.append('mappingsFile', form.mappingsFile);
     data.append('mappingsFileName', form.mappingsFileName);
     data.append('token', form.token);
-    data.append('environment', form.environment);
+    data.append('env', env);
     data.append('dataDictionary', form.dataDictionary);
     data.append('dataDictionaryName', form.dataDictionaryName);
     data.append('repeatableInstruments', form.repeatableInstruments);

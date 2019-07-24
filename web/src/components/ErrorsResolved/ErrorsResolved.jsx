@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { Icon, Spin } from 'antd';
 import EncodedRecords from '../EncodedRecords/EncodedRecords';
 
-import { importRecords, encodeRecords } from '../../actions/REDCapLinterActions';
+import { importRecords, encodeRecords, downloadProgress } from '../../actions/REDCapLinterActions';
 
 class ErrorsResolved extends Component {
   constructor(props) {
@@ -39,6 +39,11 @@ class ErrorsResolved extends Component {
       csvHeaders,
     };
     encodeRecords(payload);
+  }
+
+  onClick(e) {
+    const { downloadProgress } = this.props;
+    downloadProgress();
   }
 
   uploadToRedcap() {
@@ -84,9 +89,7 @@ class ErrorsResolved extends Component {
       });
     }
 
-    const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${
-      process.env.REDCAP_LINTER_PORT
-    }/download_output`;
+    const downloadLink = `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/download_output`;
 
     let uploadToRedcapButton = null;
 
@@ -186,6 +189,7 @@ class ErrorsResolved extends Component {
           <button
             type="submit"
             form="downloadOutput"
+            onClick={e => this.onClick(e)}
             className="App-actionButton ErrorsResolved-download"
             value="Submit"
           >
@@ -246,7 +250,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ importRecords, encodeRecords }, dispatch);
+  return bindActionCreators({ importRecords, encodeRecords, downloadProgress }, dispatch);
 }
 
 export default connect(

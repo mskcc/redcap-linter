@@ -10,7 +10,9 @@ from fuzzywuzzy import fuzz
 from flask_cors import CORS, cross_origin
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
+import yaml
 
+from definitions import ROOT_DIR
 from models.redcap_field import RedcapField
 from api.redcap.redcap_api import RedcapApi
 from linter import linter
@@ -23,6 +25,21 @@ app = flask.Flask(__name__)
 CORS(app)
 app.register_blueprint(RESOLVE)
 app.register_blueprint(EXPORT)
+
+@app.route('/fetch_config', methods=['GET', 'POST', 'OPTIONS'])
+def fetch_config():
+    with open(ROOT_DIR + "/config/redcap.yml", "r") as ymlfile:
+        cfg = yaml.load(ymlfile)
+        redcap_urls = cfg['redcap_urls']
+        env = [r for r in redcap_urls if r.get("default") == True]
+        if env:
+            env = env[0]['redcap_base_url']
+
+    results = {
+        'env': env,
+        'redcapUrls':redcap_urls,
+    }
+    return flask.jsonify(results)
 
 @app.route('/save_fields', methods=['GET', 'POST', 'OPTIONS'])
 def save_fields():
@@ -162,7 +179,7 @@ def post_form():
 
     form = request.form.to_dict()
     token = form.get('token')
-    env = form.get('environment')
+    env = form.get('env')
     datafile_name = form.get('dataFileName')
     mappings = None
     existing_records = None
@@ -361,7 +378,6 @@ def post_form():
         'unmatchedDataFields':     unmatched_data_fields,
         'dataFileName':            datafile_name,
         'token':                   token,
-        'env':                     env,
     }
     if data_field_to_redcap_field_map:
         results['dataFieldToRedcapFieldMap'] = data_field_to_redcap_field_map

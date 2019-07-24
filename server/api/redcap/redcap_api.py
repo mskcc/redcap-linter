@@ -3,10 +3,6 @@ import json
 import logging
 
 import requests
-import yaml
-
-from definitions import ROOT_DIR
-
 
 class RedcapApi():
     """This class is an interface to the REDCap api."""
@@ -16,9 +12,7 @@ class RedcapApi():
             self.format = output_format
         else:
             self.format = "json"
-        with open(ROOT_DIR + "/config/redcap.yml", "r") as ymlfile:
-            cfg = yaml.load(ymlfile)
-            self.base_url = cfg[env]["redcap_base_url"]
+        self.base_url = env
 
     def fetch_data_dictionary(self, token):
         payload = {
