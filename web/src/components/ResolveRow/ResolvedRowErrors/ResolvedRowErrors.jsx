@@ -88,10 +88,6 @@ class ResolvedRowErrors extends Component {
               onChange={e => this.setState({ search: e.target.value })}
             />
           </span>
-          <div className="ResolvedRowErrors-sheetInfo">
-            <b>Sheet</b>
-            {`: ${workingSheetName}`}
-          </div>
         </div>
         <Table
           size="small"

@@ -19,13 +19,11 @@ import {
   REMOVE_MERGE,
   SAVE_FIELDS_SUCCESS,
   SAVE_FIELDS_FAILURE,
-  ENCODE_RECORDS_START,
   ENCODE_RECORDS_SUCCESS,
   ENCODE_RECORDS_FAILURE,
   IMPORT_RECORDS_SUCCESS,
   IMPORT_RECORDS_FAILURE,
   NAVIGATE_TO_SUCCESS,
-  NAVIGATE_TO_FAILURE,
   FILTER_TABLE,
   FILTER_ROW,
   ACCEPT_CORRECTIONS,
@@ -64,17 +62,6 @@ export default function (state = {}, action) {
     case DOWNLOAD_FINISH: {
       return Object.assign({}, state, { formSubmitting: false });
     }
-    case CHANGE_ENVIRONMENT: {
-      return Object.assign({}, state, action.payload);
-    }
-    case FETCH_CONFIG_SUCCESS: {
-      return Object.assign({}, state, action.payload.data);
-    }
-    case FETCH_CONFIG_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
     case POST_FORM_SUCCESS: {
       const {
         payload: {
@@ -86,11 +73,6 @@ export default function (state = {}, action) {
         page = 'intro';
       }
       return Object.assign({ loading: false, new: true, page }, state, action.payload.data, error);
-    }
-    case POST_FORM_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
     }
     case SAVE_FIELDS_SUCCESS: {
       let nextPage = {};
@@ -105,44 +87,40 @@ export default function (state = {}, action) {
         action.payload.data,
       );
     }
-    case SAVE_FIELDS_FAILURE: {
+    case SAVE_FIELDS_FAILURE:
+    case ENCODE_RECORDS_FAILURE:
+    case IMPORT_RECORDS_FAILURE:
+    case FETCH_CONFIG_FAILURE:
+    case RESOLVE_COLUMN_FAILURE:
+    case RESOLVE_ROW_FAILURE:
+    case RESOLVE_MERGE_ROW_FAILURE:
+    case CALCULATE_MERGE_CONFLICTS_FAILURE:
+    case POST_FORM_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });
-    }
-    case ENCODE_RECORDS_START: {
-      return Object.assign({}, state, { loading: true, page: 'finish' });
     }
     case ENCODE_RECORDS_SUCCESS: {
       return Object.assign({}, state, { loading: false }, action.payload.data);
     }
-    case ENCODE_RECORDS_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case FILTER_TABLE: {
+    case FILTER_TABLE:
+    case FILTER_ROW:
+    case NAVIGATE_TO_SUCCESS:
+    case CHANGE_ENVIRONMENT: {
       return Object.assign({}, state, action.payload);
     }
-    case FILTER_ROW: {
-      return Object.assign({}, state, action.payload);
-    }
-    case IMPORT_RECORDS_SUCCESS: {
+    case IMPORT_RECORDS_SUCCESS:
+    case FETCH_CONFIG_SUCCESS: {
       return Object.assign({}, state, action.payload.data);
     }
-    case IMPORT_RECORDS_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
-    case NAVIGATE_TO_SUCCESS: {
-      return Object.assign({}, state, action.payload);
-    }
-    case NAVIGATE_TO_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
+    // case NAVIGATE_TO_SUCCESS: {
+    //   return Object.assign({}, state, action.payload);
+    // }
+    // case NAVIGATE_TO_FAILURE: {
+    //   return Object.assign({}, state, {
+    //     error: action.payload,
+    //   });
+    // }
     case HIGHLIGHT_COLUMNS: {
       let { matchedFieldMap = {} } = state;
       const { toggle = false } = state;
@@ -171,11 +149,6 @@ export default function (state = {}, action) {
         action.payload.data,
       );
     }
-    case RESOLVE_COLUMN_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
     case RESOLVE_ROW_SUCCESS: {
       return Object.assign(
         {},
@@ -184,18 +157,8 @@ export default function (state = {}, action) {
         action.payload.data,
       );
     }
-    case RESOLVE_ROW_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
-    }
     case RESOLVE_MERGE_ROW_SUCCESS: {
       return Object.assign({}, state, { workingColumn: '', workingRow: -1 }, action.payload.data);
-    }
-    case RESOLVE_MERGE_ROW_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
     }
     case CALCULATE_MERGE_CONFLICTS_SUCCESS: {
       return Object.assign(
@@ -204,11 +167,6 @@ export default function (state = {}, action) {
         { workingColumn: '', workingRow: -1, calculatedMergeConflicts: true },
         action.payload.data,
       );
-    }
-    case CALCULATE_MERGE_CONFLICTS_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.payload,
-      });
     }
     case ACCEPT_ROW_MATCHES: {
       const {

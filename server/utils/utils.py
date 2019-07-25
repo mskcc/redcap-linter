@@ -203,10 +203,16 @@ def parameterize(str):
 def parameterize_list(items):
     return [parameterize(item) for item in items]
 
-# Determine a better name for this.
-# This is an issue with Excel auto detecting whether a column contains numbers and pandas reads integers as floating point
-def get_record_id(record_id):
-    return str(int(record_id)) if isinstance(record_id, float) and record_id.is_integer() else record_id
+def get_field_values(field_name, records):
+    values = set()
+    for _, sheet in records.items():
+        for _, record in sheet.iterrows():
+            if record.get(field_name):
+                value = record.get(field_name)
+                value = str(int(value)) if isinstance(value, float) and value.is_integer() else value
+                values.add(value)
+    values = list(values)
+    return values
 
 def read_spreadsheet(filename, **kwargs):
     records = None

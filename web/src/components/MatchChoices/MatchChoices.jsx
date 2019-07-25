@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Icon, Modal, Spin } from 'antd';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 import MatchedChoices from './MatchedChoices/MatchedChoices';
 import ChoiceMatcher from './ChoiceMatcher/ChoiceMatcher';
 import ActionMenu from '../ActionMenu/ActionMenu';
@@ -104,6 +105,7 @@ class MatchChoices extends Component {
     const {
       fieldErrors,
       matchedChoiceMap,
+      dataFieldToRedcapFieldMap,
       dataFieldToChoiceMap,
       workingSheetName,
       workingColumn,
@@ -163,9 +165,19 @@ class MatchChoices extends Component {
       continueButtonText = <Spin />;
     }
     const choiceMatcher = <ChoiceMatcher showModal={showModal} />;
+    let column = workingColumn;
+    if (dataFieldToRedcapFieldMap[workingSheetName]) {
+      column = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[workingColumn];
+    }
     return (
       <div>
         <div className="MatchChoices-navigation">
+          <div className="MatchChoices-header">
+            <b>Sheet</b>
+            {`: ${workingSheetName} | `}
+            <b>Column</b>
+            {` : ${column}`}
+          </div>
           <ButtonMenu />
           <div className="MatchChoices-navigationButtons">
             <button
@@ -248,6 +260,7 @@ class MatchChoices extends Component {
 MatchChoices.propTypes = {
   fieldErrors: PropTypes.objectOf(PropTypes.any),
   dataFieldToChoiceMap: PropTypes.objectOf(PropTypes.object),
+  dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
   ddData: PropTypes.arrayOf(PropTypes.object),
   matchedChoiceMap: PropTypes.objectOf(PropTypes.any),
   projectInfo: PropTypes.objectOf(PropTypes.any),
@@ -263,6 +276,7 @@ MatchChoices.propTypes = {
 MatchChoices.defaultProps = {
   fieldErrors: {},
   dataFieldToChoiceMap: {},
+  dataFieldToRedcapFieldMap: {},
   ddData: [],
   matchedChoiceMap: {},
   jsonData: [],

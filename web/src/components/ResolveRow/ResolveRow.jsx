@@ -170,6 +170,12 @@ class ResolveRow extends Component {
     return (
       <div>
         <div className="ResolveRow-navigation">
+          <div className="ResolveRow-header">
+            <b>Sheet</b>
+            {`: ${workingSheetName} | `}
+            <b>Row</b>
+            {` : ${workingRow + 2}`}
+          </div>
           <ButtonMenu />
           <div className="ResolveRow-navigationButtons">
             <button

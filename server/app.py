@@ -71,28 +71,22 @@ def save_fields():
             if not project_info['secondary_unique_field']:
                 existing_records = None
             else:
-                secondary_unique_field_values = set()
-                for sheet_name, sheet in records.items():
-                    for _, record in sheet.iterrows():
-                        if record.get(project_info['secondary_unique_field']):
-                            secondary_unique_field_values.add(utils.get_record_id(record.get(project_info['secondary_unique_field'])))
-                secondary_unique_field_values = list(secondary_unique_field_values)
+                secondary_unique_field_values = utils.get_field_values(project_info['secondary_unique_field'], records)
                 options = {
                     'secondary_unique_field': project_info['secondary_unique_field'],
                     'secondary_unique_field_values': secondary_unique_field_values
                 }
                 existing_records = redcap_api.export_records(token, options)
 
-                record_ids = [utils.get_record_id(r[recordid_field]) for r in existing_records]
+                record_ids = []
+                for r in existing_records:
+                    record_id = r[recordid_field]
+                    record_id = str(int(record_id)) if isinstance(record_id, float) and record_id.is_integer() else record_id
+                    record_ids.append(record_id)
                 options = {'records': record_ids}
                 existing_records = redcap_api.export_records(token, options)
         else:
-            record_ids = set()
-            for sheet_name, sheet in records.items():
-                for _, record in sheet.iterrows():
-                    if record.get(recordid_field):
-                        record_ids.add(utils.get_record_id(record.get(recordid_field)))
-            record_ids = list(record_ids)
+            record_ids = utils.get_field_values(recordid_field, records)
             options = {'records': record_ids}
             existing_records = redcap_api.export_records(token, options)
 

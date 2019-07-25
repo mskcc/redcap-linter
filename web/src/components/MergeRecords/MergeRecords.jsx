@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import MergedRecord from './MergedRecord/MergedRecord';
 import RecordMerger from './RecordMerger/RecordMerger';
+import MatchingRepeatInstances from './MatchingRepeatInstances/MatchingRepeatInstances';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import './MergeRecords.scss';
 import { resolveMergeRow } from '../../actions/ResolveActions';
@@ -56,6 +57,10 @@ class MergeRecords extends Component {
         <ActionMenu />
         <div className="MergeRecords-container">
           <div>
+            <div className="MergeRecords-matchingRepeatInstances">
+              <div className="MergeRecords-title">Matching Repeat Instances</div>
+              <MatchingRepeatInstances />
+            </div>
             <div className="MergeRecords-unmatchedChoices">
               <div className="MergeRecords-title">Existing Record</div>
               <RecordMerger />

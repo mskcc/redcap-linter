@@ -58,7 +58,10 @@ class RecordMerger extends Component {
   renderCell(header, cellInfo) {
     const className = 'RecordMerger-cell';
     let acceptButton = null;
-    if (header !== 'Field') {
+    if (
+      header !== 'Field'
+      && String(cellInfo['Value in Datafile']) !== String(cellInfo['Existing Value in REDCap'])
+    ) {
       acceptButton = (
         <div className="RecordMerger-accept">
           <a onClick={e => this.handleMerge(header, cellInfo, e)}>
@@ -80,6 +83,9 @@ class RecordMerger extends Component {
       workingSheetName,
       workingMergeRow,
       mergeConflicts,
+      recordidField,
+      reconciliationColumns,
+      matchingRepeatInstances,
       jsonData,
       dataFieldToRedcapFieldMap,
       mergeMap,
@@ -93,6 +99,24 @@ class RecordMerger extends Component {
     if (mergeMap[workingSheetName] && mergeMap[workingSheetName][workingMergeRow]) {
       rowMergeMap = mergeMap[workingSheetName][workingMergeRow];
     }
+
+    let matchingRepeatInstruments = [];
+    if (
+      matchingRepeatInstances[workingSheetName]
+      && matchingRepeatInstances[workingSheetName][workingMergeRow]
+    ) {
+      matchingRepeatInstruments = Object.keys(
+        matchingRepeatInstances[workingSheetName][workingMergeRow],
+      );
+    }
+
+    let reconciliationFields = [];
+    Object.keys(reconciliationColumns).forEach((repeatInstrument) => {
+      if (matchingRepeatInstruments.includes(repeatInstrument)) {
+        reconciliationFields = reconciliationFields.concat(reconciliationColumns[repeatInstrument]);
+      }
+    });
+    reconciliationFields.push(recordidField);
 
     console.log(existingRecord);
 
@@ -111,6 +135,14 @@ class RecordMerger extends Component {
       }
       return filtered;
     }, []);
+
+    reconciliationFields.forEach((field) => {
+      tableData.unshift({
+        Field: field,
+        'Value in Datafile': row[field] || '',
+        'Existing Value in REDCap': existingRecord[field] || '',
+      });
+    });
 
     let data = tableData;
     if (search) {
@@ -133,7 +165,7 @@ class RecordMerger extends Component {
           size="small"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+          pagination={{ defaultPageSize: 5, showSizeChanger: true, showQuickJumper: true }}
         />
       </div>
     );
@@ -145,6 +177,9 @@ RecordMerger.propTypes = {
   jsonData: PropTypes.objectOf(PropTypes.array),
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
   mergeConflicts: PropTypes.objectOf(PropTypes.object),
+  reconciliationColumns: PropTypes.objectOf(PropTypes.array),
+  matchingRepeatInstances: PropTypes.objectOf(PropTypes.object),
+  recordidField: PropTypes.string,
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
 };
@@ -154,6 +189,9 @@ RecordMerger.defaultProps = {
   jsonData: {},
   dataFieldToRedcapFieldMap: {},
   mergeConflicts: {},
+  reconciliationColumns: {},
+  matchingRepeatInstances: {},
+  recordidField: '',
   workingSheetName: '',
   workingMergeRow: -1,
 };

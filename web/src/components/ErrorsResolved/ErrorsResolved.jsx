@@ -3,7 +3,6 @@ import './ErrorsResolved.scss';
 import '../../App.scss';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Select from 'react-select';
 import PropTypes from 'prop-types';
 import { Icon, Spin } from 'antd';
 import EncodedRecords from '../EncodedRecords/EncodedRecords';

@@ -55,8 +55,7 @@ class MergedRecord extends Component {
       cellValue = (
         <p>
           <del>{cellValue}</del>
-          {' '}
-          {cellInfo['Merged Value']}
+          {` ${cellInfo['Merged Value']}`}
         </p>
       );
     }
@@ -88,6 +87,9 @@ class MergedRecord extends Component {
       workingSheetName,
       workingMergeRow,
       mergeMap,
+      recordidField,
+      reconciliationColumns,
+      matchingRepeatInstances,
       dataFieldToRedcapFieldMap,
     } = this.props;
 
@@ -102,21 +104,51 @@ class MergedRecord extends Component {
 
     const row = jsonData[workingSheetName][workingMergeRow];
 
+    let matchingRepeatInstruments = [];
+    if (
+      matchingRepeatInstances[workingSheetName]
+      && matchingRepeatInstances[workingSheetName][workingMergeRow]
+    ) {
+      matchingRepeatInstruments = Object.keys(
+        matchingRepeatInstances[workingSheetName][workingMergeRow],
+      );
+    }
+
+    let reconciliationFields = [];
+    Object.keys(reconciliationColumns).forEach((repeatInstrument) => {
+      if (matchingRepeatInstruments.includes(repeatInstrument)) {
+        reconciliationFields = reconciliationFields.concat(reconciliationColumns[repeatInstrument]);
+      }
+    });
+    reconciliationFields.push(recordidField);
+
     const matchingHeaders = Object.values(dataFieldToRedcapFieldMap[workingSheetName]);
     const tableData = matchingHeaders.reduce((filtered, field) => {
-      filtered.push({
-        Field: field,
-        Value: row[field] || '',
-        'Merged Value': rowMergeMap[field] || '',
-      });
+      if (!reconciliationFields.includes(field)) {
+        filtered.push({
+          Field: field,
+          Value: row[field] || '',
+          'Merged Value': rowMergeMap[field] || '',
+        });
+      }
       return filtered;
     }, []);
+
+    console.log(row);
+
+    reconciliationFields.forEach((field) => {
+      tableData.unshift({
+        Field: field,
+        Value: row[field],
+        'Merged Value': '',
+      });
+    });
 
     const { search, columns } = this.state;
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row.Field.includes(search) || String(row.Value).includes(search));
+      data = data.filter(r => r.Field.includes(search) || String(r.Value).includes(search));
     }
     return (
       <div className="MergedRecord-table">
@@ -134,7 +166,7 @@ class MergedRecord extends Component {
           size="small"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 5, showSizeChanger: true, showQuickJumper: true }}
+          pagination={{ defaultPageSize: 5, showSizeChanger: true, showQuickJumper: true }}
         />
       </div>
     );
@@ -145,6 +177,9 @@ MergedRecord.propTypes = {
   mergeMap: PropTypes.objectOf(PropTypes.object),
   jsonData: PropTypes.objectOf(PropTypes.array),
   dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
+  reconciliationColumns: PropTypes.objectOf(PropTypes.array),
+  matchingRepeatInstances: PropTypes.objectOf(PropTypes.object),
+  recordidField: PropTypes.string,
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
 };
@@ -153,6 +188,9 @@ MergedRecord.defaultProps = {
   mergeMap: {},
   jsonData: {},
   dataFieldToRedcapFieldMap: {},
+  reconciliationColumns: {},
+  matchingRepeatInstances: {},
+  recordidField: '',
   workingSheetName: '',
   workingMergeRow: -1,
 };

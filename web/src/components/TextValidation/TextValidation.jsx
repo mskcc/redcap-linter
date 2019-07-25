@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 import { Modal, Spin, Icon } from 'antd';
 import ResolvedTextErrors from './ResolvedTextErrors/ResolvedTextErrors';
 import TextErrorResolver from './TextErrorResolver/TextErrorResolver';
@@ -110,6 +111,7 @@ class TextValidation extends Component {
     const { loadingSave, loadingContinue, showModal } = this.state;
     const {
       originalToCorrectedValueMap,
+      dataFieldToRedcapFieldMap,
       workingSheetName,
       workingColumn,
       matchedValueMap,
@@ -147,9 +149,19 @@ class TextValidation extends Component {
       continueButtonText = <Spin />;
     }
     const textErrorResolver = <TextErrorResolver showModal={showModal} />;
+    let column = workingColumn;
+    if (dataFieldToRedcapFieldMap[workingSheetName]) {
+      column = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[workingColumn];
+    }
     return (
       <div>
         <div className="TextValidation-navigation">
+          <div className="MatchChoices-header">
+            <b>Sheet</b>
+            {`: ${workingSheetName} | `}
+            <b>Column</b>
+            {` : ${column}`}
+          </div>
           <ButtonMenu />
           <div className="TextValidation-navigationButtons">
             <button
@@ -230,6 +242,7 @@ TextValidation.propTypes = {
   jsonData: PropTypes.objectOf(PropTypes.array),
   projectInfo: PropTypes.objectOf(PropTypes.any),
   csvHeaders: PropTypes.objectOf(PropTypes.array),
+  dataFieldToRedcapFieldMap: PropTypes.objectOf(PropTypes.object),
   originalToCorrectedValueMap: PropTypes.objectOf(PropTypes.object),
   matchedValueMap: PropTypes.objectOf(PropTypes.any),
   fieldErrors: PropTypes.objectOf(PropTypes.any),
@@ -246,6 +259,7 @@ TextValidation.defaultProps = {
   csvHeaders: {},
   columnsInError: {},
   rowsInError: {},
+  dataFieldToRedcapFieldMap: {},
   originalToCorrectedValueMap: {},
   matchedValueMap: {},
   fieldErrors: {},

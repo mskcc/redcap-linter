@@ -40,7 +40,6 @@ export const REMOVE_MERGE = 'REMOVE_MERGE';
 export const REMOVE_CHOICE_MATCH = 'REMOVE_CHOICE_MATCH';
 
 export const NAVIGATE_TO_SUCCESS = 'NAVIGATE_TO_SUCCESS';
-export const NAVIGATE_TO_FAILURE = 'NAVIGATE_TO_FAILURE';
 
 export const FILTER_TABLE = 'FILTER_TABLE';
 
@@ -77,12 +76,6 @@ export function finishDownload() {
     return dispatch({
       type: DOWNLOAD_FINISH,
     });
-  };
-}
-
-export function encodeRecordsStart() {
-  return {
-    type: ENCODE_RECORDS_START,
   };
 }
 
@@ -210,68 +203,48 @@ export function importRecords(payload) {
   };
 }
 
-export function matchFieldsSuccess(payload) {
-  return {
-    type: MATCH_FIELDS,
-    payload,
-  };
-}
-
 export function matchFields(payload) {
   return function action(dispatch) {
-    return dispatch(matchFieldsSuccess(payload));
-  };
-}
-
-export function highlightColumnsSuccess(payload) {
-  return {
-    type: HIGHLIGHT_COLUMNS,
-    payload,
+    return dispatch({
+      type: MATCH_FIELDS,
+      payload,
+    });
   };
 }
 
 export function highlightColumns(payload) {
   return function action(dispatch) {
-    return dispatch(highlightColumnsSuccess(payload));
-  };
-}
-
-export function highlightChoicesSuccess(payload) {
-  return {
-    type: HIGHLIGHT_CHOICES,
-    payload,
+    return dispatch({
+      type: HIGHLIGHT_COLUMNS,
+      payload,
+    });
   };
 }
 
 export function highlightChoices(payload) {
   return function action(dispatch) {
-    return dispatch(highlightChoicesSuccess(payload));
-  };
-}
-
-export function changeReconciliationColumnsSuccess(payload) {
-  return {
-    type: CHANGE_RECONCILIATION_COLUMNS,
-    payload,
+    return dispatch({
+      type: HIGHLIGHT_CHOICES,
+      payload,
+    });
   };
 }
 
 export function changeReconciliationColumns(payload) {
   return function action(dispatch) {
-    return dispatch(changeReconciliationColumnsSuccess(payload));
-  };
-}
-
-export function removeFieldMatchSuccess(payload) {
-  return {
-    type: REMOVE_FIELD_MATCH,
-    payload,
+    return dispatch({
+      type: CHANGE_RECONCILIATION_COLUMNS,
+      payload,
+    });
   };
 }
 
 export function removeFieldMatch(payload) {
   return function action(dispatch) {
-    return dispatch(removeFieldMatchSuccess(payload));
+    return dispatch({
+      type: REMOVE_FIELD_MATCH,
+      payload,
+    });
   };
 }
 
@@ -357,7 +330,7 @@ export function encodeRecords(payload) {
       data,
     });
 
-    dispatch(encodeRecordsStart());
+    dispatch(loadingStart());
 
     return request.then(
       response => dispatch(encodeRecordsSuccess(Object.assign({}, response))),
@@ -366,49 +339,30 @@ export function encodeRecords(payload) {
   };
 }
 
-export function matchChoicesSuccess(payload) {
-  return {
-    type: MATCH_CHOICES,
-    payload,
-  };
-}
-
 export function matchChoices(payload) {
   return function action(dispatch) {
-    return dispatch(matchChoicesSuccess(payload));
-  };
-}
-
-export function mergeFieldSuccess(payload) {
-  return {
-    type: MERGE_FIELD,
-    payload,
+    return dispatch({
+      type: MATCH_CHOICES,
+      payload,
+    });
   };
 }
 
 export function mergeField(payload) {
   return function action(dispatch) {
-    return dispatch(mergeFieldSuccess(payload));
-  };
-}
-
-export function removeMergeSuccess(payload) {
-  return {
-    type: REMOVE_MERGE,
-    payload,
+    return dispatch({
+      type: MERGE_FIELD,
+      payload,
+    });
   };
 }
 
 export function removeMerge(payload) {
   return function action(dispatch) {
-    return dispatch(removeMergeSuccess(payload));
-  };
-}
-
-export function removeChoiceMatchSuccess(payload) {
-  return {
-    type: REMOVE_CHOICE_MATCH,
-    payload,
+    return dispatch({
+      type: REMOVE_MERGE,
+      payload,
+    });
   };
 }
 
@@ -418,111 +372,82 @@ export function removeChoiceMatch(dataField, permissibleValue) {
       dataField,
       permissibleValue,
     };
-    return dispatch(removeChoiceMatchSuccess(payload));
-  };
-}
-
-export function removeValueMatchSuccess(payload) {
-  return {
-    type: REMOVE_VALUE_MATCH,
-    payload,
+    return dispatch({
+      type: REMOVE_CHOICE_MATCH,
+      payload,
+    });
   };
 }
 
 export function removeValueMatch(payload) {
   return function action(dispatch) {
-    return dispatch(removeValueMatchSuccess(payload));
-  };
-}
-
-export function removeRowMatchSuccess(payload) {
-  return {
-    type: REMOVE_ROW_MATCH,
-    payload,
+    return dispatch({
+      type: REMOVE_VALUE_MATCH,
+      payload,
+    });
   };
 }
 
 export function removeRowMatch(payload) {
   return function action(dispatch) {
-    return dispatch(removeRowMatchSuccess(payload));
-  };
-}
-
-export function acceptCorrectionsSuccess(payload) {
-  return {
-    type: ACCEPT_CORRECTIONS,
-    payload,
+    return dispatch({
+      type: REMOVE_ROW_MATCH,
+      payload,
+    });
   };
 }
 
 export function acceptCorrections(payload) {
   return function action(dispatch) {
-    return dispatch(acceptCorrectionsSuccess(payload));
-  };
-}
-
-export function correctValueSuccess(payload) {
-  return {
-    type: CORRECT_VALUE,
-    payload,
+    return dispatch({
+      type: ACCEPT_CORRECTIONS,
+      payload,
+    });
   };
 }
 
 export function correctValue(payload) {
   return function action(dispatch) {
-    return dispatch(correctValueSuccess(payload));
-  };
-}
-
-export function acceptRowMatchesSuccess(payload) {
-  return {
-    type: ACCEPT_ROW_MATCHES,
-    payload,
+    return dispatch({
+      type: CORRECT_VALUE,
+      payload,
+    });
   };
 }
 
 export function acceptRowMatches(payload) {
   return function action(dispatch) {
-    return dispatch(acceptRowMatchesSuccess(payload));
-  };
-}
-
-export function updateValueSuccess(payload) {
-  return {
-    type: UPDATE_VALUE,
-    payload,
+    return dispatch({
+      type: ACCEPT_ROW_MATCHES,
+      payload,
+    });
   };
 }
 
 export function updateValue(payload) {
   return function action(dispatch) {
-    return dispatch(updateValueSuccess(payload));
-  };
-}
-
-export function changeRepeatableInstrumentsSuccess(payload) {
-  return {
-    type: CHANGE_REPEATABLE_INSTRUMENTS,
-    payload,
+    return dispatch({
+      type: UPDATE_VALUE,
+      payload,
+    });
   };
 }
 
 export function changeRepeatableInstruments(payload) {
   return function action(dispatch) {
-    return dispatch(changeRepeatableInstrumentsSuccess(payload));
-  };
-}
-
-export function changeSecondaryUniqueFieldSuccess(payload) {
-  return {
-    type: CHANGE_SECONDARY_UNIQUE_FIELD,
-    payload,
+    return dispatch({
+      type: CHANGE_REPEATABLE_INSTRUMENTS,
+      payload,
+    });
   };
 }
 
 export function changeSecondaryUniqueField(payload) {
   return function action(dispatch) {
-    return dispatch(changeSecondaryUniqueFieldSuccess(payload));
+    return dispatch({
+      type: CHANGE_SECONDARY_UNIQUE_FIELD,
+      payload,
+    });
   };
 }
 
@@ -533,29 +458,12 @@ export function navigateToSuccess(payload) {
   };
 }
 
-export function navigateToError(payload) {
-  return {
-    type: NAVIGATE_TO_FAILURE,
-    payload,
-  };
-}
-
 export function navigateTo(page) {
   return function action(dispatch) {
     const payload = {
       page,
     };
-    if (!page) {
-      return dispatch(navigateToError(payload));
-    }
     return dispatch(navigateToSuccess(payload));
-  };
-}
-
-export function filterTableSuccess(payload) {
-  return {
-    type: FILTER_TABLE,
-    payload,
   };
 }
 
@@ -564,14 +472,10 @@ export function filterTable(filter) {
     const payload = {
       filter,
     };
-    return dispatch(filterTableSuccess(payload));
-  };
-}
-
-export function filterRowSuccess(payload) {
-  return {
-    type: FILTER_ROW,
-    payload,
+    return dispatch({
+      type: FILTER_TABLE,
+      payload,
+    });
   };
 }
 
@@ -581,6 +485,9 @@ export function filterRow(sheet, rowNum) {
       filterSheet: sheet,
       filterRowNum: rowNum,
     };
-    return dispatch(filterRowSuccess(payload));
+    return dispatch({
+      type: FILTER_ROW,
+      payload,
+    });
   };
 }

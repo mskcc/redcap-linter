@@ -10,15 +10,26 @@
 }
 
 .ResolveMergeConflicts-navigation {
-  float: right;
   margin-right: 2.5%;
   margin-top: -25px;
+  float: right;
+}
+
+.ResolveMergeConflicts-navigationButtons {
+  float: right;
+}
+
+.ResolveMergeConflicts-header {
+  margin-top: 5px;
+  display: inline-block;
+  font-size: 15px;
 }
 
 .ResolveMergeConflicts-back {
-  float: right;
   margin-right: 2.5%;
   margin-top: -25px;
+  float: right;
+  width: 75%;
 }
 
 .ResolveMergeConflicts-selector {

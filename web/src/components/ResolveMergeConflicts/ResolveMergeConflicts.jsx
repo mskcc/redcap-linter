@@ -8,6 +8,7 @@ import { Spin, Icon } from 'antd';
 import MergeRecords from '../MergeRecords/MergeRecords';
 import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
+import ButtonMenu from '../ButtonMenu/ButtonMenu';
 import { navigateTo } from '../../actions/REDCapLinterActions';
 import { calculateMergeConflicts } from '../../actions/ResolveActions';
 
@@ -77,7 +78,12 @@ class ResolveMergeConflicts extends Component {
   }
 
   render() {
-    const { mergeConflicts, calculatedMergeConflicts } = this.props;
+    const {
+      mergeConflicts,
+      calculatedMergeConflicts,
+      workingSheetName,
+      workingMergeRow,
+    } = this.props;
     const { loading, mode } = this.state;
     let content = '';
     let hasMergeConflicts = false;
@@ -86,6 +92,17 @@ class ResolveMergeConflicts extends Component {
         hasMergeConflicts = true;
       }
     });
+    let title = '';
+    if (workingSheetName && workingMergeRow >= 0) {
+      title = (
+        <div className="ResolveMergeConflicts-header">
+          <b>Sheet</b>
+          {`: ${workingSheetName} | `}
+          <b>Row</b>
+          {` : ${workingMergeRow + 2}`}
+        </div>
+      );
+    }
     if (loading) {
       content = <Spin tip="Loading..." />;
     } else if (!calculatedMergeConflicts || hasMergeConflicts) {
@@ -113,13 +130,19 @@ class ResolveMergeConflicts extends Component {
       } else if (mode === 'MERGE') {
         content = (
           <div>
-            <button
-              type="button"
-              onClick={this.selectReconciliationColumns.bind(this)}
-              className="App-actionButton ResolveMergeConflicts-back"
-            >
-              Select Reconciliation Column(s)
-            </button>
+            <div className="ResolveMergeConflicts-back">
+              {title}
+              <ButtonMenu />
+              <div className="ResolveMergeConflicts-navigationButtons">
+                <button
+                  type="button"
+                  onClick={this.selectReconciliationColumns.bind(this)}
+                  className="App-actionButton"
+                >
+                  Select Reconciliation Column(s)
+                </button>
+              </div>
+            </div>
             <MergeRecords />
           </div>
         );
@@ -155,6 +178,8 @@ ResolveMergeConflicts.propTypes = {
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   mergeConflicts: PropTypes.objectOf(PropTypes.object),
   calculatedMergeConflicts: PropTypes.bool,
+  workingSheetName: PropTypes.string,
+  workingMergeRow: PropTypes.number,
 };
 
 ResolveMergeConflicts.defaultProps = {
@@ -169,6 +194,8 @@ ResolveMergeConflicts.defaultProps = {
   malformedSheets: [],
   mergeConflicts: {},
   calculatedMergeConflicts: false,
+  workingSheetName: '',
+  workingMergeRow: -1,
 };
 
 function mapStateToProps(state) {

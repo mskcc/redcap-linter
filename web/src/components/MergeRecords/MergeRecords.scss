@@ -27,7 +27,14 @@
 .MergeRecords-unmatchedChoices {
   float: right;
   display: inline-block;
-  width: 65%;
+  width: 35%;
+  padding-left: 1%;
+}
+
+.MergeRecords-matchingRepeatInstances {
+  float: right;
+  display: inline-block;
+  width: 29%;
   padding-left: 1%;
 }
 

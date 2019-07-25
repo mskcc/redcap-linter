@@ -1,0 +1,36 @@
+@import '../../Utilities/color';
+
+.MatchingRepeatInstances-headerError {
+  color: color(red500);
+}
+
+.MatchingRepeatInstances-cellError {
+  color: color(red500);
+}
+
+.MatchingRepeatInstances-tableTitle {
+  height: 40px;
+}
+
+.MatchingRepeatInstances-searchBar {
+  float: left;
+}
+
+.MatchingRepeatInstances-cellContainer {
+  display: flex;
+}
+
+.MatchingRepeatInstances-cell {
+  width: 80%;
+  display: inline-block;
+  overflow-wrap: break-word;
+}
+
+.MatchingRepeatInstances-cancel {
+  width: 25px;
+  opacity: 0.6;
+  text-align: right;
+  align-self: center;
+  display: inline-block;
+  margin-left: 5px;
+}
