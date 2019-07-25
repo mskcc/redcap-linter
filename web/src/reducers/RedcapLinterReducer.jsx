@@ -161,12 +161,7 @@ export default function (state = {}, action) {
       return Object.assign({}, state, { workingColumn: '', workingRow: -1 }, action.payload.data);
     }
     case CALCULATE_MERGE_CONFLICTS_SUCCESS: {
-      return Object.assign(
-        {},
-        state,
-        { workingColumn: '', workingRow: -1, calculatedMergeConflicts: true },
-        action.payload.data,
-      );
+      return Object.assign({}, state, { workingColumn: '', workingRow: -1 }, action.payload.data);
     }
     case ACCEPT_ROW_MATCHES: {
       const {

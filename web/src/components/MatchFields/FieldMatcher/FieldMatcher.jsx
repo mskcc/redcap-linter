@@ -28,7 +28,7 @@ class FieldMatcher extends Component {
         {
           title: `${mode} Candidate`,
           key: `${mode} Candidate`,
-          width: '250px',
+          width: 250,
           render: (text, record) => this.renderCandidates(record),
         },
       ],

@@ -17,13 +17,14 @@ class ResolveMergeConflicts extends Component {
     super(props);
     this.state = {
       loading: false,
+      calculatedMergeConflicts: false,
       mode: 'CHOOSE_RECONCILIATION_COLUMNS',
     };
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if ('loading' in nextProps) {
-      return { loading: nextProps.loading };
+    if (prevState.loading && !nextProps.loading) {
+      return { loading: nextProps.loading, calculatedMergeConflicts: true };
     }
     return null;
   }
@@ -52,9 +53,9 @@ class ResolveMergeConflicts extends Component {
       malformedSheets,
       reconciliationColumns,
     };
-    calculateMergeConflicts(payload);
 
-    this.setState({ mode: 'MERGE' });
+    this.setState({ mode: 'MERGE', loading: true });
+    calculateMergeConflicts(payload);
   }
 
   forward() {
@@ -68,7 +69,7 @@ class ResolveMergeConflicts extends Component {
   }
 
   selectReconciliationColumns() {
-    this.setState({ mode: 'CHOOSE_RECONCILIATION_COLUMNS' });
+    this.setState({ mode: 'CHOOSE_RECONCILIATION_COLUMNS', calculatedMergeConflicts: false });
   }
 
   continue() {
@@ -78,13 +79,8 @@ class ResolveMergeConflicts extends Component {
   }
 
   render() {
-    const {
-      mergeConflicts,
-      calculatedMergeConflicts,
-      workingSheetName,
-      workingMergeRow,
-    } = this.props;
-    const { loading, mode } = this.state;
+    const { mergeConflicts, workingSheetName, workingMergeRow } = this.props;
+    const { loading, mode, calculatedMergeConflicts } = this.state;
     let content = '';
     let hasMergeConflicts = false;
     Object.keys(mergeConflicts).forEach((sheet) => {
@@ -150,10 +146,19 @@ class ResolveMergeConflicts extends Component {
     } else {
       content = (
         <div>
-          <p>Nothing to Merge</p>
-          <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
-            Continue
-          </button>
+          <div>
+            <p>Nothing to Merge</p>
+            <button
+              type="button"
+              onClick={this.selectReconciliationColumns.bind(this)}
+              className="App-actionButton"
+            >
+              Select Reconciliation Column(s)
+            </button>
+            <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
+              Continue
+            </button>
+          </div>
         </div>
       );
     }
@@ -177,7 +182,6 @@ ResolveMergeConflicts.propTypes = {
   decodedRecords: PropTypes.objectOf(PropTypes.array),
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   mergeConflicts: PropTypes.objectOf(PropTypes.object),
-  calculatedMergeConflicts: PropTypes.bool,
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
 };
@@ -193,7 +197,6 @@ ResolveMergeConflicts.defaultProps = {
   decodedRecords: {},
   malformedSheets: [],
   mergeConflicts: {},
-  calculatedMergeConflicts: false,
   workingSheetName: '',
   workingMergeRow: -1,
 };

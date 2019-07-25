@@ -23,6 +23,7 @@
   margin-top: 5px;
   display: inline-block;
   font-size: 15px;
+  width: 50%;
 }
 
 .ResolveMergeConflicts-back {
@@ -35,4 +36,12 @@
 .ResolveMergeConflicts-selector {
   width: 50%;
   margin: auto;
+}
+
+.ResolveMergeConflicts-resolved {
+  width: 75%;
+  float: right;
+  margin-right: 2.5%;
+  padding-top: 10px;
+  margin-top: -10px;
 }
