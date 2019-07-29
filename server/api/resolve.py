@@ -82,7 +82,7 @@ def resolve_column():
             cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
         #TODO Check if next_row and next_row is still in error
-        if not next_column:
+        if not next_column and rows_in_error:
             next_sheet_name = list(rows_in_error.keys())[0]
             next_row = rows_in_error[next_sheet_name][0]
             row_info = calculate_row_info(next_row, next_sheet_name, data_dictionary, records)
@@ -149,7 +149,7 @@ def resolve_row():
     next_column = ''
     if next_row >= 0:
         row_info = calculate_row_info(next_row, next_sheet_name, data_dictionary, records)
-    else:
+    elif columns_in_error:
         # Get next column
         next_sheet_name = list(columns_in_error.keys())[0]
         next_column = columns_in_error[next_sheet_name][0]
