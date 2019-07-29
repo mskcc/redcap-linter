@@ -11,7 +11,7 @@ import './TextValidation.scss';
 import ButtonMenu from '../ButtonMenu/ButtonMenu';
 import { filterTable, removeValueMatch, navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
-import { isValueValid } from '../../utils/utils';
+import { isValueValid, getNextColumn } from '../../utils/utils';
 
 class TextValidation extends Component {
   constructor(props) {
@@ -29,9 +29,19 @@ class TextValidation extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    const { columnsInError, workingSheetName, workingColumn } = nextProps;
+    const next = getNextColumn(columnsInError, workingSheetName, workingColumn);
+
+    const { nextSheetName, nextColumn } = next;
+
     const { loadingResolve } = nextProps;
     if (!loadingResolve) {
-      return { loadingSave: false, loadingContinue: false };
+      return {
+        loadingSave: false,
+        loadingContinue: false,
+        nextSheetName,
+        nextColumn,
+      };
     }
     return null;
   }
@@ -52,6 +62,9 @@ class TextValidation extends Component {
       resolveColumn,
       filterTable,
     } = this.props;
+
+    const { nextSheetName, nextColumn, nextRow } = this.state;
+
     const validValues = [];
     if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
       // TODO only check for valid values
@@ -71,6 +84,9 @@ class TextValidation extends Component {
       projectInfo,
       workingColumn,
       workingSheetName,
+      nextSheetName,
+      nextColumn,
+      nextRow,
       ddData,
       columnsInError,
       rowsInError,
@@ -114,6 +130,8 @@ class TextValidation extends Component {
       dataFieldToRedcapFieldMap,
       workingSheetName,
       workingColumn,
+      columnsInError,
+      rowsInError,
       matchedValueMap,
       removeValueMatch,
     } = this.props;
@@ -121,6 +139,23 @@ class TextValidation extends Component {
     if (!workingColumn) {
       return null;
     }
+
+    const { nextSheetName, nextColumn } = this.state;
+
+    let remainingColumns = 0;
+    let remainingRows = 0;
+
+    Object.keys(columnsInError).forEach((sheet) => {
+      if (columnsInError[sheet] && columnsInError[sheet].length > 0) {
+        remainingColumns += columnsInError[sheet].length;
+      }
+    });
+
+    Object.keys(rowsInError).forEach((sheet) => {
+      if (rowsInError[sheet] && rowsInError[sheet].length > 0) {
+        remainingRows += rowsInError[sheet].length;
+      }
+    });
 
     let unsavedValueMap = {};
     if (matchedValueMap[workingSheetName] && matchedValueMap[workingSheetName][workingColumn]) {
@@ -149,18 +184,49 @@ class TextValidation extends Component {
       continueButtonText = <Spin />;
     }
     const textErrorResolver = <TextErrorResolver showModal={showModal} />;
-    let column = workingColumn;
+    let current = workingColumn;
+    let next = nextColumn;
     if (dataFieldToRedcapFieldMap[workingSheetName]) {
-      column = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[workingColumn];
+      current = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[workingColumn];
+      next = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[nextColumn];
     }
+
+    let nextItemToResolve = '';
+    let lastColumnText = '';
+    if (remainingColumns === 1) {
+      lastColumnText = 'This is the last column to resolve. If there are rows missing required values the next step will be to assign values. If not the next step will be to merge with records in REDCap.';
+    } else if (nextColumn) {
+      nextItemToResolve = (
+        <div className="TextValidation-next">
+          <b>Next Sheet</b>
+          {`: ${nextSheetName}`}
+          <br />
+          <b>Next Column</b>
+          {`: ${next}`}
+        </div>
+      );
+    }
+
     return (
       <div>
         <div className="TextValidation-navigation">
-          <div className="MatchChoices-header">
-            <b>Sheet</b>
-            {`: ${workingSheetName} | `}
-            <b>Column</b>
-            {` : ${column}`}
+          <div className="TextValidation-header">
+            <div className="TextValidation-columnDetails">
+              <b>Sheet</b>
+              {`: ${workingSheetName}`}
+              <br />
+              <b>Column</b>
+              {` : ${current}`}
+            </div>
+
+            <div className="TextValidation-progress">
+              <b>Remaining Columns</b>
+              {`: ${remainingColumns}`}
+              <br />
+              <b>Remaining Rows</b>
+              {`: ${remainingRows}`}
+            </div>
+            {nextItemToResolve}
           </div>
           <ButtonMenu />
           <div className="TextValidation-navigationButtons">
@@ -172,7 +238,7 @@ class TextValidation extends Component {
               className="App-actionButton"
             >
               <Icon type="left" />
-              {' Back to Match Fields'}
+              {' Match Fields'}
             </button>
             <button
               type="button"
@@ -181,13 +247,14 @@ class TextValidation extends Component {
               }}
               className="App-actionButton"
             >
-              {'Continue to Merging '}
+              {'Merge '}
               <Icon type="right" />
             </button>
           </div>
         </div>
         <ActionMenu />
         <div className="TextValidation-container">
+          <div className="TextValidation-nextColumn">{lastColumnText}</div>
           <div>
             <div className="TextValidation-matchedChoices">
               <div className="TextValidation-title">Corrected Values</div>

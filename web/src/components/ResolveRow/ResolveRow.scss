@@ -6,8 +6,6 @@
   width: 75%;
   float: right;
   margin-right: 2.5%;
-  padding-top: 10px;
-  margin-top: -10px;
 }
 
 .ResolveRow-navigation {
@@ -18,13 +16,29 @@
 }
 
 .ResolveRow-header {
-  margin-top: 5px;
   display: inline-block;
+  font-size: 13px;
   width: 50%;
 }
 
-.ResolveRow-navigationButtons {
+.ResolveRow-columnDetails {
+  float: left;
+}
+
+.ResolveRow-progress {
+  display: inline-block;
+}
+
+.ResolveRow-next {
   float: right;
+}
+
+.ResolveRow-nextRow {
+  margin-top: 10px;
+}
+
+.ResolveRow-navigationButtons {
+  float: left;
 }
 
 .ResolveRow-column {

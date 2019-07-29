@@ -13,6 +13,7 @@ from utils import utils
 
 RESOLVE = Blueprint('resolve', __name__)
 
+# TODO Return nextSheetName and nextColumn/nextRow to the frontend to display
 @RESOLVE.route('/resolve_column', methods=['GET', 'POST', 'OPTIONS'])
 def resolve_column():
     form = request.form.to_dict()
@@ -54,38 +55,15 @@ def resolve_column():
             frame[working_column] = new_list
         records[sheet] = frame
 
-    columns_in_error = json.loads(form.get('columnsInError', '{}'))
-    rows_in_error = json.loads(form.get('rowsInError', '{}'))
     project_info = json.loads(form.get('projectInfo', '{}'))
-
-    next_sheet = False
-    for sheet in columns_in_error:
-        if next_sheet:
-            next_sheet_name = sheet
-            next_column = columns_in_error[sheet][0]
-        if sheet == working_sheet_name:
-            cols_in_error = columns_in_error[sheet]
-            if sheet == working_sheet_name and working_column == cols_in_error[-1]:
-                next_sheet = True
-            elif sheet == working_sheet_name:
-                next_sheet_name = sheet
-                if working_column not in cols_in_error:
-                    next_column = cols_in_error[0]
-                else:
-                    next_column = cols_in_error[cols_in_error.index(working_column)+1]
-
-    next_row = -1
-    if not next_column:
-        for sheet in rows_in_error:
-            if rows_in_error[sheet]:
-                next_sheet_name = sheet
-                next_row = rows_in_error[sheet][0]
 
     field_errors = {}
     if next_column:
         field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
 
+    row_info = {}
     json_data = {}
+    next_row = -1
 
     for sheet_name, sheet in records.items():
         json_data[sheet_name] = json.loads(sheet.to_json(orient='records', date_format='iso'))
@@ -99,12 +77,19 @@ def resolve_column():
         cells_with_errors = datafile_errors['cells_with_errors']
         rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
         columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
+
         for sheet_name, sheet in records.items():
             cells_with_errors[sheet_name] = json.loads(cells_with_errors[sheet_name].to_json(orient='records'))
 
+        #TODO Check if next_row and next_row is still in error
+        if not next_column:
+            next_sheet_name = list(rows_in_error.keys())[0]
+            next_row = rows_in_error[next_sheet_name][0]
+            row_info = calculate_row_info(next_row, next_sheet_name, data_dictionary, records)
+
         all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
         results['allErrors'] = all_errors
-        results['columnInError'] = columns_in_error
+        results['columnsInError'] = columns_in_error
         results['cellsWithErrors'] = cells_with_errors
         results['rowsInError'] = rows_in_error
 
@@ -112,6 +97,7 @@ def resolve_column():
         results['workingColumn'] = next_column
         results['workingSheetName'] = next_sheet_name
         results['fieldErrors'] = field_errors
+        results['rowInfo'] = row_info
         results['workingRow'] = next_row
 
     return flask.jsonify(results)
@@ -148,44 +134,26 @@ def resolve_row():
                 frame.iloc[working_row, frame.columns.get_loc(field)] = value
         records[sheet] = frame
 
-    columns_in_error = json.loads(form.get('columnsInError'))
-    rows_in_error = json.loads(form.get('rowsInError'))
     project_info = json.loads(form.get('projectInfo'))
 
-    next_sheet = False
-    for sheet in rows_in_error:
-        if next_sheet:
-            next_sheet_name = sheet
-            next_row = rows_in_error[sheet][0]
-        if sheet == working_sheet_name:
-            sheet_rows_in_error = rows_in_error[sheet]
-            if sheet == working_sheet_name and working_row == sheet_rows_in_error[-1]:
-                next_sheet = True
-            elif sheet == working_sheet_name:
-                next_sheet_name = sheet
-                if working_row not in sheet_rows_in_error:
-                    next_row = sheet_rows_in_error[0]
-                else:
-                    next_row = sheet_rows_in_error[sheet_rows_in_error.index(working_row)+1]
-
-    next_column = ''
-    if next_row == -1:
-        for sheet in columns_in_error:
-            if columns_in_error[sheet]:
-                next_sheet_name = sheet
-                next_column = columns_in_error[sheet][0]
-
-    field_errors = {}
-    if next_column:
-        field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
-
-    row_info = {}
-    if next_row >= 0:
-        row_info = calculate_row_info(next_row, next_sheet_name, data_dictionary, records)
 
     datafile_errors = linter.lint_datafile(data_dictionary, project_info, records)
     cells_with_errors = datafile_errors['cells_with_errors']
+    # TODO Figure out why errors on malformed sheets get added here
     rows_in_error = utils.get_rows_with_errors(cells_with_errors, records)
+    columns_in_error = utils.get_columns_with_errors(cells_with_errors, records)
+
+    #TODO Check if next_column and next_column is still in error
+    row_info = {}
+    field_errors = {}
+    next_column = ''
+    if next_row >= 0:
+        row_info = calculate_row_info(next_row, next_sheet_name, data_dictionary, records)
+    else:
+        # Get next column
+        next_sheet_name = list(columns_in_error.keys())[0]
+        next_column = columns_in_error[next_sheet_name][0]
+        field_errors = calculate_field_errors(next_column, next_sheet_name, data_dictionary, records)
 
     all_errors = [{"Error": error} for error in datafile_errors['linting_errors']]
 
@@ -199,6 +167,7 @@ def resolve_row():
         'jsonData':         json_data,
         'allErrors':        all_errors,
         'rowsInError':      rows_in_error,
+        'columnsInError':   columns_in_error,
         'rowInfo':          row_info,
         'cellsWithErrors':  cells_with_errors,
     }
@@ -495,7 +464,7 @@ def calculate_row_info(idx, sheet_name, data_dictionary, records):
             continue
         dd_field = dd_field[0]
         if dd_field.field_type in ['dropdown', 'radio']:
-            unmatched_choice = row[column]
+            unmatched_choice = str(row[column])
             if not unmatched_choice:
                 continue
             for dd_choice in dd_field.choices_dict:

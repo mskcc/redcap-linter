@@ -79,7 +79,9 @@ class ResolveMergeConflicts extends Component {
   }
 
   render() {
-    const { mergeConflicts, workingSheetName, workingMergeRow } = this.props;
+    const {
+      mergeConflicts, workingSheetName, workingMergeRow, existingRecords,
+    } = this.props;
     const { loading, mode, calculatedMergeConflicts } = this.state;
     let content = '';
     let hasMergeConflicts = false;
@@ -99,7 +101,23 @@ class ResolveMergeConflicts extends Component {
         </div>
       );
     }
-    if (loading) {
+    if (!existingRecords) {
+      content = (
+        <div>
+          <div className="ResolveMergeConflicts-helpText">
+            <p>
+              To merge with existing records, you must supply a token so Linter can fetch records
+              from REDCap or export a project's records by navigating to your Project Home in REDCap
+              -> click on Export data -> Click on Export Data in the table that says My Reports &
+              Exports next to the row labeled All data
+            </p>
+            <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
+              Continue
+            </button>
+          </div>
+        </div>
+      );
+    } else if (loading) {
       content = <Spin tip="Loading..." />;
     } else if (!calculatedMergeConflicts || hasMergeConflicts) {
       if (mode === 'CHOOSE_RECONCILIATION_COLUMNS') {
@@ -108,10 +126,10 @@ class ResolveMergeConflicts extends Component {
             <div className="ResolveMergeConflicts-navigation">
               <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
                 <Icon type="left" />
-                {' Back to Linting'}
+                {' Lint'}
               </button>
               <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
-                {'Continue to Finish '}
+                {'Finish '}
                 <Icon type="right" />
               </button>
             </div>

@@ -6,8 +6,6 @@
   width: 75%;
   float: right;
   margin-right: 2.5%;
-  padding-top: 10px;
-  margin-top: -10px;
 }
 
 .MatchChoices-navigation {
@@ -18,14 +16,29 @@
 }
 
 .MatchChoices-navigationButtons {
-  float: right;
+  float: left;
 }
 
 .MatchChoices-header {
-  margin-top: 5px;
   display: inline-block;
-  font-size: 15px;
+  font-size: 13px;
   width: 50%;
+}
+
+.MatchChoices-columnDetails {
+  float: left;
+}
+
+.MatchChoices-progress {
+  display: inline-block;
+}
+
+.MatchChoices-next {
+  float: right;
+}
+
+.MatchChoices-nextColumn {
+  margin-top: 10px;
 }
 
 .MatchChoices-column {

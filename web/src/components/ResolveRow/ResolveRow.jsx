@@ -15,6 +15,7 @@ import {
 } from '../../actions/REDCapLinterActions';
 import { resolveRow } from '../../actions/ResolveActions';
 import ButtonMenu from '../ButtonMenu/ButtonMenu';
+import { getNextRow } from '../../utils/utils';
 
 class ResolveRow extends Component {
   constructor(props) {
@@ -32,9 +33,19 @@ class ResolveRow extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    const { rowsInError, workingSheetName, workingRow } = nextProps;
+    const next = getNextRow(rowsInError, workingSheetName, workingRow);
+
+    const { nextSheetName, nextRow } = next;
+
     const { loadingResolve } = nextProps;
     if (!loadingResolve) {
-      return { loadingSave: false, loadingContinue: false };
+      return {
+        loadingSave: false,
+        loadingContinue: false,
+        nextSheetName,
+        nextRow,
+      };
     }
     return null;
   }
@@ -53,6 +64,8 @@ class ResolveRow extends Component {
       csvHeaders,
       resolveRow,
     } = this.props;
+
+    const { nextSheetName, nextRow, nextColumn } = this.state;
     // TODO Only let the valid values pass
     let unsavedValueMap = {};
     if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
@@ -68,6 +81,9 @@ class ResolveRow extends Component {
       projectInfo,
       workingRow,
       workingSheetName,
+      nextSheetName,
+      nextRow,
+      nextColumn,
       columnsInError,
       rowsInError,
       ddData,
@@ -113,6 +129,8 @@ class ResolveRow extends Component {
       matchedRowValueMap,
       workingRow,
       csvHeaders,
+      columnsInError,
+      rowsInError,
       acceptRowMatches,
       removeRowMatch,
       filterRow,
@@ -123,6 +141,23 @@ class ResolveRow extends Component {
     if (workingRow === -1 || workingRow === '') {
       return null;
     }
+
+    const { nextSheetName, nextRow } = this.state;
+
+    let remainingColumns = 0;
+    let remainingRows = 0;
+
+    Object.keys(columnsInError).forEach((sheet) => {
+      if (columnsInError[sheet] && columnsInError[sheet].length > 0) {
+        remainingColumns += columnsInError[sheet].length;
+      }
+    });
+
+    Object.keys(rowsInError).forEach((sheet) => {
+      if (rowsInError[sheet] && rowsInError[sheet].length > 0) {
+        remainingRows += rowsInError[sheet].length;
+      }
+    });
 
     let unsavedValueMap = {};
     if (matchedRowValueMap[workingSheetName] && matchedRowValueMap[workingSheetName][workingRow]) {
@@ -166,15 +201,43 @@ class ResolveRow extends Component {
       continueButtonText = <Spin />;
     }
     const rowResolver = <RowResolver showModal={showModal} />;
+
+    let lastRowText = '';
+    let nextItemToResolve = '';
+    if (remainingRows === 1) {
+      lastRowText = 'This is the last row to resolve. Next step is to merge with existing records in REDCap.';
+    } else if (nextRow >= 0) {
+      nextItemToResolve = (
+        <div className="ResolveRow-next">
+          <b>Next Sheet</b>
+          {`: ${nextSheetName}`}
+          <br />
+          <b>Next Row</b>
+          {`: ${nextRow + 2}`}
+        </div>
+      );
+    }
     // TODO Add Navigation Buttons to here and on resolving text errors
     return (
       <div>
         <div className="ResolveRow-navigation">
           <div className="ResolveRow-header">
-            <b>Sheet</b>
-            {`: ${workingSheetName} | `}
-            <b>Row</b>
-            {` : ${workingRow + 2}`}
+            <div className="ResolveRow-columnDetails">
+              <b>Sheet</b>
+              {`: ${workingSheetName}`}
+              <br />
+              <b>Row</b>
+              {` : ${workingRow + 2}`}
+            </div>
+
+            <div className="ResolveRow-progress">
+              <b>Remaining Columns</b>
+              {`: ${remainingColumns}`}
+              <br />
+              <b>Remaining Rows</b>
+              {`: ${remainingRows}`}
+            </div>
+            {nextItemToResolve}
           </div>
           <ButtonMenu />
           <div className="ResolveRow-navigationButtons">
@@ -186,7 +249,7 @@ class ResolveRow extends Component {
               className="App-actionButton"
             >
               <Icon type="left" />
-              {' Back to Match Fields'}
+              {' Match Fields'}
             </button>
             <button
               type="button"
@@ -195,13 +258,14 @@ class ResolveRow extends Component {
               }}
               className="App-actionButton"
             >
-              {'Continue to Merging '}
+              {'Merge '}
               <Icon type="right" />
             </button>
           </div>
         </div>
         <ActionMenu />
         <div className="ResolveRow-container">
+          <div className="ResolveRow-nextColumn">{lastRowText}</div>
           <div>
             <div className="ResolveRow-matchedChoices">
               <div className="ResolveRow-title">Row Data</div>

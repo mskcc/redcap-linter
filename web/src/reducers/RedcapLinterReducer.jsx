@@ -72,7 +72,13 @@ export default function (state = {}, action) {
       if (error) {
         page = 'intro';
       }
-      return Object.assign({ loading: false, new: true, page }, state, action.payload.data, error);
+      return Object.assign(
+        {},
+        state,
+        action.payload.data,
+        { loading: false, new: true, page },
+        error,
+      );
     }
     case SAVE_FIELDS_SUCCESS: {
       let nextPage = {};
@@ -456,7 +462,7 @@ export default function (state = {}, action) {
         }
       });
       fieldErrors.textErrors = textErrors;
-      return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors, textErrors });
+      return Object.assign({}, state, { originalToCorrectedValueMap, fieldErrors });
     }
     case REMOVE_ROW_MATCH: {
       const {

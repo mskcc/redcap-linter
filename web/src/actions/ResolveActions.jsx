@@ -50,8 +50,6 @@ export function resolveColumn(payload) {
     data.append('nextSheetName', JSON.stringify(payload.nextSheetName || ''));
     data.append('workingColumn', JSON.stringify(payload.workingColumn || ''));
     data.append('workingSheetName', JSON.stringify(payload.workingSheetName || ''));
-    data.append('columnsInError', JSON.stringify(payload.columnsInError));
-    data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', JSON.stringify(payload.action || ''));
 
     dispatch(loadingResolveStart());
@@ -141,12 +139,10 @@ export function resolveRow(payload) {
     data.append('ddData', JSON.stringify(payload.ddData));
     data.append('csvHeaders', JSON.stringify(payload.csvHeaders));
     data.append('fieldToValueMap', JSON.stringify(payload.fieldToValueMap || {}));
-    data.append('nextRow', payload.nextRow >= 0 ? JSON.stringify(payload.nextRow) : '-1');
+    data.append('nextRow', payload.nextRow >= 0 ? JSON.stringify(payload.nextRow) : -1);
     data.append('nextSheetName', JSON.stringify(payload.nextSheetName || ''));
-    data.append('workingRow', payload.workingRow >= 0 ? JSON.stringify(payload.workingRow) : '-1');
+    data.append('workingRow', payload.workingRow >= 0 ? JSON.stringify(payload.workingRow) : -1);
     data.append('workingSheetName', JSON.stringify(payload.workingSheetName || ''));
-    data.append('columnsInError', JSON.stringify(payload.columnsInError));
-    data.append('rowsInError', JSON.stringify(payload.rowsInError));
     data.append('action', JSON.stringify(payload.action || ''));
 
     dispatch(loadingResolveStart());

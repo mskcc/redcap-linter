@@ -187,7 +187,7 @@ class MatchFields extends Component {
               className="App-actionButton"
             >
               <Icon type="left" />
-              {' Back to Intro'}
+              {' Intro'}
             </button>
             <button
               type="button"
@@ -196,7 +196,7 @@ class MatchFields extends Component {
               }}
               className="App-actionButton"
             >
-              {'Continue to Linting '}
+              {'Lint '}
               <Icon type="right" />
             </button>
           </div>

@@ -12,6 +12,7 @@ import '../../App.scss';
 import ButtonMenu from '../ButtonMenu/ButtonMenu';
 import { removeChoiceMatch, highlightChoices, navigateTo } from '../../actions/REDCapLinterActions';
 import { resolveColumn } from '../../actions/ResolveActions';
+import { getNextColumn } from '../../utils/utils';
 
 class MatchChoices extends Component {
   constructor(props) {
@@ -20,6 +21,8 @@ class MatchChoices extends Component {
       showModal: false,
       loadingSave: false,
       loadingContinue: false,
+      nextSheetName: '',
+      nextColumn: '',
     };
 
     this.handleOk = this.handleOk.bind(this);
@@ -30,9 +33,19 @@ class MatchChoices extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    const { columnsInError, workingSheetName, workingColumn } = nextProps;
+    const next = getNextColumn(columnsInError, workingSheetName, workingColumn);
+
+    const { nextSheetName, nextColumn } = next;
+
     const { loadingResolve } = nextProps;
     if (!loadingResolve) {
-      return { loadingSave: false, loadingContinue: false };
+      return {
+        loadingSave: false,
+        loadingContinue: false,
+        nextSheetName,
+        nextColumn,
+      };
     }
     return null;
   }
@@ -51,6 +64,9 @@ class MatchChoices extends Component {
       csvHeaders,
       resolveColumn,
     } = this.props;
+
+    const { nextSheetName, nextColumn, nextRow } = this.state;
+
     let unsavedChoiceMap = {};
     if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
       unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
@@ -65,6 +81,9 @@ class MatchChoices extends Component {
       projectInfo,
       workingColumn,
       workingSheetName,
+      nextSheetName,
+      nextColumn,
+      nextRow,
       columnsInError,
       rowsInError,
       ddData,
@@ -109,12 +128,31 @@ class MatchChoices extends Component {
       dataFieldToChoiceMap,
       workingSheetName,
       workingColumn,
+      columnsInError,
+      rowsInError,
       removeChoiceMatch,
     } = this.props;
+
+    const { nextSheetName, nextColumn } = this.state;
 
     if (!workingColumn) {
       return null;
     }
+
+    let remainingColumns = 0;
+    let remainingRows = 0;
+
+    Object.keys(columnsInError).forEach((sheet) => {
+      if (columnsInError[sheet] && columnsInError[sheet].length > 0) {
+        remainingColumns += columnsInError[sheet].length;
+      }
+    });
+
+    Object.keys(rowsInError).forEach((sheet) => {
+      if (rowsInError[sheet] && rowsInError[sheet].length > 0) {
+        remainingRows += rowsInError[sheet].length;
+      }
+    });
 
     let unsavedChoiceMap = {};
     if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
@@ -165,18 +203,49 @@ class MatchChoices extends Component {
       continueButtonText = <Spin />;
     }
     const choiceMatcher = <ChoiceMatcher showModal={showModal} />;
-    let column = workingColumn;
+    let current = workingColumn;
+    let next = nextColumn;
     if (dataFieldToRedcapFieldMap[workingSheetName]) {
-      column = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[workingColumn];
+      current = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[workingColumn];
+      next = _.invert(dataFieldToRedcapFieldMap[workingSheetName])[nextColumn];
     }
+
+    let nextItemToResolve = '';
+    let lastColumnText = '';
+    if (remainingColumns === 1) {
+      lastColumnText = 'This is the last column to resolve. If there are rows missing required values the next step will be to assign values. If not the next step will be to merge with records in REDCap.';
+    } else if (nextColumn) {
+      nextItemToResolve = (
+        <div className="TextValidation-next">
+          <b>Next Sheet</b>
+          {`: ${nextSheetName}`}
+          <br />
+          <b>Next Column</b>
+          {`: ${next}`}
+        </div>
+      );
+    }
+
     return (
       <div>
         <div className="MatchChoices-navigation">
           <div className="MatchChoices-header">
-            <b>Sheet</b>
-            {`: ${workingSheetName} | `}
-            <b>Column</b>
-            {` : ${column}`}
+            <div className="MatchChoices-columnDetails">
+              <b>Sheet</b>
+              {`: ${workingSheetName}`}
+              <br />
+              <b>Column</b>
+              {` : ${current}`}
+            </div>
+
+            <div className="MatchChoices-progress">
+              <b>Remaining Columns</b>
+              {`: ${remainingColumns}`}
+              <br />
+              <b>Remaining Rows</b>
+              {`: ${remainingRows}`}
+            </div>
+            {nextItemToResolve}
           </div>
           <ButtonMenu />
           <div className="MatchChoices-navigationButtons">
@@ -188,7 +257,7 @@ class MatchChoices extends Component {
               className="App-actionButton"
             >
               <Icon type="left" />
-              {' Back to Match Fields'}
+              {' Match Fields'}
             </button>
             <button
               type="button"
@@ -197,13 +266,14 @@ class MatchChoices extends Component {
               }}
               className="App-actionButton"
             >
-              {'Continue to Merging '}
+              {'Merge '}
               <Icon type="right" />
             </button>
           </div>
         </div>
         <ActionMenu />
         <div className="MatchChoices-container">
+          <div className="MatchChoices-nextColumn">{lastColumnText}</div>
           <div>
             <div className="MatchChoices-matchedChoices">
               <div className="MatchChoices-title">Matched Choices</div>

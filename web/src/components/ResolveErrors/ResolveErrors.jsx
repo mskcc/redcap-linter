@@ -16,6 +16,7 @@ class ResolveErrors extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      rendered: false,
       loading: false,
     };
   }
@@ -26,6 +27,10 @@ class ResolveErrors extends Component {
     }
     return null;
   }
+
+  // componentDidMount() {
+  //   this.setState({ rendered: true });
+  // }
 
   componentDidMount() {
     const {

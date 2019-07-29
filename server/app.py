@@ -151,30 +151,31 @@ def import_records():
 
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 def post_form():
-    records = pd.read_excel(request.files['dataFile'], sheet_name=None)
-    date_cols = []
-    records_with_format = load_workbook(request.files['dataFile'])
-    for sheet in records_with_format.sheetnames:
-        for row in records_with_format[sheet].iter_rows(min_row=2):
-            for cell in row:
-                # MRN
-                column_letter = get_column_letter(cell.column)
-                column_header = records_with_format[sheet][column_letter + '1'].value
-                if column_header in records[sheet].columns and cell.number_format == '00000000':
-                    current_list = list(records[sheet][column_header])
-                    current_list = [str(i).rjust(8, '0') if isinstance(i, int) else i for i in current_list]
-                    records[sheet][column_header] = current_list
-                if column_header in records[sheet].columns and cell.number_format == 'mm-dd-yy':
-                    date_cols.append(column_header)
-                    current_list = list(records[sheet][column_header])
-                    current_list = [i.strftime('%m/%d/%Y') if isinstance(i, datetime) and not pd.isnull(i) else i for i in current_list]
-                    records[sheet][column_header] = current_list
-            break
-
     form = request.form.to_dict()
+    datafile_name = form.get('dataFileName')
+    # records = pd.read_excel(request.files['dataFile'], sheet_name=None)
+    records = utils.read_spreadsheet(request.files['dataFile'], datafile_name)
+    date_cols = []
+    if datafile_name.endswith('.xlsx') or datafile_name.endswith('.xls'):
+        records_with_format = load_workbook(request.files['dataFile'])
+        for sheet in records_with_format.sheetnames:
+            for row in records_with_format[sheet].iter_rows(min_row=2):
+                for cell in row:
+                    # MRN
+                    column_letter = get_column_letter(cell.column)
+                    column_header = records_with_format[sheet][column_letter + '1'].value
+                    if column_header in records[sheet].columns and cell.number_format == '00000000':
+                        current_list = list(records[sheet][column_header])
+                        current_list = [str(i).rjust(8, '0') if isinstance(i, int) else i for i in current_list]
+                        records[sheet][column_header] = current_list
+                    if column_header in records[sheet].columns and cell.number_format == 'mm-dd-yy':
+                        date_cols.append(column_header)
+                        current_list = list(records[sheet][column_header])
+                        current_list = [i.strftime('%m/%d/%Y') if isinstance(i, datetime) and not pd.isnull(i) else i for i in current_list]
+                        records[sheet][column_header] = current_list
+                break
     token = form.get('token')
     env = form.get('env')
-    datafile_name = form.get('dataFileName')
     mappings = None
     existing_records = None
     form_names = set()

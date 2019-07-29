@@ -1,4 +1,5 @@
 import moment from 'moment';
+import _ from 'lodash';
 
 export function _resolve(path, obj, separator = '.') {
   const properties = Array.isArray(path) ? path : path.split(separator);
@@ -84,4 +85,82 @@ export function disabledDate(validation, current) {
   }
 
   return disabled;
+}
+
+export function getNextColumn(columnsInError, workingSheetName, workingColumn) {
+  let nextSheetName = '';
+  let nextColumn = '';
+  const allColumns = [];
+  Object.keys(columnsInError).forEach((sheet) => {
+    if (columnsInError[sheet] && columnsInError[sheet].length > 0) {
+      columnsInError[sheet].forEach((column) => {
+        allColumns.push([sheet, column]);
+      });
+    }
+  });
+
+  // Make sure this is not the last column
+  if (allColumns.length > 0) {
+    let nextColumnIndex = 0;
+    const currColumnIndex = _.findIndex(
+      allColumns,
+      el => el[0] === workingSheetName && el[1] === workingColumn,
+    );
+    // Module wraps around to 0 if it reaches the end
+    nextColumnIndex = (currColumnIndex + 1) % allColumns.length;
+    nextSheetName = allColumns[nextColumnIndex][0];
+    nextColumn = allColumns[nextColumnIndex][1];
+  }
+
+  if (workingSheetName === nextSheetName && workingColumn === nextColumn) {
+    // Last column
+    return {
+      nextSheetName: '',
+      nextColumn: '',
+    };
+  }
+
+  return {
+    nextSheetName,
+    nextColumn,
+  };
+}
+
+export function getNextRow(rowsInError, workingSheetName, workingRow) {
+  let nextSheetName = '';
+  let nextRow = -1;
+  const allRows = [];
+  Object.keys(rowsInError).forEach((sheet) => {
+    if (rowsInError[sheet] && rowsInError[sheet].length > 0) {
+      rowsInError[sheet].forEach((row) => {
+        allRows.push([sheet, row]);
+      });
+    }
+  });
+
+  // Make sure this is not the last column
+  if (allRows.length > 0) {
+    let nextRowIndex = 0;
+    const currRowIndex = _.findIndex(
+      allRows,
+      el => el[0] === workingSheetName && el[1] === workingRow,
+    );
+    // Module wraps around to 0 if it reaches the end
+    nextRowIndex = (currRowIndex + 1) % allRows.length;
+    nextSheetName = allRows[nextRowIndex][0];
+    nextRow = allRows[nextRowIndex][1];
+  }
+
+  if (workingSheetName === nextSheetName && workingRow === nextRow) {
+    // Last column
+    return {
+      nextSheetName: '',
+      nextRow: -1,
+    };
+  }
+
+  return {
+    nextSheetName,
+    nextRow,
+  };
 }

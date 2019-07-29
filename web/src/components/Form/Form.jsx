@@ -207,7 +207,7 @@ export class Form extends Component {
               className="App-fieldsetInput"
               type="file"
               id="dataFile"
-              accept=".xls,.xlsx"
+              accept=".xls,.xlsx,.csv"
               value={form.dataFileName}
               onChange={this.handleSelectedFile.bind(this, 'dataFile')}
             />

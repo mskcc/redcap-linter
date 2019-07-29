@@ -6,8 +6,6 @@
   width: 75%;
   float: right;
   margin-right: 2.5%;
-  padding-top: 10px;
-  margin-top: -10px;
 }
 
 .TextValidation-navigation {
@@ -18,14 +16,29 @@
 }
 
 .TextValidation-navigationButtons {
-  float: right;
+  float: left;
 }
 
 .TextValidation-header {
-  margin-top: 5px;
   display: inline-block;
-  font-size: 15px;
+  font-size: 13px;
   width: 50%;
+}
+
+.TextValidation-columnDetails {
+  float: left;
+}
+
+.TextValidation-progress {
+  display: inline-block;
+}
+
+.TextValidation-next {
+  float: right;
+}
+
+.TextValidation-nextColumn {
+  margin-top: 10px;
 }
 
 .TextValidation-column {

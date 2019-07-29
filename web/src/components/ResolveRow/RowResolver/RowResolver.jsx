@@ -43,7 +43,7 @@ class RowResolver extends Component {
         {
           title: 'Action',
           key: 'Action',
-          width: 200,
+          width: 250,
           render: (text, record) => this.renderMatchButton(record),
         },
       ],

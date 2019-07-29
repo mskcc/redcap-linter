@@ -145,10 +145,11 @@ def get_rows_with_errors(cells_with_errors, records):
     rows_in_error = {}
     for sheet_name in cells_with_errors:
         sheet_rows_in_error = []
-        for idx, row in enumerate(cells_with_errors[sheet_name].itertuples()):
+        for idx, row in enumerate(cells_with_errors[sheet_name].itertuples(index=False)):
             if True in row:
                 sheet_rows_in_error.append(idx)
-        rows_in_error[sheet_name] = sheet_rows_in_error
+        if sheet_rows_in_error:
+            rows_in_error[sheet_name] = sheet_rows_in_error
     return rows_in_error
 
 def get_matching_fields(data_dictionary, records, recordid_field):
@@ -214,13 +215,16 @@ def get_field_values(field_name, records):
     values = list(values)
     return values
 
-def read_spreadsheet(filename, **kwargs):
+def read_spreadsheet(tempfile, filename):
     records = None
     if filename.endswith('.csv'):
-        records = pd.read_csv(filename, dtype=str)
+        records = pd.read_csv(tempfile, dtype=str)
         records.fillna('', inplace=True)
+        records = {
+            'csv': records
+        }
     elif filename.endswith('.xlsx') or filename.endswith('.xls'):
-        records = pd.read_excel(filename, sheet_name=None, dtype=str)
+        records = pd.read_excel(tempfile, sheet_name=None, dtype=str)
         for key in records:
             records.get(key).replace('nan', '', inplace=True)
     else:
