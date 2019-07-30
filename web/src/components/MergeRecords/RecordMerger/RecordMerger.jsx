@@ -11,7 +11,6 @@ class RecordMerger extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      noMatch: '',
       search: '',
       columns: [
         {
@@ -118,7 +117,7 @@ class RecordMerger extends Component {
     });
     reconciliationFields.push(recordidField);
 
-    console.log(existingRecord);
+    // console.log(existingRecord);
 
     // TODO if data field is missing from the data file, but existing in REDCap should it be left blank on upload?
     // REDCap provides options to override, need to talk to Julian to see if this is ever used
@@ -146,7 +145,7 @@ class RecordMerger extends Component {
 
     let data = tableData;
     if (search) {
-      data = data.filter(row => row.Field.includes(search));
+      data = data.filter(r => r.Field.includes(search));
     }
 
     return (

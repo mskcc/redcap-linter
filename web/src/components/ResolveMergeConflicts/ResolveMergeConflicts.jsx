@@ -11,6 +11,7 @@ import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import ButtonMenu from '../ButtonMenu/ButtonMenu';
 import { navigateTo } from '../../actions/REDCapLinterActions';
 import { calculateMergeConflicts } from '../../actions/ResolveActions';
+import { getNextMergeRow } from '../../utils/utils';
 
 class ResolveMergeConflicts extends Component {
   constructor(props) {
@@ -23,8 +24,25 @@ class ResolveMergeConflicts extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (prevState.loading && !nextProps.loading) {
-      return { loading: nextProps.loading, calculatedMergeConflicts: true };
+    const {
+      mergeConflicts, workingSheetName, workingMergeRow, loadingResolve,
+    } = nextProps;
+    // This is unintuitive, consider reworking
+    if (loadingResolve) {
+      return {
+        loading: true,
+      };
+    }
+    const next = getNextMergeRow(mergeConflicts, workingSheetName, workingMergeRow);
+    const { nextSheetName, nextMergeRow } = next;
+
+    if (prevState.loading && !nextProps.loadingResolve) {
+      return {
+        loading: false,
+        calculatedMergeConflicts: true,
+        nextSheetName,
+        nextMergeRow,
+      };
     }
     return null;
   }
@@ -54,7 +72,7 @@ class ResolveMergeConflicts extends Component {
       reconciliationColumns,
     };
 
-    this.setState({ mode: 'MERGE', loading: true });
+    this.setState({ mode: 'MERGE' });
     calculateMergeConflicts(payload);
   }
 
@@ -82,22 +100,55 @@ class ResolveMergeConflicts extends Component {
     const {
       mergeConflicts, workingSheetName, workingMergeRow, existingRecords,
     } = this.props;
-    const { loading, mode, calculatedMergeConflicts } = this.state;
+
+    const {
+      loading, mode, calculatedMergeConflicts, nextSheetName, nextMergeRow,
+    } = this.state;
+
+    let remainingRows = 0;
     let content = '';
     let hasMergeConflicts = false;
     Object.keys(mergeConflicts).forEach((sheet) => {
+      const conflictCount = Object.keys(mergeConflicts[sheet]).length;
       if (mergeConflicts[sheet] && Object.keys(mergeConflicts[sheet]).length > 0) {
         hasMergeConflicts = true;
+        remainingRows += conflictCount;
       }
     });
+
+    // TODO Calculate nextMergeRow
+    let nextItemToResolve = '';
+    let lastRowText = '';
+    if (remainingRows === 1) {
+      lastRowText = 'This is the last row to merge.';
+    } else if (nextMergeRow >= 0) {
+      nextItemToResolve = (
+        <div className="ResolveMergeConflicts-next">
+          <b>Next Sheet</b>
+          {`: ${nextSheetName}`}
+          <br />
+          <b>Next Row</b>
+          {`: ${nextMergeRow + 2}`}
+        </div>
+      );
+    }
+
     let title = '';
     if (workingSheetName && workingMergeRow >= 0) {
       title = (
         <div className="ResolveMergeConflicts-header">
-          <b>Sheet</b>
-          {`: ${workingSheetName} | `}
-          <b>Row</b>
-          {` : ${workingMergeRow + 2}`}
+          <div className="ResolveMergeConflicts-columnDetails">
+            <b>Sheet</b>
+            {`: ${workingSheetName}`}
+            <br />
+            <b>Row</b>
+            {` : ${workingMergeRow + 2}`}
+          </div>
+          <div className="ResolveMergeConflicts-progress">
+            <b>Remaining Rows</b>
+            {`: ${remainingRows}`}
+          </div>
+          {nextItemToResolve}
         </div>
       );
     }
@@ -108,7 +159,7 @@ class ResolveMergeConflicts extends Component {
             <p>
               To merge with existing records, you must supply a token so Linter can fetch records
               from REDCap or export a project's records by navigating to your Project Home in REDCap
-              -> click on Export data -> Click on Export Data in the table that says My Reports &
+              -> click on Export data -> click on Export Data in the table that says My Reports &
               Exports next to the row labeled All data
             </p>
             <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
@@ -156,8 +207,9 @@ class ResolveMergeConflicts extends Component {
                   Select Reconciliation Column(s)
                 </button>
               </div>
+              <div className="ResolveMergeConflicts-nextColumn">{lastRowText}</div>
             </div>
-            <MergeRecords />
+            <MergeRecords nextSheetName={nextSheetName} nextMergeRow={nextMergeRow} />
           </div>
         );
       }

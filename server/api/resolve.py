@@ -214,23 +214,6 @@ def resolve_merge_row():
                 frame.iloc[working_merge_row, frame.columns.get_loc(field)] = value
         records[sheet] = frame
 
-    next_sheet = False
-    for sheet in merge_conflicts:
-        if next_sheet and merge_conflicts[sheet]:
-            next_sheet_name = sheet
-            next_merge_row = merge_conflicts[sheet][0]
-        if sheet == working_sheet_name:
-            sheet_merge_conflicts = list(map(int, merge_conflicts[sheet].keys()))
-            sheet_merge_conflicts.sort()
-            if sheet == working_sheet_name and working_merge_row == sheet_merge_conflicts[-1]:
-                next_sheet = True
-            elif sheet == working_sheet_name:
-                next_sheet_name = sheet
-                if working_merge_row not in sheet_merge_conflicts:
-                    next_merge_row = sheet_merge_conflicts[0]
-                else:
-                    next_merge_row = sheet_merge_conflicts[sheet_merge_conflicts.index(working_merge_row)+1]
-
     if working_sheet_name and merge_conflicts and merge_conflicts[working_sheet_name]:
         del merge_conflicts[working_sheet_name][str(working_merge_row)]
 

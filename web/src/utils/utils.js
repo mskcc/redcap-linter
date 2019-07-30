@@ -164,3 +164,43 @@ export function getNextRow(rowsInError, workingSheetName, workingRow) {
     nextRow,
   };
 }
+
+export function getNextMergeRow(mergeConflicts, workingSheetName, workingMergeRow) {
+  let nextSheetName = '';
+  let nextMergeRow = -1;
+  const allRows = [];
+  Object.keys(mergeConflicts).forEach((sheet) => {
+    if (mergeConflicts[sheet] && Object.keys(mergeConflicts[sheet]).length > 0) {
+      Object.keys(mergeConflicts[sheet]).forEach((row) => {
+        allRows.push([sheet, row]);
+      });
+    }
+  });
+
+  // Make sure this is not the last column
+  if (allRows.length > 0) {
+    let nextRowIndex = 0;
+    const currRowIndex = _.findIndex(
+      allRows,
+      el => el[0] === workingSheetName && el[1] === String(workingMergeRow),
+    );
+    // Module wraps around to 0 if it reaches the end
+    nextRowIndex = (currRowIndex + 1) % allRows.length;
+
+    nextSheetName = allRows[nextRowIndex][0];
+    nextMergeRow = parseInt(allRows[nextRowIndex][1]);
+  }
+
+  if (workingSheetName === nextSheetName && workingMergeRow === nextMergeRow) {
+    // Last column
+    return {
+      nextSheetName: '',
+      nextMergeRow: -1,
+    };
+  }
+
+  return {
+    nextSheetName,
+    nextMergeRow,
+  };
+}

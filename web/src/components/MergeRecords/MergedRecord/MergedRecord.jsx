@@ -134,7 +134,7 @@ class MergedRecord extends Component {
       return filtered;
     }, []);
 
-    console.log(row);
+    // console.log(row);
 
     reconciliationFields.forEach((field) => {
       tableData.unshift({

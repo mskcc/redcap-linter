@@ -23,6 +23,8 @@ class MergeRecords extends Component {
       ddData,
       workingMergeRow,
       workingSheetName,
+      nextSheetName,
+      nextMergeRow,
       malformedSheets,
       mergeConflicts,
       decodedRecords,
@@ -35,6 +37,8 @@ class MergeRecords extends Component {
       projectInfo,
       workingMergeRow,
       workingSheetName,
+      nextSheetName,
+      nextMergeRow,
       malformedSheets,
       decodedRecords,
       mergeConflicts,
@@ -105,6 +109,8 @@ MergeRecords.propTypes = {
   malformedSheets: PropTypes.arrayOf(PropTypes.string),
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
+  nextSheetName: PropTypes.string,
+  nextMergeRow: PropTypes.number,
 };
 
 MergeRecords.defaultProps = {
@@ -118,6 +124,8 @@ MergeRecords.defaultProps = {
   malformedSheets: [],
   workingSheetName: '',
   workingMergeRow: -1,
+  nextSheetName: '',
+  nextMergeRow: -1,
 };
 
 function mapStateToProps(state) {

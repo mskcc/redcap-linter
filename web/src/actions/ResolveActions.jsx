@@ -103,6 +103,8 @@ export function resolveMergeRow(payload) {
     data.append('mergeConflicts', JSON.stringify(payload.mergeConflicts));
     data.append('action', JSON.stringify(payload.action || ''));
 
+    dispatch(loadingResolveStart());
+
     const request = axios({
       method: 'POST',
       url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/resolve_merge_row`,
@@ -188,6 +190,9 @@ export function calculateMergeConflicts(payload) {
     data.append('malformedSheets', JSON.stringify(payload.malformedSheets));
     data.append('decodedRecords', JSON.stringify(payload.decodedRecords));
     data.append('reconciliationColumns', JSON.stringify(payload.reconciliationColumns));
+
+    dispatch(loadingResolveStart());
+
     const request = axios({
       method: 'POST',
       url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/calculate_merge_conflicts`,
