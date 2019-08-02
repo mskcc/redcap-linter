@@ -6,17 +6,20 @@ pipeline {
     }
     agent any
     stages {
-        stage('build') {
+        stage("build and test the project") {
           agent { dockerfile true }
-            steps {
-                sh 'python --version'
+          stages {
+            stage('build') {
+                steps {
+                    sh 'python --version'
+                }
             }
-        }
-        stage('test') {
-            agent { dockerfile true }
-            steps {
-                sh 'cd server && pytest -v'
+            stage('test') {
+                steps {
+                    sh 'cd server && pytest -v'
+                }
             }
+          }
         }
         stage('Building image') {
           steps{
@@ -28,7 +31,7 @@ pipeline {
         stage('Deploy Image') {
           steps{
             script {
-              docker.withRegistry( '', registryCredential ) {
+              docker.withRegistry('https://docker.mskcc.org', registryCredential ) {
                 dockerImage.push()
               }
             }
