@@ -1,4 +1,9 @@
 pipeline {
+    environment {
+        registry = 'perkinsc/redcap-linter'
+        registryCredential = 'dockerhub'
+        dockerImage = ''
+    }
     agent { dockerfile true }
     stages {
         stage('build') {
@@ -10,6 +15,27 @@ pipeline {
             steps {
                 sh 'cd server && pytest -v'
             }
+        }
+        stage('Building image') {
+          steps{
+            script {
+              dockerImage = docker.build registry + ":$BUILD_NUMBER"
+            }
+          }
+        }
+        stage('Deploy Image') {
+          steps{
+            script {
+              docker.withRegistry( '', registryCredential ) {
+                dockerImage.push()
+              }
+            }
+          }
+        }
+        stage('Remove Unused docker image') {
+          steps{
+            sh "docker rmi $registry:$BUILD_NUMBER"
+          }
         }
     }
     post {
