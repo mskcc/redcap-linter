@@ -4,14 +4,16 @@ pipeline {
         registryCredential = 'dockerhub'
         dockerImage = ''
     }
-    agent { dockerfile true }
+    agent any
     stages {
         stage('build') {
+          agent { dockerfile true }
             steps {
                 sh 'python --version'
             }
         }
         stage('test') {
+            agent { dockerfile true }
             steps {
                 sh 'cd server && pytest -v'
             }
