@@ -373,6 +373,7 @@ class FieldMatcher extends Component {
           </div>
           <button
             type="button"
+            id="acceptFieldMatches"
             disabled={disabled}
             onClick={this.acceptMatches.bind(this)}
             className="App-submitButton FieldMatcher-matchAll"

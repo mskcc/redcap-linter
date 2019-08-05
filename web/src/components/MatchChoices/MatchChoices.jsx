@@ -67,11 +67,17 @@ class MatchChoices extends Component {
 
     const { nextSheetName, nextColumn, nextRow } = this.state;
 
+    const ddField = ddData.find(field => field.field_name === workingColumn);
+
     let unsavedChoiceMap = {};
     if (matchedChoiceMap[workingSheetName] && matchedChoiceMap[workingSheetName][workingColumn]) {
       unsavedChoiceMap = matchedChoiceMap[workingSheetName][workingColumn];
     }
-    if (action === 'continue' && Object.keys(unsavedChoiceMap).length > 0) {
+    if (
+      action === 'continue'
+      && Object.keys(unsavedChoiceMap).length > 0
+      && ddField.field_type !== 'checkbox'
+    ) {
       this.setState({ showModal: true });
       return;
     }
@@ -297,6 +303,7 @@ class MatchChoices extends Component {
             </button>
             <button
               type="button"
+              id="unmatchedChoicesSaveAndContinue"
               onClick={() => {
                 this.saveChanges('continue');
               }}

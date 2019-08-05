@@ -227,6 +227,7 @@ class MatchFields extends Component {
               </button>
               <button
                 type="button"
+                id="unmatchedFieldsSaveAndContinue"
                 onClick={() => {
                   this.saveChanges('continue');
                 }}

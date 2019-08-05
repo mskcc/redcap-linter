@@ -242,6 +242,7 @@ class TextValidation extends Component {
             </button>
             <button
               type="button"
+              id="forward"
               onClick={() => {
                 this.forward();
               }}
@@ -276,6 +277,7 @@ class TextValidation extends Component {
             </button>
             <button
               type="button"
+              id="textValidationSaveAndContinue"
               onClick={this.saveChanges.bind(this, 'continue')}
               className="App-submitButton"
             >

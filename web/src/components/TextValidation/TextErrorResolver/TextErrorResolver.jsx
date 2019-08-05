@@ -26,7 +26,7 @@ class TextErrorResolver extends Component {
           title: 'Corrected Value',
           key: 'Corrected Value',
           width: '200px',
-          render: (text, record) => this.renderInput(record),
+          render: (text, record, idx) => this.renderInput(record, idx),
         },
         {
           title: 'Action',
@@ -101,7 +101,7 @@ class TextErrorResolver extends Component {
     correctValue({ matchedValueMap });
   }
 
-  renderInput(record) {
+  renderInput(record, idx) {
     const {
       matchedValueMap, workingSheetName, workingColumn, fieldErrors,
     } = this.props;
@@ -120,7 +120,8 @@ class TextErrorResolver extends Component {
     let input = (
       <Input
         className={`TextErrorResolver-input ${validClassName}`}
-        key={`${record['Original Value']}`}
+        key={`${idx}`}
+        id={`textErrorResolverInput${idx}`}
         type="text"
         value={value}
         onBlur={this.onBlur.bind(this)}
@@ -261,6 +262,7 @@ class TextErrorResolver extends Component {
           </div>
           <button
             type="button"
+            id="correctAll"
             disabled={disabled}
             onClick={() => {
               this.handleCorrectAll();

@@ -315,6 +315,7 @@ class ChoiceMatcher extends Component {
           </span>
           <button
             type="button"
+            id="acceptChoiceMatches"
             disabled={disabled}
             onClick={() => {
               this.acceptMatches();

@@ -30,6 +30,7 @@ export class Form extends Component {
     };
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.handleChangeEnvironment = this.handleChangeEnvironment.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -133,7 +134,7 @@ export class Form extends Component {
             options={options}
             isSearchable
             value={selectedValue}
-            onChange={this.handleChangeEnvironment.bind(this)}
+            onChange={option => this.handleChangeEnvironment(option)}
           />
         </fieldset>
         <fieldset className="App-fieldset">
@@ -171,8 +172,7 @@ export class Form extends Component {
         <fieldset className="App-fieldset">
           <label className="App-fieldsetLabel" htmlFor="mappingsFile">
             <span className="Form-label">Mappings File</span>
-            {' '}
-(Optional)
+            {' (Optional)'}
             <input
               className="App-fieldsetInput"
               type="file"
@@ -215,7 +215,12 @@ export class Form extends Component {
         </fieldset>
 
         <div className="Form-submitButtonDiv">
-          <button type="button" onClick={this.onSubmit} className="App-submitButton">
+          <button
+            type="button"
+            id="formSubmit"
+            onClick={this.onSubmit}
+            className="App-submitButton"
+          >
             {buttonText}
           </button>
         </div>
