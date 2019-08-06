@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { Spin, Icon } from 'antd';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import MergeRecords from '../MergeRecords/MergeRecords';
 import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
@@ -98,7 +99,11 @@ class ResolveMergeConflicts extends Component {
 
   render() {
     const {
-      mergeConflicts, workingSheetName, workingMergeRow, existingRecords,
+      mergeConflicts,
+      workingSheetName,
+      workingMergeRow,
+      existingRecords,
+      token,
     } = this.props;
 
     const {
@@ -152,28 +157,11 @@ class ResolveMergeConflicts extends Component {
         </div>
       );
     }
-    if (!existingRecords) {
+    if (!token && !existingRecords) {
       content = (
         <div>
-          <div className="ResolveMergeConflicts-helpText">
-            <p>
-              To merge with existing records, you must supply a token so Linter can fetch records
-              from REDCap or export a project's records by navigating to your Project Home in REDCap
-              -> click on Export data -> click on Export Data in the table that says My Reports &
-              Exports next to the row labeled All data
-            </p>
-            <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
-              Continue
-            </button>
-          </div>
-        </div>
-      );
-    } else if (loading) {
-      content = <Spin tip="Loading..." />;
-    } else if (!calculatedMergeConflicts || hasMergeConflicts) {
-      if (mode === 'CHOOSE_RECONCILIATION_COLUMNS') {
-        content = (
-          <div>
+          <ActionMenu />
+          <div className="ResolveMergeConflicts-mainContainer">
             <div className="ResolveMergeConflicts-navigation">
               <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
                 <Icon type="left" />
@@ -184,12 +172,51 @@ class ResolveMergeConflicts extends Component {
                 <Icon type="right" />
               </button>
             </div>
-            <div className="ResolveMergeConflicts-selector">
-              <RepeatSelector />
-              <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">
+            <div className="ResolveMergeConflicts-helpText">
+              <p>
+                To merge with existing records, you must supply a token so Linter can fetch records
+                from REDCap or export a project's records by navigating to your Project Home in
+                REDCap -> click on Export data -> click on Export Data in the table that says My
+                Reports & Exports next to the row labeled All data
+              </p>
+              <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
                 Continue
               </button>
             </div>
+          </div>
+          <div style={{ clear: 'both' }} />
+        </div>
+      );
+    } else if (loading) {
+      content = <Spin tip="Loading..." />;
+    } else if (!calculatedMergeConflicts || hasMergeConflicts) {
+      if (mode === 'CHOOSE_RECONCILIATION_COLUMNS') {
+        content = (
+          <div>
+            <ActionMenu />
+            <div className="ResolveMergeConflicts-mainContainer">
+              <div className="ResolveMergeConflicts-navigation">
+                <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+                  <Icon type="left" />
+                  {' Lint'}
+                </button>
+                <button
+                  type="button"
+                  onClick={this.forward.bind(this)}
+                  className="App-actionButton"
+                >
+                  {'Finish '}
+                  <Icon type="right" />
+                </button>
+              </div>
+              <div className="ResolveMergeConflicts-selector">
+                <RepeatSelector />
+                <button type="button" onClick={this.merge.bind(this)} className="App-submitButton">
+                  Continue
+                </button>
+              </div>
+            </div>
+            <div style={{ clear: 'both' }} />
           </div>
         );
       } else if (mode === 'MERGE') {
@@ -209,6 +236,7 @@ class ResolveMergeConflicts extends Component {
               </div>
               <div className="ResolveMergeConflicts-nextColumn">{lastRowText}</div>
             </div>
+            <ActionMenu />
             <MergeRecords nextSheetName={nextSheetName} nextMergeRow={nextMergeRow} />
           </div>
         );
@@ -216,19 +244,39 @@ class ResolveMergeConflicts extends Component {
     } else {
       content = (
         <div>
-          <div>
-            <p>Nothing to Merge</p>
-            <button
-              type="button"
-              onClick={this.selectReconciliationColumns.bind(this)}
-              className="App-actionButton"
-            >
-              Select Reconciliation Column(s)
-            </button>
-            <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
-              Continue
-            </button>
+          <ActionMenu />
+          <div className="ResolveMergeConflicts-mainContainer">
+            <div className="ResolveMergeConflicts-navigation">
+              <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
+                <Icon type="left" />
+                {' Lint'}
+              </button>
+              <button type="button" onClick={this.forward.bind(this)} className="App-actionButton">
+                {'Finish '}
+                <Icon type="right" />
+              </button>
+            </div>
+            <div className="ResolveMergeConflicts-selector">
+              <p>Nothing to Merge</p>
+              <div>
+                <button
+                  type="button"
+                  onClick={this.selectReconciliationColumns.bind(this)}
+                  className="App-actionButton"
+                >
+                  Select Reconciliation Column(s)
+                </button>
+                <button
+                  type="button"
+                  onClick={this.continue.bind(this)}
+                  className="App-submitButton"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
           </div>
+          <div style={{ clear: 'both' }} />
         </div>
       );
     }
@@ -254,6 +302,7 @@ ResolveMergeConflicts.propTypes = {
   mergeConflicts: PropTypes.objectOf(PropTypes.object),
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
+  token: PropTypes.string,
 };
 
 ResolveMergeConflicts.defaultProps = {
@@ -269,6 +318,7 @@ ResolveMergeConflicts.defaultProps = {
   mergeConflicts: {},
   workingSheetName: '',
   workingMergeRow: -1,
+  token: '',
 };
 
 function mapStateToProps(state) {

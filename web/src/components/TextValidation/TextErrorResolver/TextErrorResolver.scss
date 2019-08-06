@@ -18,12 +18,12 @@
   text-align: center;
 }
 
-.TextErrorResolver-invalid:focus {
-  border-color: red;
+.TextErrorResolver-invalid {
+  border-color: red !important;
 }
 
-.TextErrorResolver-valid:focus {
-  border-color: green;
+.TextErrorResolver-valid {
+  border-color: green !important;
 }
 
 .TextErrorResolver-tableTitle {

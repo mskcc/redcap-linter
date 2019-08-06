@@ -14,12 +14,12 @@
   overflow: visible;
 }
 
-.RowResolver-invalid:focus {
-  border-color: red;
+.RowResolver-invalid {
+  border-color: red !important;
 }
 
-.RowResolver-valid:focus {
-  border-color: green;
+.RowResolver-valid {
+  border-color: green !important;
 }
 
 .RowResolver-buttons {

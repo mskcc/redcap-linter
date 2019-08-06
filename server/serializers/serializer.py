@@ -89,7 +89,7 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
                 for decoded_record in decoded_records.get(str(row.get(recordid_field.field_name)), []):
                     if decoded_record['redcap_repeat_instrument'] == form_name and int(decoded_record['redcap_repeat_instance']) > max_instance_number:
                         max_instance_number = int(decoded_record['redcap_repeat_instance'])
-                repeat_instance = max_instance_number + repeat_instance_dict.get(row[unique_field.field_name])
+                repeat_instance = max_instance_number + repeat_instance_dict.get(row.get(unique_field.field_name), 1)
                 if matching_repeat_instances.get(str(index), {}).get(form_name):
                     repeat_instance = matching_repeat_instances.get(str(index), {}).get(form_name)
                 row_to_encode['redcap_repeat_instance'] = repeat_instance

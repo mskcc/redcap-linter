@@ -10,9 +10,8 @@
 }
 
 .ResolveMergeConflicts-navigation {
-  margin-right: 2.5%;
+  float: left;
   margin-top: -25px;
-  float: right;
 }
 
 .ResolveMergeConflicts-navigationButtons {
@@ -52,6 +51,12 @@
   margin-top: -25px;
   float: right;
   width: 75%;
+}
+
+.ResolveMergeConflicts-mainContainer {
+  width: 75%;
+  float: right;
+  margin-right: 2.5%;
 }
 
 .ResolveMergeConflicts-selector {

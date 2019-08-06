@@ -58,7 +58,6 @@ class MergeRecords extends Component {
 
     return (
       <div>
-        <ActionMenu />
         <div className="MergeRecords-container">
           <div>
             <div className="MergeRecords-matchingRepeatInstances">
