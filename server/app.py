@@ -385,3 +385,16 @@ def post_form():
 
     response = flask.jsonify(results)
     return response
+
+@app.route('/upload_existing_records', methods=['GET', 'POST', 'OPTIONS'])
+def upload_existing_records():
+    existing_records = None
+    if 'existingRecordsFile' in request.files:
+        existing_records = pd.read_csv(request.files['existingRecordsFile'])
+        existing_records = json.loads(existing_records.to_json(orient='records', date_format='iso'))
+
+    results = {
+        'existingRecords':         existing_records,
+    }
+    response = flask.jsonify(results)
+    return response

@@ -12,6 +12,9 @@ export const CHANGE_ENVIRONMENT = 'CHANGE_ENVIRONMENT';
 export const POST_FORM_SUCCESS = 'POST_FORM_SUCCESS';
 export const POST_FORM_FAILURE = 'POST_FORM_FAILURE';
 
+export const UPLOAD_EXISTING_RECORDS_SUCCESS = 'UPLOAD_EXISTING_RECORDS_SUCCESS';
+export const UPLOAD_EXISTING_RECORDS_FAILURE = 'UPLOAD_EXISTING_RECORDS_FAILURE';
+
 export const IMPORT_RECORDS_SUCCESS = 'IMPORT_RECORDS_SUCCESS';
 export const IMPORT_RECORDS_FAILURE = 'IMPORT_RECORDS_FAILURE';
 
@@ -162,6 +165,42 @@ export function postForm(payload) {
     return request.then(
       response => dispatch(postFormSuccess(response)),
       err => dispatch(postFormError(err)),
+    );
+  };
+}
+
+export function uploadExistingRecordsSuccess(results) {
+  return {
+    type: UPLOAD_EXISTING_RECORDS_SUCCESS,
+    payload: results,
+  };
+}
+
+export function uploadExistingRecordsError(error) {
+  return {
+    type: UPLOAD_EXISTING_RECORDS_FAILURE,
+    payload: error,
+  };
+}
+
+export function uploadExistingRecords(payload) {
+  return function action(dispatch) {
+    const data = new FormData();
+    data.append('existingRecordsFile', payload.existingRecordsFile);
+    data.append('existingRecordsFileName', payload.existingRecordsFileName);
+
+    dispatch(loadingStart());
+
+    const request = axios({
+      method: 'POST',
+      url: `${process.env.REDCAP_LINTER_HOST}:${process.env.REDCAP_LINTER_PORT}/upload_existing_records`,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data,
+    });
+
+    return request.then(
+      response => dispatch(uploadExistingRecordsSuccess(response)),
+      err => dispatch(uploadExistingRecordsError(err)),
     );
   };
 }

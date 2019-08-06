@@ -8,6 +8,8 @@ import {
   CHANGE_ENVIRONMENT,
   POST_FORM_SUCCESS,
   POST_FORM_FAILURE,
+  UPLOAD_EXISTING_RECORDS_SUCCESS,
+  UPLOAD_EXISTING_RECORDS_FAILURE,
   MATCH_FIELDS,
   HIGHLIGHT_COLUMNS,
   HIGHLIGHT_CHOICES,
@@ -101,12 +103,14 @@ export default function (state = {}, action) {
     case RESOLVE_ROW_FAILURE:
     case RESOLVE_MERGE_ROW_FAILURE:
     case CALCULATE_MERGE_CONFLICTS_FAILURE:
-    case POST_FORM_FAILURE: {
+    case POST_FORM_FAILURE:
+    case UPLOAD_EXISTING_RECORDS_FAILURE: {
       return Object.assign({}, state, {
         error: action.payload,
       });
     }
-    case ENCODE_RECORDS_SUCCESS: {
+    case ENCODE_RECORDS_SUCCESS:
+    case UPLOAD_EXISTING_RECORDS_SUCCESS: {
       return Object.assign({}, state, { loading: false }, action.payload.data);
     }
     case FILTER_TABLE:

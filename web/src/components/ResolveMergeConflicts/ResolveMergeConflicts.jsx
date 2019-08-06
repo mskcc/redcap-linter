@@ -10,7 +10,7 @@ import MergeRecords from '../MergeRecords/MergeRecords';
 import RepeatSelector from '../MergeRecords/RepeatSelector/RepeatSelector';
 import TabbedDatatable from '../TabbedDatatable/TabbedDatatable';
 import ButtonMenu from '../ButtonMenu/ButtonMenu';
-import { navigateTo } from '../../actions/REDCapLinterActions';
+import { navigateTo, uploadExistingRecords } from '../../actions/REDCapLinterActions';
 import { calculateMergeConflicts } from '../../actions/ResolveActions';
 import { getNextMergeRow } from '../../utils/utils';
 
@@ -20,6 +20,8 @@ class ResolveMergeConflicts extends Component {
     this.state = {
       loading: false,
       calculatedMergeConflicts: false,
+      existingRecordsFileName: '',
+      existingRecordsFile: null,
       mode: 'CHOOSE_RECONCILIATION_COLUMNS',
     };
   }
@@ -91,10 +93,25 @@ class ResolveMergeConflicts extends Component {
     this.setState({ mode: 'CHOOSE_RECONCILIATION_COLUMNS', calculatedMergeConflicts: false });
   }
 
-  continue() {
+  skip() {
     const { navigateTo } = this.props;
 
     navigateTo('finish');
+  }
+
+  upload() {
+    const { uploadExistingRecords } = this.props;
+
+    const { existingRecordsFile, existingRecordsFileName } = this.state;
+
+    uploadExistingRecords({ existingRecordsFileName, existingRecordsFile });
+  }
+
+  handleSelectedFile(field, e) {
+    this.setState({
+      existingRecordsFileName: e.target.value,
+      existingRecordsFile: e.target.files[0],
+    });
   }
 
   render() {
@@ -107,7 +124,12 @@ class ResolveMergeConflicts extends Component {
     } = this.props;
 
     const {
-      loading, mode, calculatedMergeConflicts, nextSheetName, nextMergeRow,
+      loading,
+      mode,
+      calculatedMergeConflicts,
+      nextSheetName,
+      nextMergeRow,
+      existingRecordsFileName,
     } = this.state;
 
     let remainingRows = 0;
@@ -179,8 +201,24 @@ class ResolveMergeConflicts extends Component {
                 REDCap -> click on Export data -> click on Export Data in the table that says My
                 Reports & Exports next to the row labeled All data
               </p>
-              <button type="button" onClick={this.continue.bind(this)} className="App-submitButton">
-                Continue
+              <div className="ResolveMergeConflicts-existingRecordsUpload">
+                <label className="App-fieldsetLabel" htmlFor="existingRecordsFile">
+                  <span className="ResolveMergeConflicts-label">Existing Records (Optional)</span>
+                  <input
+                    className="App-fieldsetInput"
+                    id="existingRecordsFile"
+                    type="file"
+                    accept=".csv"
+                    value={existingRecordsFileName}
+                    onChange={this.handleSelectedFile.bind(this, 'existingRecordsFile')}
+                  />
+                </label>
+              </div>
+              <button type="button" onClick={this.skip.bind(this)} className="App-actionButton">
+                Skip
+              </button>
+              <button type="button" onClick={this.upload.bind(this)} className="App-submitButton">
+                Upload
               </button>
             </div>
           </div>
@@ -266,11 +304,7 @@ class ResolveMergeConflicts extends Component {
                 >
                   Select Reconciliation Column(s)
                 </button>
-                <button
-                  type="button"
-                  onClick={this.continue.bind(this)}
-                  className="App-submitButton"
-                >
+                <button type="button" onClick={this.skip.bind(this)} className="App-submitButton">
                   Continue
                 </button>
               </div>
@@ -326,7 +360,10 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ calculateMergeConflicts, navigateTo }, dispatch);
+  return bindActionCreators(
+    { calculateMergeConflicts, navigateTo, uploadExistingRecords },
+    dispatch,
+  );
 }
 
 export default connect(
