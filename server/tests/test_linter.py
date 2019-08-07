@@ -53,7 +53,7 @@ def test_validation_permissible_value_success(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -90,7 +90,7 @@ def test_validation_permissible_value_failure(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -128,7 +128,7 @@ def test_date_validation_success(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -165,7 +165,7 @@ def test_date_validation_failure(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -202,7 +202,7 @@ def test_integer_validation(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -242,7 +242,7 @@ def test_integer_validation_with_range(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -280,7 +280,7 @@ def test_decimal_validation(client):
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': '',
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],

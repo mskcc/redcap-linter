@@ -253,10 +253,6 @@ def calculate_merge_conflicts():
     malformed_sheets = json.loads(form.get('malformedSheets', '[]'))
     reconciliation_columns = json.loads(form.get('reconciliationColumns', '{}'))
 
-    data_dictionary = [RedcapField.from_json(field) for field in json.loads(form.get('ddData'))]
-
-    unique_field = utils.get_unique_field(data_dictionary, project_info)
-
     next_sheet_name = None
     next_merge_row = -1
     merge_conflicts = {}
@@ -281,12 +277,23 @@ def calculate_merge_conflicts():
             matching_record_ids[sheet_name] = {}
         for index, record in sheet.iterrows():
             recordid = record.get(recordid_field)
+            # TODO This only gets triggered if the recordid field in the datafile is not there.
+            # We may want to look for merge conflicts by recordid AND seconday unique field
             if not recordid:
                 # If recordid doesn't exist try to match on the secondary unique field
-                existing_record = [r for r in existing_records if not r['redcap_repeat_instance'] and str(r[unique_field.field_name]) == str(record.get(unique_field.field_name))]
+                existing_record = None
+                for r in existing_records:
+                    if r['redcap_repeat_instance']:
+                        continue
+                    matching = True
+                    for field in project_info.get('secondary_unique_field', []):
+                        if str(r[field]) != str(record.get(field)):
+                            matching = False
+                    if matching:
+                        existing_record = r
                 if not existing_record:
                     continue
-                recordid = existing_record[0][recordid_field]
+                recordid = existing_record.get(recordid_field)
                 matching_record_ids[sheet_name][index] = recordid
             if isinstance(recordid, float) and recordid.is_integer():
                 # Excel reads this in as a float :/

@@ -184,6 +184,9 @@ class ResolveMergeConflicts extends Component {
         <div>
           <ActionMenu />
           <div className="ResolveMergeConflicts-mainContainer">
+            <div className="ResolveMergeConflicts-buttonMenu">
+              <ButtonMenu />
+            </div>
             <div className="ResolveMergeConflicts-navigation">
               <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
                 <Icon type="left" />
@@ -233,6 +236,9 @@ class ResolveMergeConflicts extends Component {
           <div>
             <ActionMenu />
             <div className="ResolveMergeConflicts-mainContainer">
+              <div className="ResolveMergeConflicts-buttonMenu">
+                <ButtonMenu />
+              </div>
               <div className="ResolveMergeConflicts-navigation">
                 <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
                   <Icon type="left" />
@@ -284,6 +290,9 @@ class ResolveMergeConflicts extends Component {
         <div>
           <ActionMenu />
           <div className="ResolveMergeConflicts-mainContainer">
+            <div className="ResolveMergeConflicts-buttonMenu">
+              <ButtonMenu />
+            </div>
             <div className="ResolveMergeConflicts-navigation">
               <button type="button" onClick={this.back.bind(this)} className="App-actionButton">
                 <Icon type="left" />

@@ -55,7 +55,7 @@ def test_resolve_column_with_choice_map(client):
             }
         ]),
         "projectInfo": json.dumps({
-            'secondary_unique_field': "",
+            'secondary_unique_field': [],
             'record_autonumbering_enabled': 1,
             'next_record_name': 1
         })
@@ -104,7 +104,7 @@ def test_resolve_column_with_value_map(client):
             }
         ]),
         "projectInfo": json.dumps({
-            'secondary_unique_field': "",
+            'secondary_unique_field': [],
             'record_autonumbering_enabled': 1,
             'next_record_name': 1
         })
@@ -153,7 +153,7 @@ def test_resolve_merge(client):
             }
         ]),
         "projectInfo": json.dumps({
-            'secondary_unique_field': "",
+            'secondary_unique_field': [],
             'record_autonumbering_enabled': 1,
             'next_record_name': 1
         })

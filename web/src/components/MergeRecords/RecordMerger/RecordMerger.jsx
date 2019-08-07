@@ -83,6 +83,7 @@ class RecordMerger extends Component {
       workingMergeRow,
       mergeConflicts,
       recordidField,
+      projectInfo,
       reconciliationColumns,
       matchingRepeatInstances,
       jsonData,
@@ -115,6 +116,11 @@ class RecordMerger extends Component {
         reconciliationFields = reconciliationFields.concat(reconciliationColumns[repeatInstrument]);
       }
     });
+    if (projectInfo.secondary_unique_field && projectInfo.secondary_unique_field.length > 0) {
+      projectInfo.secondary_unique_field.forEach((field) => {
+        reconciliationFields.push(field);
+      });
+    }
     reconciliationFields.push(recordidField);
 
     // console.log(existingRecord);
@@ -178,6 +184,7 @@ RecordMerger.propTypes = {
   mergeConflicts: PropTypes.objectOf(PropTypes.object),
   reconciliationColumns: PropTypes.objectOf(PropTypes.array),
   matchingRepeatInstances: PropTypes.objectOf(PropTypes.object),
+  projectInfo: PropTypes.objectOf(PropTypes.any),
   recordidField: PropTypes.string,
   workingSheetName: PropTypes.string,
   workingMergeRow: PropTypes.number,
@@ -188,6 +195,7 @@ RecordMerger.defaultProps = {
   jsonData: {},
   dataFieldToRedcapFieldMap: {},
   mergeConflicts: {},
+  projectInfo: {},
   reconciliationColumns: {},
   matchingRepeatInstances: {},
   recordidField: '',

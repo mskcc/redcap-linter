@@ -26,8 +26,6 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
 
     recordid_field = data_dictionary[0]
 
-    unique_field = utils.get_unique_field(data_dictionary, project_info)
-
     matching_fields = utils.get_matching_fields(data_dictionary, records, recordid_field)
 
     rows_in_error = options.get('rows_in_error', [])
@@ -52,7 +50,7 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
 
     # Counts repeats of recordid in the datafile
     repeat_instance_dict = {}
-    if project_info.get('record_autonumbering_enabled') == 0 and unique_field.field_name not in list(records.columns):
+    if project_info.get('record_autonumbering_enabled') == 0 and recordid_field.field_name not in list(records.columns):
         return output_records
 
     next_inst = project_info.get('next_record_name', 1)
@@ -69,14 +67,24 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
             record_inst = next_inst
             next_inst += 1
 
-        if project_info.get('record_autonumbering_enabled') == 1:
+        key = None
+        if project_info.get('record_autonumbering_enabled') == 0:
+            key = row.get(recordid_field.field_name)
+        elif project_info.get('record_autonumbering_enabled') == 1:
             encoded_row[recordid_field.field_name] = record_inst
+            key = []
+            for field in project_info.get('secondary_unique_field', []):
+                key.append(row.get(field))
+            key = tuple(key)
+            # All fields must be present
+            if not all(key):
+                key = None
 
-        if row.get(unique_field.field_name):
-            if not repeat_instance_dict.get(row[unique_field.field_name]):
-                repeat_instance_dict[row[unique_field.field_name]] = 1
+        if key:
+            if not repeat_instance_dict.get(key):
+                repeat_instance_dict[key] = 1
             else:
-                repeat_instance_dict[row[unique_field.field_name]] += 1
+                repeat_instance_dict[key] += 1
 
         for form_name in matching_fields:
             if form_name in project_info.get('repeatable_instruments'):
@@ -89,7 +97,7 @@ def encode_sheet(data_dictionary, project_info, records, options={}):
                 for decoded_record in decoded_records.get(str(row.get(recordid_field.field_name)), []):
                     if decoded_record['redcap_repeat_instrument'] == form_name and int(decoded_record['redcap_repeat_instance']) > max_instance_number:
                         max_instance_number = int(decoded_record['redcap_repeat_instance'])
-                repeat_instance = max_instance_number + repeat_instance_dict.get(row.get(unique_field.field_name), 1)
+                repeat_instance = max_instance_number + repeat_instance_dict.get(key, 1)
                 if matching_repeat_instances.get(str(index), {}).get(form_name):
                     repeat_instance = matching_repeat_instances.get(str(index), {}).get(form_name)
                 row_to_encode['redcap_repeat_instance'] = repeat_instance

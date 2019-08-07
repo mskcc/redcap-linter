@@ -68,12 +68,12 @@ def save_fields():
     if token:
         redcap_api = RedcapApi(env)
         if project_info['record_autonumbering_enabled'] == 1:
-            if not project_info['secondary_unique_field']:
+            if not project_info.get('secondary_unique_field'):
                 existing_records = None
             else:
-                secondary_unique_field_values = utils.get_field_values(project_info['secondary_unique_field'], records)
+                secondary_unique_field_values = utils.get_field_values(project_info.get('secondary_unique_field', []), records)
                 options = {
-                    'secondary_unique_field': project_info['secondary_unique_field'],
+                    'secondary_unique_field': project_info.get('secondary_unique_field', []),
                     'secondary_unique_field_values': secondary_unique_field_values
                 }
                 existing_records = redcap_api.export_records(token, options)
@@ -86,7 +86,7 @@ def save_fields():
                 options = {'records': record_ids}
                 existing_records = redcap_api.export_records(token, options)
         else:
-            record_ids = utils.get_field_values(recordid_field, records)
+            record_ids = utils.get_field_values([recordid_field], records)
             options = {'records': record_ids}
             existing_records = redcap_api.export_records(token, options)
 
@@ -213,6 +213,8 @@ def post_form():
             data_dictionary = redcap_api.fetch_data_dictionary(token)
             project_info = redcap_api.fetch_project_info(token)
             project_info['next_record_name'] = redcap_api.generate_next_record_name(token)
+            if project_info.get('secondary_unique_field'):
+                project_info['secondary_unique_field'] = [project_info.get('secondary_unique_field')]
             if project_info['has_repeating_instruments_or_events'] == 1:
                 repeatable_instruments = redcap_api.fetch_repeatable_instruments(token)
                 project_info['repeatable_instruments'] = [i['form_name'] for i in repeatable_instruments]

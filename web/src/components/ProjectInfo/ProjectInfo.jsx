@@ -49,9 +49,15 @@ class ProjectInfo extends Component {
     changeRepeatableInstruments({ repeatableInstruments: newRepeatableInstruments });
   }
 
-  changeSecondaryUniqueField(selectedOption) {
+  changeSecondaryUniqueField(selectedOptions) {
     const { changeSecondaryUniqueField } = this.props;
-    changeSecondaryUniqueField({ secondaryUniqueField: selectedOption.value });
+    const secondaryUniqueFields = [];
+    if (selectedOptions && selectedOptions.length > 0) {
+      selectedOptions.forEach((selectedOption) => {
+        secondaryUniqueFields.push(selectedOption.value);
+      });
+    }
+    changeSecondaryUniqueField({ secondaryUniqueField: secondaryUniqueFields });
   }
 
   handleOnChangeProjectInfo(field, e) {
@@ -83,7 +89,7 @@ class ProjectInfo extends Component {
     let warning = '';
     let repeatableInstrumentsDisabled = false;
     const secondaryUniqueDisabled = false;
-    let selectedSecondaryValue = null;
+    const selectedSecondaryValue = [];
     if (!error) {
       project += '<div>';
       if (projectInfo.project_id) {
@@ -101,12 +107,14 @@ class ProjectInfo extends Component {
       } else {
         project += '<b>Record Autonumbering</b>: false<br />';
       }
-      if (projectInfo.secondary_unique_field) {
+      if (projectInfo.secondary_unique_field && projectInfo.secondary_unique_field.length > 0) {
         // secondaryUniqueDisabled = true;
-        selectedSecondaryValue = {
-          value: projectInfo.secondary_unique_field,
-          label: projectInfo.secondary_unique_field,
-        };
+        projectInfo.secondary_unique_field.forEach((field) => {
+          selectedSecondaryValue.push({
+            value: field,
+            label: field,
+          });
+        });
       }
       if (projectInfo.custom_record_label) {
         project += `<b>Custom Record Label</b>: ${projectInfo.custom_record_label}<br />`;
@@ -151,13 +159,14 @@ class ProjectInfo extends Component {
       secondaryUniqueSelector = (
         <div className="ProjectInfo-repeatableInstruments">
           <div>
-            <b>Secondary Unique Field</b>
+            <b>Secondary Unique Field(s)</b>
 :
           </div>
           <Select
             className="ProjectInfo-elevate"
             options={secondaryUniqueFieldOptions}
             isSearchable
+            isMulti
             isDisabled={secondaryUniqueDisabled}
             value={selectedSecondaryValue}
             onChange={this.changeSecondaryUniqueField}

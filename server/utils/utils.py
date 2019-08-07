@@ -185,14 +185,6 @@ def validate_text_type(list_to_validate, redcap_field):
         validations = list_to_validate
     return validations
 
-def get_unique_field(data_dictionary, project_info):
-    unique_field = None
-    if project_info.get('record_autonumbering_enabled') == 1 and project_info.get('secondary_unique_field'):
-        unique_field = [d for d in data_dictionary if d.field_name == project_info.get('secondary_unique_field')][0]
-    else:
-        unique_field = data_dictionary[0]
-    return unique_field
-
 def parameterize(str):
     # \W = [^a-zA-Z0-9_]
     parameterized_str = re.sub(r'([^\s\w-]|)+', '', str)
@@ -204,14 +196,21 @@ def parameterize(str):
 def parameterize_list(items):
     return [parameterize(item) for item in items]
 
-def get_field_values(field_name, records):
+def get_field_values(fields, records):
     values = set()
     for _, sheet in records.items():
         for _, record in sheet.iterrows():
-            if record.get(field_name):
-                value = record.get(field_name)
-                value = str(int(value)) if isinstance(value, float) and value.is_integer() else value
-                values.add(value)
+            row_values = []
+            for field in fields:
+                v = None
+                if record.get(field):
+                    v = record.get(field)
+                    v = str(int(v)) if isinstance(v, float) and v.is_integer() else v
+                row_values.append(v)
+            row_values = tuple(row_values)
+            if not all(row_values):
+                continue
+            values.add(row_values)
     values = list(values)
     return values
 

@@ -109,8 +109,13 @@ class RedcapApi():
                 payload["forms[{0}]".format(i)] = form
         if options.get('secondary_unique_field'):
             filter_logic = ''
-            for i, value in enumerate(options.get('secondary_unique_field_values')):
-                filter_logic += "[{0}] = '{1}'".format(options.get('secondary_unique_field'), value)
+            for i, row_values in enumerate(options.get('secondary_unique_field_values')):
+                filter_logic += "("
+                for j, field in enumerate(options.get('secondary_unique_field', [])):
+                    filter_logic += "[{0}] = '{1}'".format(field, row_values[j])
+                    if j < len(options.get('secondary_unique_field', [])) - 1:
+                        filter_logic += " AND "
+                filter_logic += ")"
                 if i < len(options.get('secondary_unique_field_values')) - 1:
                     filter_logic += " OR "
             payload["filterLogic"] = filter_logic

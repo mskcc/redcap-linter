@@ -41,7 +41,7 @@ def test_serializer():
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': "",
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -89,7 +89,7 @@ def test_serializer_with_record_id():
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': "",
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 0,
         'next_record_name': 1,
         'repeatable_instruments': [],
@@ -149,7 +149,7 @@ def test_serializer_with_repeatable_instrument():
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': "",
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 0,
         'next_record_name': 1,
         'repeatable_instruments': ['treatment'],
@@ -211,7 +211,7 @@ def test_serializer_with_repeatable_instrument():
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': "",
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 0,
         'next_record_name': 1,
         'repeatable_instruments': ['treatment'],
@@ -272,7 +272,7 @@ def test_serializer_with_repeatable_instrument_and_matching_repeat_instances():
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': "",
+        'secondary_unique_field': [],
         'record_autonumbering_enabled': 0,
         'next_record_name': 1,
         'repeatable_instruments': ['treatment'],
@@ -334,7 +334,7 @@ def test_serializer_with_repeatable_instrument_and_matching_record_id():
     data_dictionary = [RedcapField.from_json(field) for field in data_dictionary]
 
     project_info = {
-        'secondary_unique_field': 'dmp_id',
+        'secondary_unique_field': ['dmp_id'],
         'record_autonumbering_enabled': 1,
         'next_record_name': 1,
         'repeatable_instruments': [],
