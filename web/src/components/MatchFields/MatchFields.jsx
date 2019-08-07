@@ -204,6 +204,12 @@ class MatchFields extends Component {
         <div>
           <ActionMenu />
           <div className="MatchFields-container">
+            <div className="MatchFields-helpText">
+              The first step in the Linting process is to match each column in the datafile with its
+              respective REDCap field. Use the dropdown next to each unmatched REDCap field to match
+              with its corresponding column in the datafile. You can toggle from matching REDCap
+              Field to Datafile columns by pressing the switch button above the table.
+            </div>
             <div>
               <div className="MatchFields-matchedFields">
                 <div className="MatchFields-title">Matched Fields</div>

@@ -21,7 +21,11 @@ function App() {
           <Linter />
         </Provider>
       </div>
-      <div className="App-footer" />
+      <div className="App-footer">
+        <small style={{ color: 'gray' }} className="App-copyright">
+          © Memorial Sloan Kettering Cancer Center
+        </small>
+      </div>
     </div>
   );
 }
