@@ -54,7 +54,7 @@
     "jest-css-modules": "^2.1.0",
     "jest-environment-enzyme": "^7.1.0",
     "jest-enzyme": "^7.1.0",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "react-hot-loader": "^4.12.10",
     "react-test-renderer": "^16.8.6",
     "sass-loader": "^7.1.0",
